@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.6)
+project(temblor VERSION 0.1.1 LANGUAGES CXX)
+enable_testing()
+
+##########################################################################################
+#                    Define the compiler standard and requisites                         #
+##########################################################################################
+include(CheckCXXCompilerFlag)
+
+include(FindOpenMP QUIET)
+if (OPENMP_FOUND)
+   message("OpenMP found")
+   string(APPEND CMAKE_CXX_FLAGS " ${OpenMP_CXX_FLAGS}")
+endif()
+
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+
+# Run MOC when required
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+# Includes
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+
+find_package(GTest REQUIRED)
+
+#########################################################################################
+#                      Define the source, libraries, and executables                    #
+#########################################################################################
+
+set(LIBSRC
+    lib/utilities/time.cpp)
+
+add_executable(helloworld main.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
+
+add_library(temblor SHARED ${LIBSRC})
+set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
+
+# Add the Qt5 Widgets for linking
+target_link_libraries(helloworld Qt5::Widgets)
+
+add_executable(testLibraryUtilities
+               lib/tests/utilities/main.cpp 
+               lib/tests/utilities/time.cpp)
+set_property(TARGET testLibraryUtilities PROPERTY CXX_STANDARD 17)
+target_link_libraries(testLibraryUtilities PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
+add_test(NAME testLibraryUtilities
+         COMMAND testLibraryUtilities)
+
+#########################################################################################
+#                                     Installation                                      #
+#########################################################################################
+
+include(GNUInstallDirs)
+install(TARGETS temblor
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
