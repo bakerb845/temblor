@@ -6,18 +6,18 @@
 
 #define NULL_DOUBLE -12345
 #define NULL_INT -12345
-#define NULL_STRING "-12345"
+#define NULL_STRING "-12345\0\0"
 
 using namespace Temblor::Library::DataReaders::SAC;
 
 class Header::HeaderImpl
 {
 public:
-    //HeaderImpl() = default;
-    //HeaderImpl(const HeaderImpl &header) = default; 
-    //HeaderImpl& operator=HeaderImpl() = default;
-    //~HeaderImpl() = default;
+    // Doubles
+    double delta = NULL_DOUBLE;
+    // Integers
 
+    // Logicals
     int leven   = NULL_INT;
     int lpspol  = NULL_INT;
     int lovrok  = NULL_INT;
