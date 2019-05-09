@@ -34,6 +34,8 @@ find_package(GTest REQUIRED)
 #########################################################################################
 
 set(LIBSRC
+    lib/dataReaders/sac/sac.cpp
+    lib/dataReaders/sac/header.cpp
     lib/utilities/time.cpp)
 
 add_executable(helloworld main.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
