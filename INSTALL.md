@@ -16,6 +16,8 @@ After satisfying the dependencies, it is possible to configure CMake.  I find th
     #!/bin/bash
     export CXX=/usr/bin/clang++
     export BUILD_DIR=clang_build
+    # Possibly simplest way to specify cmake location
+    #export Qt5_DIR=/Users/bbaker/Qt/5.12.3/clang_64/lib/cmake
     # You may want to export CMAKE_PREFIX_PATH instead of specifying the 
     # requisite libraries below.  Or, even better, do this in your bashrc.
     #export GTEST_DIR=/local/lib/cmake/GTest
