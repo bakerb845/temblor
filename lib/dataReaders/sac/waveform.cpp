@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
 #include <string>
 #include "temblor/library/dataReaders/sac/waveform.hpp"
 #include "temblor/library/dataReaders/sac/header.hpp"
