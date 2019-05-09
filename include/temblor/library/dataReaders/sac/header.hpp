@@ -113,17 +113,17 @@ public:
      */
     /*! @brief Gets a logical header variable.
      * @param variableName  The name of the logical variable to get.
-     * result The value of the header variable.  If the header variable
-     *        has not been set then this will be -12345.
+     * @result The value of the header variable.  If the header variable
+     *         has not been set then this will be -12345.  Otherwise,
+     *         0 indicates false while 1 indicates true.
      */
     int getHeader(const Logical variableName) const noexcept;
     /*! @brief Sets a logical header variable.
       * @param variableName  The name of the logical variable to set.
-      * @param value         The value of the variable.  Here 0 is false,
-      *                      non-zero (ideally 1) is true, and -12345 is
-      *                      undefined.
+      * @param value         The value of the variable.
+      * @note That after a variable is set it can only to toggled on or off.
       */
-    void setHeader(const Logical variableName, const bool value) const noexcept;
+    void setHeader(const Logical variableName, const bool value) noexcept;
     /*! @} */
 
     /*! @name Character Header Variables

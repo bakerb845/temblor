@@ -122,7 +122,11 @@ TEST(LibraryDataReadersSAC, header)
     header.setHeader(SAC::Integer::UNUSED8,    34);
     header.setHeader(SAC::Integer::UNUSED9,    35);
     // Set the logicals
-
+    header.setHeader(SAC::Logical::LEVEN,  false);
+    header.setHeader(SAC::Logical::LPSPOL, true);
+    //header.setHeader(SAC::Logical::LOVROK, -12345); // undefined
+    header.setHeader(SAC::Logical::LCALDA, true);
+    header.setHeader(SAC::Logical::UNUSED, false);
     // Set the strings
 
     // Implicitly tests the copy as well
@@ -234,7 +238,11 @@ TEST(LibraryDataReadersSAC, header)
     ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED8),    34);
     ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED9),    35);
     // Test the logicals
-
+    ASSERT_EQ(headerCheck.getHeader(SAC::Logical::LEVEN),       0);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Logical::LPSPOL),      1);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Logical::LOVROK), -12345);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Logical::LCALDA),      1);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Logical::UNUSED),      0);
     // Test the strings
 }
 

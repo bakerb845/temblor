@@ -1304,6 +1304,68 @@ int Header::getHeader(const Integer variableName) const noexcept
 
 //============================================================================//
 
+void Header::setHeader(const Logical variableName,
+                       const bool value) noexcept
+{
+    int valueToSet = static_cast<int> (value);
+    if (variableName == Logical::LEVEN)
+    {
+        pImpl->leven = valueToSet;
+    }
+    else if (variableName == Logical::LPSPOL)
+    {
+        pImpl->lpspol = valueToSet;
+    }
+    else if (variableName == Logical::LOVROK)
+    {
+        pImpl->lovrok = valueToSet;
+    }
+    else if (variableName == Logical::LCALDA)
+    {
+        pImpl->lcalda = valueToSet;
+    }
+    else if (variableName == Logical::UNUSED)
+    {
+        pImpl->lunused = valueToSet;
+    }
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
+}
+
+int Header::getHeader(const Logical variableName) const noexcept
+{
+    if (variableName == Logical::LEVEN)
+    {
+        return pImpl->leven;
+    }
+    else if (variableName == Logical::LPSPOL)
+    {
+        return pImpl->lpspol;
+    }
+    else if (variableName == Logical::LOVROK)
+    {
+        return pImpl->lovrok;
+    }
+    else if (variableName == Logical::LCALDA)
+    {
+        return pImpl->lcalda;
+    }
+    else if (variableName == Logical::UNUSED)
+    {
+        return pImpl->lunused;
+    }
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
+    return NULL_INT;
+}
 //============================================================================//
 
 void Header::setHeader(const Character variableName,
