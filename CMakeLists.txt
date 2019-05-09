@@ -15,6 +15,7 @@ endif()
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
+# TODO - move to ui and scope there.  This generates useless stuff for the core library.
 # Run MOC when required
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -34,7 +35,7 @@ find_package(GTest REQUIRED)
 #########################################################################################
 
 set(LIBSRC
-    lib/dataReaders/sac/sac.cpp
+    lib/dataReaders/sac/waveform.cpp
     lib/dataReaders/sac/header.cpp
     lib/utilities/time.cpp)
 
