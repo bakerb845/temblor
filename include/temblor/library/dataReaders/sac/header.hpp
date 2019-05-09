@@ -18,6 +18,15 @@ public:
      */
     Header();
     /*!
+     * @brief Creates a header from character data.
+     * @param[in] header  The binary header from which to initialize the header.
+     * @param[in] lswap   This an optional variable that indicates whether or
+     *                    not the header bytes should be swapped.  By default
+     *                    this is false.
+     * @throw std::invalid_argument if header is NULL.
+     */
+    explicit Header(const char header[638], const bool lswap = false);
+    /*!
      * @brief Copy constructor.
      * @param[in] header  Header class from which to initialize this class.
      */

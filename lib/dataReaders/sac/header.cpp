@@ -11,6 +11,72 @@
 
 using namespace Temblor::Library::DataReaders::SAC;
 
+static std::string copyTruncatedString(const std::string &value, std::string &result);
+static int unpacki4(const char c4[4], const bool lswap);
+static double unpackf4(const char c4[4], const bool lswap);
+
+static std::string copyTruncatedString(const std::string &value, std::string &result)
+{
+    size_t ncopy = std::min(result.length(), value.length());
+    for (size_t i=0; i<ncopy; ++i)
+    {
+        result[i] = value[i];
+    }
+    for (size_t i=ncopy; i<result.length(); ++i)
+    {
+        result[i] = '\0';
+    }
+    return result;
+}
+
+static double unpackf4(const char c4[4], const bool lswap)
+{
+    union
+    {
+        char cd[4];
+        float f4;
+    };
+    if (!lswap)
+    {
+        cd[0] = c4[0];
+        cd[1] = c4[1];
+        cd[2] = c4[2];
+        cd[3] = c4[3];
+    }
+    else
+    {
+        cd[0] = c4[3];
+        cd[1] = c4[2];
+        cd[2] = c4[1];
+        cd[3] = c4[0];
+    }
+    return static_cast<double> (f4);
+}
+
+static int unpacki4(const char c4[4], const bool lswap)
+{
+    union
+    {
+        char cd[4];
+        int i4;
+    };
+    if (!lswap)
+    {
+        cd[0] = c4[0];
+        cd[1] = c4[1];
+        cd[2] = c4[2];
+        cd[3] = c4[3];
+    }
+    else
+    {
+        cd[0] = c4[3];
+        cd[1] = c4[2];
+        cd[2] = c4[1];
+        cd[3] = c4[0];
+    }
+    return i4;
+}
+
 class Header::HeaderImpl
 {
 public:
@@ -156,6 +222,124 @@ public:
 Header::Header() :
     pImpl(std::make_unique<HeaderImpl> ())
 {
+}
+
+Header::Header(const char header[], const bool lswap)
+{
+    // Floats (convert to double)
+    pImpl->delta      = unpackf4(  &header[0], lswap);
+    pImpl->depmin     = unpackf4(  &header[4], lswap);
+    pImpl->depmax     = unpackf4(  &header[8], lswap);
+    pImpl->scale      = unpackf4( &header[12], lswap);
+    pImpl->odelta     = unpackf4( &header[16], lswap);
+    pImpl->b          = unpackf4( &header[20], lswap);
+    pImpl->e          = unpackf4( &header[24], lswap);
+    pImpl->o          = unpackf4( &header[28], lswap);
+    pImpl->a          = unpackf4( &header[32], lswap);
+    pImpl->internal1  = unpackf4( &header[36], lswap);
+    pImpl->t0         = unpackf4( &header[40], lswap);
+    pImpl->t1         = unpackf4( &header[44], lswap);
+    pImpl->t2         = unpackf4( &header[48], lswap);
+    pImpl->t3         = unpackf4( &header[52], lswap);
+    pImpl->t4         = unpackf4( &header[56], lswap);
+    pImpl->t5         = unpackf4( &header[60], lswap);
+    pImpl->t6         = unpackf4( &header[64], lswap);
+    pImpl->t7         = unpackf4( &header[68], lswap);
+    pImpl->t8         = unpackf4( &header[72], lswap);
+    pImpl->t9         = unpackf4( &header[76], lswap);
+    pImpl->f          = unpackf4( &header[80], lswap);
+    pImpl->resp0      = unpackf4( &header[84], lswap);
+    pImpl->resp1      = unpackf4( &header[88], lswap);
+    pImpl->resp2      = unpackf4( &header[92], lswap);
+    pImpl->resp3      = unpackf4( &header[96], lswap);
+    pImpl->resp4      = unpackf4(&header[100], lswap);
+    pImpl->resp5      = unpackf4(&header[104], lswap);
+    pImpl->resp6      = unpackf4(&header[108], lswap);
+    pImpl->resp7      = unpackf4(&header[112], lswap);
+    pImpl->resp8      = unpackf4(&header[116], lswap);
+    pImpl->resp9      = unpackf4(&header[120], lswap);
+    pImpl->stla       = unpackf4(&header[124], lswap);
+    pImpl->stlo       = unpackf4(&header[128], lswap);
+    pImpl->stel       = unpackf4(&header[132], lswap);
+    pImpl->stdp       = unpackf4(&header[136], lswap);
+    pImpl->evla       = unpackf4(&header[140], lswap);
+    pImpl->evlo       = unpackf4(&header[144], lswap);
+    pImpl->evel       = unpackf4(&header[148], lswap);
+    pImpl->evdp       = unpackf4(&header[152], lswap);
+    pImpl->mag        = unpackf4(&header[156], lswap);
+    pImpl->user0      = unpackf4(&header[160], lswap);
+    pImpl->user1      = unpackf4(&header[164], lswap);
+    pImpl->user2      = unpackf4(&header[168], lswap);
+    pImpl->user3      = unpackf4(&header[172], lswap);
+    pImpl->user4      = unpackf4(&header[176], lswap);
+    pImpl->user5      = unpackf4(&header[180], lswap);
+    pImpl->user6      = unpackf4(&header[184], lswap);
+    pImpl->user7      = unpackf4(&header[188], lswap);
+    pImpl->user8      = unpackf4(&header[192], lswap);
+    pImpl->user9      = unpackf4(&header[196], lswap);
+    pImpl->dist       = unpackf4(&header[200], lswap);
+    pImpl->az         = unpackf4(&header[204], lswap);
+    pImpl->baz        = unpackf4(&header[208], lswap);
+    pImpl->gcarc      = unpackf4(&header[212], lswap);
+    pImpl->internal2  = unpackf4(&header[216], lswap);
+    pImpl->internal3  = unpackf4(&header[220], lswap);
+    pImpl->depmen     = unpackf4(&header[224], lswap);
+    pImpl->cmpaz      = unpackf4(&header[228], lswap);
+    pImpl->cmpinc     = unpackf4(&header[232], lswap);
+    pImpl->xminimum   = unpackf4(&header[236], lswap);
+    pImpl->xmaximum   = unpackf4(&header[240], lswap);
+    pImpl->yminimum   = unpackf4(&header[244], lswap);
+    pImpl->ymaximum   = unpackf4(&header[248], lswap);
+    pImpl->unused0    = unpackf4(&header[252], lswap);
+    pImpl->unused1    = unpackf4(&header[256], lswap);
+    pImpl->unused2    = unpackf4(&header[260], lswap);
+    pImpl->unused3    = unpackf4(&header[264], lswap);
+    pImpl->unused4    = unpackf4(&header[268], lswap);
+    pImpl->unused5    = unpackf4(&header[272], lswap);
+    pImpl->unused6    = unpackf4(&header[276], lswap);
+    // Integers
+    pImpl->nzyear     = unpacki4(&header[280], lswap);
+    pImpl->nzjday     = unpacki4(&header[284], lswap);
+    pImpl->nzhour     = unpacki4(&header[288], lswap);
+    pImpl->nzmin      = unpacki4(&header[292], lswap);
+    pImpl->nzsec      = unpacki4(&header[296], lswap);
+    pImpl->nzmsec     = unpacki4(&header[300], lswap);
+    pImpl->nvhdr      = unpacki4(&header[304], lswap);
+    pImpl->norid      = unpacki4(&header[308], lswap);
+    pImpl->nevid      = unpacki4(&header[312], lswap);
+    pImpl->npts       = unpacki4(&header[316], lswap);
+    pImpl->iinternal1 = unpacki4(&header[320], lswap);
+    pImpl->nwfid      = unpacki4(&header[324], lswap);
+    pImpl->nxsize     = unpacki4(&header[328], lswap);
+    pImpl->nysize     = unpacki4(&header[332], lswap);
+    pImpl->iunused0   = unpacki4(&header[336], lswap);
+    pImpl->iftype     = unpacki4(&header[340], lswap);
+    pImpl->idep       = unpacki4(&header[344], lswap);
+    pImpl->iztype     = unpacki4(&header[348], lswap);
+    pImpl->iunused1   = unpacki4(&header[352], lswap);
+    pImpl->iinst      = unpacki4(&header[356], lswap);
+    pImpl->istreg     = unpacki4(&header[360], lswap);
+    pImpl->ievreg     = unpacki4(&header[364], lswap);
+    pImpl->ievtyp     = unpacki4(&header[368], lswap);
+    pImpl->iqual      = unpacki4(&header[372], lswap);
+    pImpl->isynth     = unpacki4(&header[376], lswap);
+    pImpl->imagtyp    = unpacki4(&header[380], lswap);
+    pImpl->imagsrc    = unpacki4(&header[384], lswap);
+    pImpl->iunused2   = unpacki4(&header[388], lswap);
+    pImpl->iunused3   = unpacki4(&header[392], lswap);
+    pImpl->iunused4   = unpacki4(&header[396], lswap);
+    pImpl->iunused5   = unpacki4(&header[400], lswap);
+    pImpl->iunused6   = unpacki4(&header[404], lswap);
+    pImpl->iunused7   = unpacki4(&header[408], lswap);
+    pImpl->iunused8   = unpacki4(&header[412], lswap);
+    pImpl->iunused9   = unpacki4(&header[416], lswap);
+    // Logicals
+    pImpl->leven   = unpacki4(&header[420], lswap);
+    pImpl->lpspol  = unpacki4(&header[424], lswap);
+    pImpl->lovrok  = unpacki4(&header[428], lswap);
+    pImpl->lcalda  = unpacki4(&header[432], lswap);
+    pImpl->lunused = unpacki4(&header[436], lswap);
+    // Strings
 }
 
 Header::Header(const Header &header)
@@ -474,7 +658,12 @@ double Header::getHeader(const Double variableName) const noexcept
     {
         return pImpl->unused6;
     }
-    assert(false);
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
     return NULL_DOUBLE;
 }
 
@@ -766,6 +955,12 @@ void Header::setHeader(const Double variableName, const double value)
     {
         pImpl->unused6 = value;
     }
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
 }
 
 //============================================================================//
@@ -948,7 +1143,12 @@ void Header::setHeader(const Integer variableName, const int value)
     {
         pImpl->iunused9 = value;
     }
-    assert(false);
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
 }
 
 int Header::getHeader(const Integer variableName) const noexcept
@@ -1093,11 +1293,117 @@ int Header::getHeader(const Integer variableName) const noexcept
     {
         return pImpl->iunused9;
     }
-    assert(false);
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
     return NULL_INT;
 }
 
 //============================================================================//
+
+//============================================================================//
+
+void Header::setHeader(const Character variableName,
+                       const std::string &value) noexcept
+{
+    if (variableName == Character::KSTNM)
+    {
+        copyTruncatedString(value, pImpl->kstnm);
+    }
+    else if (variableName == Character::KEVNM)
+    {
+        copyTruncatedString(value, pImpl->kevnm);
+    }
+    else if (variableName == Character::KHOLE)
+    {
+        copyTruncatedString(value, pImpl->khole);
+    }
+    else if (variableName == Character::KO)
+    {
+        copyTruncatedString(value, pImpl->ko);
+    }
+    else if (variableName == Character::KA)
+    {
+        copyTruncatedString(value, pImpl->ka);
+    }
+    else if (variableName == Character::KT0)
+    {
+        copyTruncatedString(value, pImpl->kt0);
+    }
+    else if (variableName == Character::KT1)
+    {
+        copyTruncatedString(value, pImpl->kt1);
+    }
+    else if (variableName == Character::KT2)
+    {
+        copyTruncatedString(value, pImpl->kt2);
+    }
+    else if (variableName == Character::KT3)
+    {
+        copyTruncatedString(value, pImpl->kt3);
+    }
+    else if (variableName == Character::KT4)
+    {
+        copyTruncatedString(value, pImpl->kt4);
+    }
+    else if (variableName == Character::KT5)
+    {
+        copyTruncatedString(value, pImpl->kt5);
+    }
+    else if (variableName == Character::KT6)
+    {
+        copyTruncatedString(value, pImpl->kt6);
+    }
+    else if (variableName == Character::KT7)
+    {
+        copyTruncatedString(value, pImpl->kt7);
+    }
+    else if (variableName == Character::KT8)
+    {
+        copyTruncatedString(value, pImpl->kt8);
+    }
+    else if (variableName == Character::KT9)
+    {
+        copyTruncatedString(value, pImpl->kt9);
+    }
+    else if (variableName == Character::KF)
+    {
+        copyTruncatedString(value, pImpl->kf);
+    }
+    else if (variableName == Character::KUSER0)
+    {
+        copyTruncatedString(value, pImpl->kuser0);
+    }
+    else if (variableName == Character::KUSER1)
+    {
+        copyTruncatedString(value, pImpl->kuser1);
+    }
+    else if (variableName == Character::KUSER2)
+    {
+        copyTruncatedString(value, pImpl->kuser2);
+    }
+    else if (variableName == Character::KCMPNM)
+    {
+        copyTruncatedString(value, pImpl->kcmpnm);
+    }
+    else if (variableName == Character::KDATRD)
+    {
+        copyTruncatedString(value, pImpl->kdatrd);
+    }
+    else if (variableName == Character::KINST)
+    {
+        copyTruncatedString(value, pImpl->kinst);
+    }
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
+}
 
 std::string Header::getHeader(const Character variableName) const noexcept
 {
@@ -1193,7 +1499,12 @@ std::string Header::getHeader(const Character variableName) const noexcept
     {
         return pImpl->kinst;
     }
-    assert(false);
+#ifdef DEBUG
+    else
+    {
+        assert(false);
+    }
+#endif
     return NULL_STRING;
 }
 

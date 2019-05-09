@@ -106,6 +106,21 @@ TEST(LibraryDataReadersSAC, header)
     header.setHeader(SAC::Integer::IZTYPE,     18);
     header.setHeader(SAC::Integer::UNUSED1,    19);
     header.setHeader(SAC::Integer::IINST,      20);
+    header.setHeader(SAC::Integer::ISTREG,     21);
+    header.setHeader(SAC::Integer::IEVREG,     22);
+    header.setHeader(SAC::Integer::IEVTYP,     23);
+    header.setHeader(SAC::Integer::IQUAL,      24);
+    header.setHeader(SAC::Integer::ISYNTH,     25);
+    header.setHeader(SAC::Integer::IMAGTYP,    26);
+    header.setHeader(SAC::Integer::IMAGSRC,    27);
+    header.setHeader(SAC::Integer::UNUSED2,    28);
+    header.setHeader(SAC::Integer::UNUSED3,    29);
+    header.setHeader(SAC::Integer::UNUSED4,    30);
+    header.setHeader(SAC::Integer::UNUSED5,    31);
+    header.setHeader(SAC::Integer::UNUSED6,    32);
+    header.setHeader(SAC::Integer::UNUSED7,    33);
+    header.setHeader(SAC::Integer::UNUSED8,    34);
+    header.setHeader(SAC::Integer::UNUSED9,    35);
     // Set the logicals
 
     // Set the strings
@@ -203,7 +218,21 @@ TEST(LibraryDataReadersSAC, header)
     ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IZTYPE),     18);
     ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED1),    19);
     ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IINST),      20);
-
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::ISTREG),     21);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IEVREG),     22);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IEVTYP),     23);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IQUAL),      24);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::ISYNTH),     25);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IMAGTYP),    26);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::IMAGSRC),    27);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED2),    28);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED3),    29);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED4),    30);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED5),    31);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED6),    32);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED7),    33);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED8),    34);
+    ASSERT_EQ(headerCheck.getHeader(SAC::Integer::UNUSED9),    35);
     // Test the logicals
 
     // Test the strings
