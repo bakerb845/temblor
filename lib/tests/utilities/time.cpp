@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <climits>
-#include <memory>
 #include "temblor/library/utilities/time.hpp"
 #include <gtest/gtest.h>
 

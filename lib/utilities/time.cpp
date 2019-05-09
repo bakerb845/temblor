@@ -93,17 +93,6 @@ Time& Time::operator=(const Time &time)
 {
     if (&time == this){return *this;}
     pImpl = std::make_unique<TimeImpl> (*time.pImpl); // use default copy
-    //pImpl->epoch      = time.pImpl->epoch;
-    //pImpl->year       = time.pImpl->year;
-    //pImpl->jday       = time.pImpl->jday;
-    //pImpl->month      = time.pImpl->month;
-    //pImpl->dom        = time.pImpl->dom;
-    //pImpl->hour       = time.pImpl->hour;
-    //pImpl->minute     = time.pImpl->minute;
-    //pImpl->second     = time.pImpl->second;
-    //pImpl->musec      = time.pImpl->musec;
-    //pImpl->lhaveEpoch = time.pImpl->lhaveEpoch;
-    //pImpl->luseJday   = time.pImpl->luseJday;
     return *this;
 }
 
@@ -138,15 +127,13 @@ bool Time::operator!=(const Time &time)
 
 bool Time::operator>(const Time &time)
 {
-    if (pImpl->epoch > time.getEpochalTime()){return true;}
-    return false;
+    return pImpl->epoch > time.getEpochalTime();
 }
 
 bool Time::operator<(const Time &time)
 {
-    if (pImpl->epoch < time.getEpochalTime()){return true;}
-    return false;
-} 
+    return pImpl->epoch < time.getEpochalTime();
+}
 
 void Time::setEpochalTime(const double epoch)
 {

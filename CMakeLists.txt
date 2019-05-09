@@ -46,6 +46,10 @@ set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 # Add the Qt5 Widgets for linking
 target_link_libraries(helloworld Qt5::Widgets)
 
+
+##########################################################################################
+#                                      Unit Tests                                        #
+##########################################################################################
 add_executable(testLibraryUtilities
                lib/tests/utilities/main.cpp 
                lib/tests/utilities/time.cpp)
@@ -55,9 +59,19 @@ target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryUtilities
          COMMAND testLibraryUtilities)
 
-#########################################################################################
-#                                     Installation                                      #
-#########################################################################################
+add_executable(testLibraryDataReaders
+               lib/tests/dataReaders/main.cpp
+               lib/tests/dataReaders/sac.cpp)
+set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)
+target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
+add_test(NAME testLibraryDataReaders
+         COMMAND testLibraryDataReaders)
+          
+
+##########################################################################################
+#                                     Installation                                       #
+##########################################################################################
 
 include(GNUInstallDirs)
 install(TARGETS temblor
