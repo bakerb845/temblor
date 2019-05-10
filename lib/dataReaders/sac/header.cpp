@@ -1,7 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
 #include <string>
+#include <array>
 #include <stdexcept>
 #include "temblor/library/dataReaders/sac/header.hpp"
 
@@ -11,25 +13,67 @@
 
 using namespace Temblor::Library::DataReaders::SAC;
 
-static std::string copyTruncatedString(const std::string &value, std::string &result);
-static int unpacki4(const char c4[4], const bool lswap);
-static double unpackf4(const char c4[4], const bool lswap);
 
-static std::string copyTruncatedString(const std::string &value, std::string &result)
+namespace {
+
+inline void copyTruncatedString(const std::string &value, char result[], const size_t len=8); //std::array &result);
+inline void readChar8(const char cin[], char cout[]);
+inline void readChar16(const char cin[], char cout[]);
+inline std::string returnString8(const char c[8]);
+inline std::string returnString16(const char c[16]);
+inline int unpacki4(const char c4[4], const bool lswap);
+inline double unpackf4(const char c4[4], const bool lswap);
+
+inline std::string returnString8(const char c[])
 {
-    size_t ncopy = std::min(result.length(), value.length());
+    std::string result(c, 8);
+    return result; 
+}
+
+inline std::string returnString16(const char c[])
+{
+    std::string result(c, 16);
+    return result;
+}
+
+inline void readChar8(const char cin[], char cout[])
+{
+    std::memcpy(cout, cin, 8*sizeof(char));
+    // ObsPy packages the header wrong - purge blank space
+    for (size_t i=7; i>=0; --i)
+    {
+        if (!std::isspace(cout[i])){break;}
+        cout[i] = '\0';
+    }
+}
+
+inline void readChar16(const char cin[], char cout[])
+{
+    std::memcpy(cout, cin, 16*sizeof(char));
+    // ObsPy packages the header wrong - purge blank space
+    for (size_t i=15; i>=0; --i)
+    {
+        if (!std::isspace(cout[i])){break;}
+        cout[i] = '\0';
+    }
+}
+
+
+inline void copyTruncatedString(const std::string &value, char result[],
+                                const size_t len)
+{
+    size_t ncopy = std::min(value.length(), len);
     for (size_t i=0; i<ncopy; ++i)
     {
         result[i] = value[i];
     }
-    for (size_t i=ncopy; i<result.length(); ++i)
+    for (size_t i=ncopy; i<len; ++i)
     {
         result[i] = '\0';
     }
-    return result;
 }
 
-static double unpackf4(const char c4[4], const bool lswap)
+inline double unpackf4(const char c4[4], const bool lswap)
 {
     union
     {
@@ -53,7 +97,7 @@ static double unpackf4(const char c4[4], const bool lswap)
     return static_cast<double> (f4);
 }
 
-static int unpacki4(const char c4[4], const bool lswap)
+inline int unpacki4(const char c4[4], const bool lswap)
 {
     union
     {
@@ -76,6 +120,8 @@ static int unpacki4(const char c4[4], const bool lswap)
     }
     return i4;
 }
+
+} /// End anonymous namespace
 
 class Header::HeaderImpl
 {
@@ -193,30 +239,32 @@ public:
     int lovrok  = NULL_INT;
     int lcalda  = NULL_INT;
     int lunused = NULL_INT;
-    // Character
-    std::string kstnm{NULL_STRING,  8};
-    std::string kevnm{NULL_STRING, 16};
-    std::string khole{NULL_STRING, 8};
-    std::string ko{NULL_STRING, 8};
-    std::string ka{NULL_STRING, 8};
-    std::string kt0{NULL_STRING, 8};
-    std::string kt1{NULL_STRING, 8};
-    std::string kt2{NULL_STRING, 8};
-    std::string kt3{NULL_STRING, 8};
-    std::string kt4{NULL_STRING, 8};
-    std::string kt5{NULL_STRING, 8};
-    std::string kt6{NULL_STRING, 8}; 
-    std::string kt7{NULL_STRING, 8}; 
-    std::string kt8{NULL_STRING, 8}; 
-    std::string kt9{NULL_STRING, 8}; 
-    std::string kf{NULL_STRING, 8};
-    std::string kuser0{NULL_STRING, 8};
-    std::string kuser1{NULL_STRING, 8};
-    std::string kuser2{NULL_STRING, 8};
-    std::string kcmpnm{NULL_STRING, 8};
-    std::string knetwk{NULL_STRING, 8};
-    std::string kdatrd{NULL_STRING, 8};
-    std::string kinst{NULL_STRING, 8};
+    // Character - by using arrays the default copy operator should
+    // `do the right thing'
+    std::array<char, 8>  kstnm{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char,16>  kevnm{{'-','1','2','3','4','5','\0','\0',
+                                '\0','\0','\0','\0', '\0','\0','\0','\0'}};
+    std::array<char, 8>  khole{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>     ko{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>     ka{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt0{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt1{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt2{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt3{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt4{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt5{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt6{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt7{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt8{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>    kt9{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>     kf{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8> kuser0{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8> kuser1{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8> kuser2{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8> kcmpnm{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8> knetwk{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8> kdatrd{{'-','1','2','3','4','5','\0','\0'}};
+    std::array<char, 8>  kinst{{'-','1','2','3','4','5','\0','\0'}};
 };
 
 Header::Header() :
@@ -224,8 +272,10 @@ Header::Header() :
 {
 }
 
-Header::Header(const char header[], const bool lswap)
+Header::Header(const char header[], const bool lswap) :
+    pImpl(std::make_unique<HeaderImpl> ())
 {
+    setFromBinaryHeader(header, lswap);
     // Floats (convert to double)
     pImpl->delta      = unpackf4(  &header[0], lswap);
     pImpl->depmin     = unpackf4(  &header[4], lswap);
@@ -340,6 +390,29 @@ Header::Header(const char header[], const bool lswap)
     pImpl->lcalda  = unpacki4(&header[432], lswap);
     pImpl->lunused = unpacki4(&header[436], lswap);
     // Strings
+    readChar8(&header[440], pImpl->kstnm.data()); 
+    readChar16(&header[448], pImpl->kevnm.data());
+    readChar8(&header[464], pImpl->khole.data());
+    readChar8(&header[472], pImpl->ko.data());
+    readChar8(&header[480], pImpl->ka.data());
+    readChar8(&header[488], pImpl->kt0.data());
+    readChar8(&header[496], pImpl->kt1.data());
+    readChar8(&header[504], pImpl->kt2.data());
+    readChar8(&header[512], pImpl->kt3.data());
+    readChar8(&header[520], pImpl->kt4.data());
+    readChar8(&header[528], pImpl->kt5.data());
+    readChar8(&header[536], pImpl->kt6.data());
+    readChar8(&header[544], pImpl->kt7.data());
+    readChar8(&header[552], pImpl->kt8.data());
+    readChar8(&header[560], pImpl->kt9.data());
+    readChar8(&header[568], pImpl->kf.data());
+    readChar8(&header[576], pImpl->kuser0.data());
+    readChar8(&header[584], pImpl->kuser1.data());
+    readChar8(&header[592], pImpl->kuser2.data());
+    readChar8(&header[600], pImpl->kcmpnm.data());
+    readChar8(&header[608], pImpl->knetwk.data());
+    readChar8(&header[616], pImpl->kdatrd.data());
+    readChar8(&header[624], pImpl->kinst.data());
 }
 
 Header::Header(const Header &header)
@@ -1373,91 +1446,95 @@ void Header::setHeader(const Character variableName,
 {
     if (variableName == Character::KSTNM)
     {
-        copyTruncatedString(value, pImpl->kstnm);
+        copyTruncatedString(value, pImpl->kstnm.data(), 8);
     }
     else if (variableName == Character::KEVNM)
     {
-        copyTruncatedString(value, pImpl->kevnm);
+        copyTruncatedString(value, pImpl->kevnm.data(), 16);
     }
     else if (variableName == Character::KHOLE)
     {
-        copyTruncatedString(value, pImpl->khole);
+        copyTruncatedString(value, pImpl->khole.data(), 8);
     }
     else if (variableName == Character::KO)
     {
-        copyTruncatedString(value, pImpl->ko);
+        copyTruncatedString(value, pImpl->ko.data(), 8);
     }
     else if (variableName == Character::KA)
     {
-        copyTruncatedString(value, pImpl->ka);
+        copyTruncatedString(value, pImpl->ka.data(), 8);
     }
     else if (variableName == Character::KT0)
     {
-        copyTruncatedString(value, pImpl->kt0);
+        copyTruncatedString(value, pImpl->kt0.data(), 8);
     }
     else if (variableName == Character::KT1)
     {
-        copyTruncatedString(value, pImpl->kt1);
+        copyTruncatedString(value, pImpl->kt1.data(), 8);
     }
     else if (variableName == Character::KT2)
     {
-        copyTruncatedString(value, pImpl->kt2);
+        copyTruncatedString(value, pImpl->kt2.data(), 8);
     }
     else if (variableName == Character::KT3)
     {
-        copyTruncatedString(value, pImpl->kt3);
+        copyTruncatedString(value, pImpl->kt3.data(), 8);
     }
     else if (variableName == Character::KT4)
     {
-        copyTruncatedString(value, pImpl->kt4);
+        copyTruncatedString(value, pImpl->kt4.data(), 8);
     }
     else if (variableName == Character::KT5)
     {
-        copyTruncatedString(value, pImpl->kt5);
+        copyTruncatedString(value, pImpl->kt5.data(), 8);
     }
     else if (variableName == Character::KT6)
     {
-        copyTruncatedString(value, pImpl->kt6);
+        copyTruncatedString(value, pImpl->kt6.data(), 8);
     }
     else if (variableName == Character::KT7)
     {
-        copyTruncatedString(value, pImpl->kt7);
+        copyTruncatedString(value, pImpl->kt7.data(), 8);
     }
     else if (variableName == Character::KT8)
     {
-        copyTruncatedString(value, pImpl->kt8);
+        copyTruncatedString(value, pImpl->kt8.data(), 8);
     }
     else if (variableName == Character::KT9)
     {
-        copyTruncatedString(value, pImpl->kt9);
+        copyTruncatedString(value, pImpl->kt9.data(), 8);
     }
     else if (variableName == Character::KF)
     {
-        copyTruncatedString(value, pImpl->kf);
+        copyTruncatedString(value, pImpl->kf.data(), 8);
     }
     else if (variableName == Character::KUSER0)
     {
-        copyTruncatedString(value, pImpl->kuser0);
+        copyTruncatedString(value, pImpl->kuser0.data(), 8);
     }
     else if (variableName == Character::KUSER1)
     {
-        copyTruncatedString(value, pImpl->kuser1);
+        copyTruncatedString(value, pImpl->kuser1.data(), 8);
     }
     else if (variableName == Character::KUSER2)
     {
-        copyTruncatedString(value, pImpl->kuser2);
+        copyTruncatedString(value, pImpl->kuser2.data(), 8);
     }
     else if (variableName == Character::KCMPNM)
     {
-        copyTruncatedString(value, pImpl->kcmpnm);
+        copyTruncatedString(value, pImpl->kcmpnm.data(), 8);
+    }
+    else if (variableName == Character::KNETWK)
+    {
+        copyTruncatedString(value, pImpl->knetwk.data(), 8);
     }
     else if (variableName == Character::KDATRD)
     {
-        copyTruncatedString(value, pImpl->kdatrd);
+        copyTruncatedString(value, pImpl->kdatrd.data(), 8);
     }
     else if (variableName == Character::KINST)
     {
-        copyTruncatedString(value, pImpl->kinst);
+        copyTruncatedString(value, pImpl->kinst.data(), 8);
     }
 #ifdef DEBUG
     else
@@ -1471,95 +1548,95 @@ std::string Header::getHeader(const Character variableName) const noexcept
 {
     if (variableName == Character::KSTNM)
     {
-        return pImpl->kstnm;
+        return returnString8(pImpl->kstnm.data());
     }
     else if (variableName == Character::KEVNM)
     {
-        return pImpl->kevnm;
+        return returnString16(pImpl->kevnm.data());
     }
     else if (variableName == Character::KHOLE)
     {
-        return pImpl->khole;
+        return returnString8(pImpl->khole.data());
     }
     else if (variableName == Character::KO)
     {
-        return pImpl->ko;
+        return returnString8(pImpl->ko.data());
     }
     else if (variableName == Character::KA)
     {
-        return pImpl->ka;
+        return returnString8(pImpl->ka.data());
     }
     else if (variableName == Character::KT0)
     {
-        return pImpl->kt0;
+        return returnString8(pImpl->kt0.data());
     }
     else if (variableName == Character::KT1)
     {   
-        return pImpl->kt1;
+        return returnString8(pImpl->kt1.data());
     }
     else if (variableName == Character::KT2)
     {
-        return pImpl->kt2;
+        return returnString8(pImpl->kt2.data());
     }
     else if (variableName == Character::KT3)
     {
-        return pImpl->kt3;
+        return returnString8(pImpl->kt3.data());
     }
     else if (variableName == Character::KT4)
     {
-        return pImpl->kt4;
+        return returnString8(pImpl->kt4.data());
     }
     else if (variableName == Character::KT5)
     {
-        return pImpl->kt5;
+        return returnString8(pImpl->kt5.data());
     }
     else if (variableName == Character::KT6)
     {
-        return pImpl->kt6;
+        return returnString8(pImpl->kt6.data());
     }
     else if (variableName == Character::KT7)
     {
-        return pImpl->kt7;
+        return returnString8(pImpl->kt7.data());
     }
     else if (variableName == Character::KT8)
     {
-        return pImpl->kt8;
+        return returnString8(pImpl->kt8.data());
     }
     else if (variableName == Character::KT9)
     {
-        return pImpl->kt9;
+        return returnString8(pImpl->kt9.data());
     }
     else if (variableName == Character::KF)
     {
-        return pImpl->kf;
+        return returnString8(pImpl->kf.data());
     }
     else if (variableName == Character::KUSER0)
     {
-        return pImpl->kuser0;
+        return returnString8(pImpl->kuser0.data());
     }
     else if (variableName == Character::KUSER1)
     {
-        return pImpl->kuser1;
+        return returnString8(pImpl->kuser1.data());
     }
     else if (variableName == Character::KUSER2)
     {
-        return pImpl->kuser2;
+        return returnString8(pImpl->kuser2.data());
     }
     else if (variableName == Character::KCMPNM)
     {
-        return pImpl->kcmpnm;
+        return returnString8(pImpl->kcmpnm.data());
     }
     else if (variableName == Character::KNETWK)
     {
-        return pImpl->knetwk;
+        return returnString8(pImpl->knetwk.data());
     }
     else if (variableName == Character::KDATRD)
     {
-        return pImpl->kdatrd;
+        return returnString8(pImpl->kdatrd.data());
     }
     else if (variableName == Character::KINST)
     {
-        return pImpl->kinst;
+        return returnString8(pImpl->kinst.data());
     }
 #ifdef DEBUG
     else
@@ -1570,3 +1647,145 @@ std::string Header::getHeader(const Character variableName) const noexcept
     return NULL_STRING;
 }
 
+//============================================================================//
+
+void Header::setFromBinaryHeader(const char header[632], const bool lswap)
+{
+    // Floats (convert to double)
+    pImpl->delta      = unpackf4(  &header[0], lswap);
+    pImpl->depmin     = unpackf4(  &header[4], lswap);
+    pImpl->depmax     = unpackf4(  &header[8], lswap);
+    pImpl->scale      = unpackf4( &header[12], lswap);
+    pImpl->odelta     = unpackf4( &header[16], lswap);
+    pImpl->b          = unpackf4( &header[20], lswap);
+    pImpl->e          = unpackf4( &header[24], lswap);
+    pImpl->o          = unpackf4( &header[28], lswap);
+    pImpl->a          = unpackf4( &header[32], lswap);
+    pImpl->internal1  = unpackf4( &header[36], lswap);
+    pImpl->t0         = unpackf4( &header[40], lswap);
+    pImpl->t1         = unpackf4( &header[44], lswap);
+    pImpl->t2         = unpackf4( &header[48], lswap);
+    pImpl->t3         = unpackf4( &header[52], lswap);
+    pImpl->t4         = unpackf4( &header[56], lswap);
+    pImpl->t5         = unpackf4( &header[60], lswap);
+    pImpl->t6         = unpackf4( &header[64], lswap);
+    pImpl->t7         = unpackf4( &header[68], lswap);
+    pImpl->t8         = unpackf4( &header[72], lswap);
+    pImpl->t9         = unpackf4( &header[76], lswap);
+    pImpl->f          = unpackf4( &header[80], lswap);
+    pImpl->resp0      = unpackf4( &header[84], lswap);
+    pImpl->resp1      = unpackf4( &header[88], lswap);
+    pImpl->resp2      = unpackf4( &header[92], lswap);
+    pImpl->resp3      = unpackf4( &header[96], lswap);
+    pImpl->resp4      = unpackf4(&header[100], lswap);
+    pImpl->resp5      = unpackf4(&header[104], lswap);
+    pImpl->resp6      = unpackf4(&header[108], lswap);
+    pImpl->resp7      = unpackf4(&header[112], lswap);
+    pImpl->resp8      = unpackf4(&header[116], lswap);
+    pImpl->resp9      = unpackf4(&header[120], lswap);
+    pImpl->stla       = unpackf4(&header[124], lswap);
+    pImpl->stlo       = unpackf4(&header[128], lswap);
+    pImpl->stel       = unpackf4(&header[132], lswap);
+    pImpl->stdp       = unpackf4(&header[136], lswap);
+    pImpl->evla       = unpackf4(&header[140], lswap);
+    pImpl->evlo       = unpackf4(&header[144], lswap);
+    pImpl->evel       = unpackf4(&header[148], lswap);
+    pImpl->evdp       = unpackf4(&header[152], lswap);
+    pImpl->mag        = unpackf4(&header[156], lswap);
+    pImpl->user0      = unpackf4(&header[160], lswap);
+    pImpl->user1      = unpackf4(&header[164], lswap);
+    pImpl->user2      = unpackf4(&header[168], lswap);
+    pImpl->user3      = unpackf4(&header[172], lswap);
+    pImpl->user4      = unpackf4(&header[176], lswap);
+    pImpl->user5      = unpackf4(&header[180], lswap);
+    pImpl->user6      = unpackf4(&header[184], lswap);
+    pImpl->user7      = unpackf4(&header[188], lswap);
+    pImpl->user8      = unpackf4(&header[192], lswap);
+    pImpl->user9      = unpackf4(&header[196], lswap);
+    pImpl->dist       = unpackf4(&header[200], lswap);
+    pImpl->az         = unpackf4(&header[204], lswap);
+    pImpl->baz        = unpackf4(&header[208], lswap);
+    pImpl->gcarc      = unpackf4(&header[212], lswap);
+    pImpl->internal2  = unpackf4(&header[216], lswap);
+    pImpl->internal3  = unpackf4(&header[220], lswap);
+    pImpl->depmen     = unpackf4(&header[224], lswap);
+    pImpl->cmpaz      = unpackf4(&header[228], lswap);
+    pImpl->cmpinc     = unpackf4(&header[232], lswap);
+    pImpl->xminimum   = unpackf4(&header[236], lswap);
+    pImpl->xmaximum   = unpackf4(&header[240], lswap);
+    pImpl->yminimum   = unpackf4(&header[244], lswap);
+    pImpl->ymaximum   = unpackf4(&header[248], lswap);
+    pImpl->unused0    = unpackf4(&header[252], lswap);
+    pImpl->unused1    = unpackf4(&header[256], lswap);
+    pImpl->unused2    = unpackf4(&header[260], lswap);
+    pImpl->unused3    = unpackf4(&header[264], lswap);
+    pImpl->unused4    = unpackf4(&header[268], lswap);
+    pImpl->unused5    = unpackf4(&header[272], lswap);
+    pImpl->unused6    = unpackf4(&header[276], lswap);
+    // Integers
+    pImpl->nzyear     = unpacki4(&header[280], lswap);
+    pImpl->nzjday     = unpacki4(&header[284], lswap);
+    pImpl->nzhour     = unpacki4(&header[288], lswap);
+    pImpl->nzmin      = unpacki4(&header[292], lswap);
+    pImpl->nzsec      = unpacki4(&header[296], lswap);
+    pImpl->nzmsec     = unpacki4(&header[300], lswap);
+    pImpl->nvhdr      = unpacki4(&header[304], lswap);
+    pImpl->norid      = unpacki4(&header[308], lswap);
+    pImpl->nevid      = unpacki4(&header[312], lswap);
+    pImpl->npts       = unpacki4(&header[316], lswap);
+    pImpl->iinternal1 = unpacki4(&header[320], lswap);
+    pImpl->nwfid      = unpacki4(&header[324], lswap);
+    pImpl->nxsize     = unpacki4(&header[328], lswap);
+    pImpl->nysize     = unpacki4(&header[332], lswap);
+    pImpl->iunused0   = unpacki4(&header[336], lswap);
+    pImpl->iftype     = unpacki4(&header[340], lswap);
+    pImpl->idep       = unpacki4(&header[344], lswap);
+    pImpl->iztype     = unpacki4(&header[348], lswap);
+    pImpl->iunused1   = unpacki4(&header[352], lswap);
+    pImpl->iinst      = unpacki4(&header[356], lswap);
+    pImpl->istreg     = unpacki4(&header[360], lswap);
+    pImpl->ievreg     = unpacki4(&header[364], lswap);
+    pImpl->ievtyp     = unpacki4(&header[368], lswap);
+    pImpl->iqual      = unpacki4(&header[372], lswap);
+    pImpl->isynth     = unpacki4(&header[376], lswap);
+    pImpl->imagtyp    = unpacki4(&header[380], lswap);
+    pImpl->imagsrc    = unpacki4(&header[384], lswap);
+    pImpl->iunused2   = unpacki4(&header[388], lswap);
+    pImpl->iunused3   = unpacki4(&header[392], lswap);
+    pImpl->iunused4   = unpacki4(&header[396], lswap);
+    pImpl->iunused5   = unpacki4(&header[400], lswap);
+    pImpl->iunused6   = unpacki4(&header[404], lswap);
+    pImpl->iunused7   = unpacki4(&header[408], lswap);
+    pImpl->iunused8   = unpacki4(&header[412], lswap);
+    pImpl->iunused9   = unpacki4(&header[416], lswap);
+    // Logicals
+    pImpl->leven   = unpacki4(&header[420], lswap);
+    pImpl->lpspol  = unpacki4(&header[424], lswap);
+    pImpl->lovrok  = unpacki4(&header[428], lswap);
+    pImpl->lcalda  = unpacki4(&header[432], lswap);
+    pImpl->lunused = unpacki4(&header[436], lswap);
+    // Strings
+    readChar8(&header[440], pImpl->kstnm.data()); 
+    readChar16(&header[448], pImpl->kevnm.data());
+    readChar8(&header[464], pImpl->khole.data());
+    readChar8(&header[472], pImpl->ko.data());
+    readChar8(&header[480], pImpl->ka.data());
+    readChar8(&header[488], pImpl->kt0.data());
+    readChar8(&header[496], pImpl->kt1.data());
+    readChar8(&header[504], pImpl->kt2.data());
+    readChar8(&header[512], pImpl->kt3.data());
+    readChar8(&header[520], pImpl->kt4.data());
+    readChar8(&header[528], pImpl->kt5.data());
+    readChar8(&header[536], pImpl->kt6.data());
+    readChar8(&header[544], pImpl->kt7.data());
+    readChar8(&header[552], pImpl->kt8.data());
+    readChar8(&header[560], pImpl->kt9.data());
+    readChar8(&header[568], pImpl->kf.data());
+    readChar8(&header[576], pImpl->kuser0.data());
+    readChar8(&header[584], pImpl->kuser1.data());
+    readChar8(&header[592], pImpl->kuser2.data());
+    readChar8(&header[600], pImpl->kcmpnm.data());
+    readChar8(&header[608], pImpl->knetwk.data());
+    readChar8(&header[616], pImpl->kdatrd.data());
+    readChar8(&header[624], pImpl->kinst.data());
+}

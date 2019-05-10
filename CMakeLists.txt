@@ -30,6 +30,10 @@ include_directories(
 
 find_package(GTest REQUIRED)
 
+
+# In case i switch to gtkmm
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(gtkmm REQUIRED gtkmm-3.0)
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
 #########################################################################################
@@ -68,6 +72,9 @@ target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRAR
 target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryDataReaders
          COMMAND testLibraryDataReaders)
+
+# Also need to copy some test data
+file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)
           
 
 ##########################################################################################

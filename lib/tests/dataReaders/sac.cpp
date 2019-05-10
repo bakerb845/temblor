@@ -128,6 +128,29 @@ TEST(LibraryDataReadersSAC, header)
     header.setHeader(SAC::Logical::LCALDA, true);
     header.setHeader(SAC::Logical::UNUSED, false);
     // Set the strings
+    header.setHeader(SAC::Character::KSTNM, "kstnm");
+    header.setHeader(SAC::Character::KEVNM, "length sixteen");
+    header.setHeader(SAC::Character::KHOLE, "truncate me"); // truncate
+    //header.setHeader(SAC::Character::KO,  "ko")); // do nothing
+    header.setHeader(SAC::Character::KA,    "P");
+    header.setHeader(SAC::Character::KT0,   "S");
+    header.setHeader(SAC::Character::KT1,   "");
+    header.setHeader(SAC::Character::KT2,   "kt2");
+    header.setHeader(SAC::Character::KT3,   "kt3");
+    header.setHeader(SAC::Character::KT4,   "kt4");
+    header.setHeader(SAC::Character::KT5,   "kt5");
+    header.setHeader(SAC::Character::KT6,   "kt6");
+    header.setHeader(SAC::Character::KT7,   "kt7");
+    header.setHeader(SAC::Character::KT8,   "kt8");
+    header.setHeader(SAC::Character::KT9,   "kt9");
+    header.setHeader(SAC::Character::KF,    "kf");
+    header.setHeader(SAC::Character::KUSER0, "kuser0");
+    header.setHeader(SAC::Character::KUSER1, "kuser1");
+    header.setHeader(SAC::Character::KUSER2, "kuser2");
+    header.setHeader(SAC::Character::KCMPNM, "kcmpnm");
+    header.setHeader(SAC::Character::KNETWK, "knetwk");
+    header.setHeader(SAC::Character::KDATRD, "kdatrd");
+    header.setHeader(SAC::Character::KINST,  "kinst");
 
     // Implicitly tests the copy as well
     SAC::Header headerCheck(header);
@@ -244,6 +267,52 @@ TEST(LibraryDataReadersSAC, header)
     ASSERT_EQ(headerCheck.getHeader(SAC::Logical::LCALDA),      1);
     ASSERT_EQ(headerCheck.getHeader(SAC::Logical::UNUSED),      0);
     // Test the strings
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KSTNM).c_str(),
+                                       "kstnm");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KEVNM).c_str(),
+                                       "length sixteen");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KHOLE).c_str(),
+                                       "truncate");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KO).c_str(),
+                                       "-12345");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KA).c_str(),
+                                       "P");  
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT0).c_str(),
+                                       "S");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT1).c_str(),
+                                       "");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT2).c_str(),
+                                       "kt2");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT3).c_str(),
+                                       "kt3");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT4).c_str(),
+                                       "kt4");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT5).c_str(),
+                                       "kt5");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT6).c_str(),
+                                       "kt6");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT7).c_str(),
+                                       "kt7");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT8).c_str(),
+                                       "kt8");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KT9).c_str(),
+                                       "kt9");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KF).c_str(),
+                                       "kf");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KUSER0).c_str(),
+                                       "kuser0");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KUSER1).c_str(),
+                                       "kuser1");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KUSER2).c_str(),
+                                       "kuser2");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KCMPNM).c_str(),
+                                       "kcmpnm");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KNETWK).c_str(),
+                                       "knetwk");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KDATRD).c_str(),
+                                       "kdatrd");
+    ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KINST).c_str(),
+                                       "kinst");
 }
 
 }

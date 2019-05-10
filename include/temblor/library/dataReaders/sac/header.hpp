@@ -23,9 +23,11 @@ public:
      * @param[in] lswap   This an optional variable that indicates whether or
      *                    not the header bytes should be swapped.  By default
      *                    this is false.
-     * @throw std::invalid_argument if header is NULL.
+     * @throw std::invalid_argument if header is NULL or if delta or npts
+     *        is invalid.  If delta or npts are invalid this can indicate a
+     *        problem with the byte order.
      */
-    explicit Header(const char header[638], const bool lswap = false);
+    explicit Header(const char header[632], const bool lswap = false);
     /*!
      * @brief Copy constructor.
      * @param[in] header  Header class from which to initialize this class.
@@ -70,6 +72,18 @@ public:
     void clear() noexcept;
     /*! @} */
 
+    /*!
+     * @brief Sets the header from a character string comprised of binary data.
+     * @param[in] header   Character string with header variables.  This is an
+     *                     array of dimension [632].  Moreover, this would have
+     *                     been directly lifted from the first 632 bytes of the
+     *                     SAC file.
+     * @param[in] lswap    If true then the byte order will be swapped.
+     *                     The default is false.
+     * @throws std::invalid_argument if the sampling rate or number of samples
+     *         are invalid.  This can indicate a problem with the byte order.
+     */
+    void setFromBinaryHeader(const char chdr[632], const bool lswap = false);
     /*! @name Floating Point Header Variables
      * @{
      */
