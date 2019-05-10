@@ -39,7 +39,7 @@ set(LIBSRC
     lib/dataReaders/sac/header.cpp
     lib/utilities/time.cpp)
 
-add_executable(helloworld main.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
+add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 
 add_library(temblor SHARED ${LIBSRC})
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
