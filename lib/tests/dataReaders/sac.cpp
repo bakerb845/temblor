@@ -5,6 +5,13 @@
 #include "temblor/library/dataReaders/sac/header.hpp"
 #include "temblor/library/dataReaders/sac/enums.hpp"
 #include <gtest/gtest.h>
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
 
 namespace
 {
@@ -321,7 +328,11 @@ TEST(LibraryDataReadersSAC, waveform)
     SAC::Waveform waveform; 
     waveform.read(sacFile);
     ASSERT_EQ(waveform.getNumberOfSamples(), 100);    
-
+    ASSERT_NEAR(waveform.getSamplingPeriod(), 0.005, 1.e-7);
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KNETWK).c_str(), "FK");
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KSTNM).c_str(),  "NEW");
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KCMPNM).c_str(), "HHZ");
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KHOLE).c_str(),  "10");
     const double *dPtr = waveform.getDataPointer();
     double resmax = 0;
     for (int i=0; i<waveform.getNumberOfSamples(); ++i)
@@ -339,6 +350,11 @@ TEST(LibraryDataReadersSAC, waveform)
         resmax = std::max(std::abs(res), resmax);
     }
     ASSERT_NEAR(resmax, 0.0, 1.e-7);
+
+    // Let's try reading and writing the waveform
+    std::string scratchFile = fs::temp_directory_path();
+    scratchFile = scratchFile + + "/temp.sac";
+    waveform.write(scratchFile);
 }
 
 }

@@ -79,7 +79,6 @@ Waveform& Waveform::operator=(const Waveform &waveform)
     return *this;
 }
 
-
 Waveform::~Waveform() = default;
 
 void Waveform::clear() noexcept
@@ -145,7 +144,7 @@ void Waveform::read(const std::string &fileName)
     {
         auto fdata = reinterpret_cast<const float *> (&cdat[632]);
         #pragma omp simd
-        for (int i=0; i<npts; i++)
+        for (auto i=0; i<npts; i++)
         {
             pImpl->mData[i] = static_cast<double> (fdata[i]);
         }
@@ -158,9 +157,9 @@ void Waveform::read(const std::string &fileName)
             char crev[4];
             float f4;
         };
-        for (int i=0; i<npts; i++)
+        for (auto i=0; i<npts; i++)
         {
-            int indx = 632 + 4*i;
+            auto indx = 632 + 4*i;
             crev[0] = cdat[indx+3];
             crev[1] = cdat[indx+2];
             crev[2] = cdat[indx+1];
@@ -179,7 +178,7 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
     }
     // Make sure the root directory exists
     fs::path path(fileName);
-    if (path.has_relative_path())
+    if (!path.has_relative_path())
     {
         std::string pathName = path.parent_path();
         if (!fs::create_directories(pathName))
@@ -190,51 +189,51 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
     }
     // Pack the header
     int npts = getNumberOfSamples();
-    size_t nbytes = 632 + static_cast<size_t> (npts);
-    std::vector<char> chdr(nbytes);
-    pImpl->mHeader.getBinaryHeader(chdr.data(), lswap);
+    size_t nbytes = 632 + 4*static_cast<size_t> (npts);
+    std::vector<char> cdata(nbytes);
+    pImpl->mHeader.getBinaryHeader(cdata.data(), lswap);
     // Pack the data
-    union
-    {
-        char c4[4];
-        float f4;
-    };
     if (!lswap)
     {
+        auto fdata = reinterpret_cast<float *> (cdata.data() + 632);
         #pragma omp simd
-        for (int i=0; i<npts; ++i)
+        for (auto i=0; i<npts; ++i)
         {
-            f4 = static_cast<float> (pImpl->mData[i]);
-            int indx = 632 + i*4;
-            chdr[indx]   = c4[0];
-            chdr[indx+1] = c4[1];
-            chdr[indx+2] = c4[2];
-            chdr[indx+3] = c4[3];
+            fdata[i] = static_cast<float> (pImpl->mData[i]);
         }
     }
     else
     {
-        #pragma omp simd
+        union
+        {
+            char c4[4];
+            float f4; 
+        };
         for (int i=0; i<npts; ++i)
         {
             f4 = static_cast<float> (pImpl->mData[i]);
-            int indx = 632 + i*4;
-            chdr[indx]   = c4[3];
-            chdr[indx+1] = c4[2];
-            chdr[indx+2] = c4[1];
-            chdr[indx+3] = c4[0];
+            auto indx = 632 + i*4;
+            cdata[indx]   = c4[3];
+            cdata[indx+1] = c4[2];
+            cdata[indx+2] = c4[1];
+            cdata[indx+3] = c4[0];
         }
     }
     // Write it 
     std::ofstream outfile(fileName,
                           std::ofstream::binary | std::ofstream::trunc);
-    outfile.write(chdr.data(), nbytes);
+    outfile.write(cdata.data(), nbytes);
     outfile.close();
 }
 
 void Waveform::setHeader(const Double variableName, const double value)
 {
     pImpl->mHeader.setHeader(variableName, value);
+}
+
+double Waveform::getHeader(const Double variableName) const noexcept
+{
+    return pImpl->mHeader.getHeader(variableName);
 }
 
 void Waveform::setHeader(const Integer variableName, const int value)
@@ -246,9 +245,19 @@ void Waveform::setHeader(const Integer variableName, const int value)
     pImpl->mHeader.setHeader(variableName, value);
 }
 
+int Waveform::getHeader(const Integer variableName) const noexcept
+{
+    return pImpl->mHeader.getHeader(variableName);
+}
+
 void Waveform::setHeader(const Logical variableName, const bool value) noexcept
 {
     pImpl->mHeader.setHeader(variableName, value);
+}
+
+int Waveform::getHeader(const Logical variableName) const noexcept
+{
+    return pImpl->mHeader.getHeader(variableName);
 }
 
 void Waveform::setHeader(const Character variableName,
@@ -256,6 +265,12 @@ void Waveform::setHeader(const Character variableName,
 {
     pImpl->mHeader.setHeader(variableName, value);
 }
+
+std::string Waveform::getHeader(const Character variableName) const noexcept
+{
+    return pImpl->mHeader.getHeader(variableName);
+}
+                         
 
 double Waveform::getSamplingPeriod() const noexcept
 {
