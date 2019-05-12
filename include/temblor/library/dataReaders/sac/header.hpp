@@ -84,6 +84,15 @@ public:
      *         are invalid.  This can indicate a problem with the byte order.
      */
     void setFromBinaryHeader(const char chdr[632], const bool lswap = false);
+    /*!
+     * @brief Creates a header for writing to a binary file.
+     * @param[out] header  The packed header.  This constitutes the first
+     *                     632 bytes of the SAC binary file.
+     * @param[in] lswap    If true then the byte order will be swapped.
+     *                     The default is false.
+     */
+    void getBinaryHeader(char header[632], 
+                         const bool lswap = false) const noexcept;
     /*! @name Floating Point Header Variables
      * @{
      */

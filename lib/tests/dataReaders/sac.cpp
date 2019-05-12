@@ -315,4 +315,30 @@ TEST(LibraryDataReadersSAC, header)
                                        "kinst");
 }
 
+TEST(LibraryDataReadersSAC, waveform)
+{
+    const std::string sacFile = "data/debug.sac";
+    SAC::Waveform waveform; 
+    waveform.read(sacFile);
+    ASSERT_EQ(waveform.getNumberOfSamples(), 100);    
+
+    const double *dPtr = waveform.getDataPointer();
+    double resmax = 0;
+    for (int i=0; i<waveform.getNumberOfSamples(); ++i)
+    {
+        double res = dPtr[i] - static_cast<double> (i + 1);
+        resmax = std::max(std::abs(res), resmax);
+    }
+    ASSERT_NEAR(resmax, 0.0, 1.e-7);
+
+    std::vector<double> dVec = waveform.getData();
+    resmax = 0;
+    for (int i=0; i<waveform.getNumberOfSamples(); ++i)
+    {
+        double res = dVec[i] - static_cast<double> (i + 1);
+        resmax = std::max(std::abs(res), resmax);
+    }
+    ASSERT_NEAR(resmax, 0.0, 1.e-7);
+}
+
 }

@@ -17,9 +17,9 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 # TODO - move to ui and scope there.  This generates useless stuff for the core library.
 # Run MOC when required
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+#set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTORCC ON)
 
 # Includes
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -30,10 +30,25 @@ include_directories(
 
 find_package(GTest REQUIRED)
 
+#include(CheckIncludeFileCXX)
+#check_include_file_cxx(filesystem TEMBLOR_USE_FS)
+#if (TEMBLOR_USE_FS)
+#   message("Using standard filesystem")
+#   add_definitions(-DTEMBLOR_USE_FILESYSTEM)
+#else()
+#   check_include_file_cxx(experimental/filesystem TEMBLOR_USE_EXPFS)
+#   if (TEMBLOR_USE_EXPFS)
+#      message("Using experimental filesystem")
+#   else()
+#      message(STATUS "Compiler does not support filesystem") 
+#   endif()
+#endif()
 
 # In case i switch to gtkmm
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(gtkmm REQUIRED gtkmm-3.0)
+
+link_libraries(stdc++fs)
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
 #########################################################################################
@@ -43,14 +58,13 @@ set(LIBSRC
     lib/dataReaders/sac/header.cpp
     lib/utilities/time.cpp)
 
-add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
+#add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 
 add_library(temblor SHARED ${LIBSRC})
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
-target_link_libraries(helloworld Qt5::Widgets)
-
+#target_link_libraries(helloworld Qt5::Widgets)
 
 ##########################################################################################
 #                                      Unit Tests                                        #

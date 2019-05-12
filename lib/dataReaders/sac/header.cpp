@@ -19,6 +19,8 @@ namespace {
 inline void copyTruncatedString(const std::string &value, char result[], const size_t len=8); //std::array &result);
 inline void readChar8(const char cin[], char cout[]);
 inline void readChar16(const char cin[], char cout[]);
+inline void packf4(const double d8, char c[], const bool lswap);
+inline void packi4(const int i4, char c[], const bool lswap);
 inline std::string returnString8(const char c[8]);
 inline std::string returnString16(const char c[16]);
 inline int unpacki4(const char c4[4], const bool lswap);
@@ -95,6 +97,48 @@ inline double unpackf4(const char c4[4], const bool lswap)
         cd[3] = c4[0];
     }
     return static_cast<double> (f4);
+}
+
+inline void packf4(const double d8, char c[], const bool lswap)
+{
+    union
+    {
+        char c4[4];
+        float f4;
+    };
+    f4 = static_cast<float> (d8);
+    if (!lswap)
+    {
+        std::memcpy(c, c4, 4*sizeof(char));
+    }
+    else
+    {
+        c[0] = c4[3];
+        c[1] = c4[2];
+        c[2] = c4[1];
+        c[3] = c4[0];
+    }
+}
+
+inline void packi4(const int i, char c[], const bool lswap)
+{
+    union
+    {
+        char c4[4];
+        int i4;
+    };
+    i4 = i;
+    if (!lswap)
+    {
+        std::memcpy(c, c4, 4*sizeof(char));
+    }
+    else 
+    {
+        c[0] = c4[3];
+        c[1] = c4[2];
+        c[2] = c4[1];
+        c[3] = c4[0];
+    }
 }
 
 inline int unpacki4(const char c4[4], const bool lswap)
@@ -276,143 +320,6 @@ Header::Header(const char header[], const bool lswap) :
     pImpl(std::make_unique<HeaderImpl> ())
 {
     setFromBinaryHeader(header, lswap);
-    // Floats (convert to double)
-    pImpl->delta      = unpackf4(  &header[0], lswap);
-    pImpl->depmin     = unpackf4(  &header[4], lswap);
-    pImpl->depmax     = unpackf4(  &header[8], lswap);
-    pImpl->scale      = unpackf4( &header[12], lswap);
-    pImpl->odelta     = unpackf4( &header[16], lswap);
-    pImpl->b          = unpackf4( &header[20], lswap);
-    pImpl->e          = unpackf4( &header[24], lswap);
-    pImpl->o          = unpackf4( &header[28], lswap);
-    pImpl->a          = unpackf4( &header[32], lswap);
-    pImpl->internal1  = unpackf4( &header[36], lswap);
-    pImpl->t0         = unpackf4( &header[40], lswap);
-    pImpl->t1         = unpackf4( &header[44], lswap);
-    pImpl->t2         = unpackf4( &header[48], lswap);
-    pImpl->t3         = unpackf4( &header[52], lswap);
-    pImpl->t4         = unpackf4( &header[56], lswap);
-    pImpl->t5         = unpackf4( &header[60], lswap);
-    pImpl->t6         = unpackf4( &header[64], lswap);
-    pImpl->t7         = unpackf4( &header[68], lswap);
-    pImpl->t8         = unpackf4( &header[72], lswap);
-    pImpl->t9         = unpackf4( &header[76], lswap);
-    pImpl->f          = unpackf4( &header[80], lswap);
-    pImpl->resp0      = unpackf4( &header[84], lswap);
-    pImpl->resp1      = unpackf4( &header[88], lswap);
-    pImpl->resp2      = unpackf4( &header[92], lswap);
-    pImpl->resp3      = unpackf4( &header[96], lswap);
-    pImpl->resp4      = unpackf4(&header[100], lswap);
-    pImpl->resp5      = unpackf4(&header[104], lswap);
-    pImpl->resp6      = unpackf4(&header[108], lswap);
-    pImpl->resp7      = unpackf4(&header[112], lswap);
-    pImpl->resp8      = unpackf4(&header[116], lswap);
-    pImpl->resp9      = unpackf4(&header[120], lswap);
-    pImpl->stla       = unpackf4(&header[124], lswap);
-    pImpl->stlo       = unpackf4(&header[128], lswap);
-    pImpl->stel       = unpackf4(&header[132], lswap);
-    pImpl->stdp       = unpackf4(&header[136], lswap);
-    pImpl->evla       = unpackf4(&header[140], lswap);
-    pImpl->evlo       = unpackf4(&header[144], lswap);
-    pImpl->evel       = unpackf4(&header[148], lswap);
-    pImpl->evdp       = unpackf4(&header[152], lswap);
-    pImpl->mag        = unpackf4(&header[156], lswap);
-    pImpl->user0      = unpackf4(&header[160], lswap);
-    pImpl->user1      = unpackf4(&header[164], lswap);
-    pImpl->user2      = unpackf4(&header[168], lswap);
-    pImpl->user3      = unpackf4(&header[172], lswap);
-    pImpl->user4      = unpackf4(&header[176], lswap);
-    pImpl->user5      = unpackf4(&header[180], lswap);
-    pImpl->user6      = unpackf4(&header[184], lswap);
-    pImpl->user7      = unpackf4(&header[188], lswap);
-    pImpl->user8      = unpackf4(&header[192], lswap);
-    pImpl->user9      = unpackf4(&header[196], lswap);
-    pImpl->dist       = unpackf4(&header[200], lswap);
-    pImpl->az         = unpackf4(&header[204], lswap);
-    pImpl->baz        = unpackf4(&header[208], lswap);
-    pImpl->gcarc      = unpackf4(&header[212], lswap);
-    pImpl->internal2  = unpackf4(&header[216], lswap);
-    pImpl->internal3  = unpackf4(&header[220], lswap);
-    pImpl->depmen     = unpackf4(&header[224], lswap);
-    pImpl->cmpaz      = unpackf4(&header[228], lswap);
-    pImpl->cmpinc     = unpackf4(&header[232], lswap);
-    pImpl->xminimum   = unpackf4(&header[236], lswap);
-    pImpl->xmaximum   = unpackf4(&header[240], lswap);
-    pImpl->yminimum   = unpackf4(&header[244], lswap);
-    pImpl->ymaximum   = unpackf4(&header[248], lswap);
-    pImpl->unused0    = unpackf4(&header[252], lswap);
-    pImpl->unused1    = unpackf4(&header[256], lswap);
-    pImpl->unused2    = unpackf4(&header[260], lswap);
-    pImpl->unused3    = unpackf4(&header[264], lswap);
-    pImpl->unused4    = unpackf4(&header[268], lswap);
-    pImpl->unused5    = unpackf4(&header[272], lswap);
-    pImpl->unused6    = unpackf4(&header[276], lswap);
-    // Integers
-    pImpl->nzyear     = unpacki4(&header[280], lswap);
-    pImpl->nzjday     = unpacki4(&header[284], lswap);
-    pImpl->nzhour     = unpacki4(&header[288], lswap);
-    pImpl->nzmin      = unpacki4(&header[292], lswap);
-    pImpl->nzsec      = unpacki4(&header[296], lswap);
-    pImpl->nzmsec     = unpacki4(&header[300], lswap);
-    pImpl->nvhdr      = unpacki4(&header[304], lswap);
-    pImpl->norid      = unpacki4(&header[308], lswap);
-    pImpl->nevid      = unpacki4(&header[312], lswap);
-    pImpl->npts       = unpacki4(&header[316], lswap);
-    pImpl->iinternal1 = unpacki4(&header[320], lswap);
-    pImpl->nwfid      = unpacki4(&header[324], lswap);
-    pImpl->nxsize     = unpacki4(&header[328], lswap);
-    pImpl->nysize     = unpacki4(&header[332], lswap);
-    pImpl->iunused0   = unpacki4(&header[336], lswap);
-    pImpl->iftype     = unpacki4(&header[340], lswap);
-    pImpl->idep       = unpacki4(&header[344], lswap);
-    pImpl->iztype     = unpacki4(&header[348], lswap);
-    pImpl->iunused1   = unpacki4(&header[352], lswap);
-    pImpl->iinst      = unpacki4(&header[356], lswap);
-    pImpl->istreg     = unpacki4(&header[360], lswap);
-    pImpl->ievreg     = unpacki4(&header[364], lswap);
-    pImpl->ievtyp     = unpacki4(&header[368], lswap);
-    pImpl->iqual      = unpacki4(&header[372], lswap);
-    pImpl->isynth     = unpacki4(&header[376], lswap);
-    pImpl->imagtyp    = unpacki4(&header[380], lswap);
-    pImpl->imagsrc    = unpacki4(&header[384], lswap);
-    pImpl->iunused2   = unpacki4(&header[388], lswap);
-    pImpl->iunused3   = unpacki4(&header[392], lswap);
-    pImpl->iunused4   = unpacki4(&header[396], lswap);
-    pImpl->iunused5   = unpacki4(&header[400], lswap);
-    pImpl->iunused6   = unpacki4(&header[404], lswap);
-    pImpl->iunused7   = unpacki4(&header[408], lswap);
-    pImpl->iunused8   = unpacki4(&header[412], lswap);
-    pImpl->iunused9   = unpacki4(&header[416], lswap);
-    // Logicals
-    pImpl->leven   = unpacki4(&header[420], lswap);
-    pImpl->lpspol  = unpacki4(&header[424], lswap);
-    pImpl->lovrok  = unpacki4(&header[428], lswap);
-    pImpl->lcalda  = unpacki4(&header[432], lswap);
-    pImpl->lunused = unpacki4(&header[436], lswap);
-    // Strings
-    readChar8(&header[440], pImpl->kstnm.data()); 
-    readChar16(&header[448], pImpl->kevnm.data());
-    readChar8(&header[464], pImpl->khole.data());
-    readChar8(&header[472], pImpl->ko.data());
-    readChar8(&header[480], pImpl->ka.data());
-    readChar8(&header[488], pImpl->kt0.data());
-    readChar8(&header[496], pImpl->kt1.data());
-    readChar8(&header[504], pImpl->kt2.data());
-    readChar8(&header[512], pImpl->kt3.data());
-    readChar8(&header[520], pImpl->kt4.data());
-    readChar8(&header[528], pImpl->kt5.data());
-    readChar8(&header[536], pImpl->kt6.data());
-    readChar8(&header[544], pImpl->kt7.data());
-    readChar8(&header[552], pImpl->kt8.data());
-    readChar8(&header[560], pImpl->kt9.data());
-    readChar8(&header[568], pImpl->kf.data());
-    readChar8(&header[576], pImpl->kuser0.data());
-    readChar8(&header[584], pImpl->kuser1.data());
-    readChar8(&header[592], pImpl->kuser2.data());
-    readChar8(&header[600], pImpl->kcmpnm.data());
-    readChar8(&header[608], pImpl->knetwk.data());
-    readChar8(&header[616], pImpl->kdatrd.data());
-    readChar8(&header[624], pImpl->kinst.data());
 }
 
 Header::Header(const Header &header)
@@ -1653,6 +1560,11 @@ void Header::setFromBinaryHeader(const char header[632], const bool lswap)
 {
     // Floats (convert to double)
     pImpl->delta      = unpackf4(  &header[0], lswap);
+    if (pImpl->delta <= 0)
+    {
+        clear();
+        throw std::invalid_argument("Header has non-positive sampling period");
+    }
     pImpl->depmin     = unpackf4(  &header[4], lswap);
     pImpl->depmax     = unpackf4(  &header[8], lswap);
     pImpl->scale      = unpackf4( &header[12], lswap);
@@ -1733,6 +1645,11 @@ void Header::setFromBinaryHeader(const char header[632], const bool lswap)
     pImpl->norid      = unpacki4(&header[308], lswap);
     pImpl->nevid      = unpacki4(&header[312], lswap);
     pImpl->npts       = unpacki4(&header[316], lswap);
+    if (pImpl->npts < 0)
+    {
+        clear();
+        throw std::invalid_argument("npts must be defined");
+    }
     pImpl->iinternal1 = unpacki4(&header[320], lswap);
     pImpl->nwfid      = unpacki4(&header[324], lswap);
     pImpl->nxsize     = unpacki4(&header[328], lswap);
@@ -1788,4 +1705,146 @@ void Header::setFromBinaryHeader(const char header[632], const bool lswap)
     readChar8(&header[608], pImpl->knetwk.data());
     readChar8(&header[616], pImpl->kdatrd.data());
     readChar8(&header[624], pImpl->kinst.data());
+}
+
+void Header::getBinaryHeader(char header[632], 
+                             const bool lswap) const noexcept
+{
+    // Floats (convert to double)
+    packf4(pImpl->delta,      &header[0],  lswap);
+    packf4(pImpl->depmin,     &header[4],  lswap);
+    packf4(pImpl->depmax,     &header[8],  lswap);
+    packf4(pImpl->scale,      &header[12], lswap);
+    packf4(pImpl->odelta,     &header[16], lswap);
+    packf4(pImpl->b,          &header[20], lswap);
+    packf4(pImpl->e,          &header[24], lswap);
+    packf4(pImpl->o,          &header[28], lswap);
+    packf4(pImpl->a,          &header[32], lswap);
+    packf4(pImpl->internal1,  &header[36], lswap);
+    packf4(pImpl->t0,         &header[40], lswap);
+    packf4(pImpl->t1,         &header[44], lswap);
+    packf4(pImpl->t2,         &header[48], lswap);
+    packf4(pImpl->t3,         &header[52], lswap);
+    packf4(pImpl->t4,         &header[56], lswap);
+    packf4(pImpl->t5,         &header[60], lswap);
+    packf4(pImpl->t6,         &header[64], lswap);
+    packf4(pImpl->t7,         &header[68], lswap);
+    packf4(pImpl->t8,         &header[72], lswap);
+    packf4(pImpl->t9,         &header[76], lswap);
+    packf4(pImpl->f,          &header[80], lswap);
+    packf4(pImpl->resp0,      &header[84], lswap);
+    packf4(pImpl->resp1,      &header[88], lswap);
+    packf4(pImpl->resp2,      &header[92], lswap);
+    packf4(pImpl->resp3,      &header[96], lswap);
+    packf4(pImpl->resp4,     &header[100], lswap);
+    packf4(pImpl->resp5,     &header[104], lswap);
+    packf4(pImpl->resp6,     &header[108], lswap);
+    packf4(pImpl->resp7,     &header[112], lswap);
+    packf4(pImpl->resp8,     &header[116], lswap);
+    packf4(pImpl->resp9,     &header[120], lswap);
+    packf4(pImpl->stla,      &header[124], lswap);
+    packf4(pImpl->stlo,      &header[128], lswap);
+    packf4(pImpl->stel,      &header[132], lswap);
+    packf4(pImpl->stdp,      &header[136], lswap);
+    packf4(pImpl->evla,      &header[140], lswap);
+    packf4(pImpl->evlo,      &header[144], lswap);
+    packf4(pImpl->evel,      &header[148], lswap);
+    packf4(pImpl->evdp,      &header[152], lswap);
+    packf4(pImpl->mag,       &header[156], lswap);
+    packf4(pImpl->user0,     &header[160], lswap);
+    packf4(pImpl->user1,     &header[164], lswap);
+    packf4(pImpl->user2,     &header[168], lswap);
+    packf4(pImpl->user3,     &header[172], lswap);
+    packf4(pImpl->user4,     &header[176], lswap);
+    packf4(pImpl->user5,     &header[180], lswap);
+    packf4(pImpl->user6,     &header[184], lswap);
+    packf4(pImpl->user7,     &header[188], lswap);
+    packf4(pImpl->user8,     &header[192], lswap);
+    packf4(pImpl->user9,     &header[196], lswap);
+    packf4(pImpl->dist,      &header[200], lswap);
+    packf4(pImpl->az,        &header[204], lswap);
+    packf4(pImpl->baz,       &header[208], lswap);
+    packf4(pImpl->gcarc,     &header[212], lswap);
+    packf4(pImpl->internal2, &header[216], lswap);
+    packf4(pImpl->internal3, &header[220], lswap);
+    packf4(pImpl->depmen,    &header[224], lswap);
+    packf4(pImpl->cmpaz,     &header[228], lswap);
+    packf4(pImpl->cmpinc,    &header[232], lswap);
+    packf4(pImpl->xminimum,  &header[236], lswap);
+    packf4(pImpl->xmaximum,  &header[240], lswap);
+    packf4(pImpl->yminimum,  &header[244], lswap);
+    packf4(pImpl->ymaximum,  &header[248], lswap);
+    packf4(pImpl->unused0,   &header[252], lswap);
+    packf4(pImpl->unused1,   &header[256], lswap);
+    packf4(pImpl->unused2,   &header[260], lswap);
+    packf4(pImpl->unused3,   &header[264], lswap);
+    packf4(pImpl->unused4,   &header[268], lswap);
+    packf4(pImpl->unused5,   &header[272], lswap);
+    packf4(pImpl->unused6,   &header[276], lswap);
+    // Integers
+    packi4(pImpl->nzyear,     &header[280], lswap);
+    packi4(pImpl->nzjday,     &header[284], lswap);
+    packi4(pImpl->nzhour,     &header[288], lswap);
+    packi4(pImpl->nzmin,      &header[292], lswap);
+    packi4(pImpl->nzsec,      &header[296], lswap);
+    packi4(pImpl->nzmsec,     &header[300], lswap);
+    packi4(pImpl->nvhdr,      &header[304], lswap);
+    packi4(pImpl->norid,      &header[308], lswap);
+    packi4(pImpl->nevid,      &header[312], lswap);
+    packi4(pImpl->npts,       &header[316], lswap);
+    packi4(pImpl->iinternal1, &header[320], lswap);
+    packi4(pImpl->nwfid,      &header[324], lswap);
+    packi4(pImpl->nxsize,     &header[328], lswap);
+    packi4(pImpl->nysize,     &header[332], lswap);
+    packi4(pImpl->iunused0,   &header[336], lswap);
+    packi4(pImpl->iftype,     &header[340], lswap);
+    packi4(pImpl->idep,       &header[344], lswap);
+    packi4(pImpl->iztype,     &header[348], lswap);
+    packi4(pImpl->iunused1,   &header[352], lswap);
+    packi4(pImpl->iinst,      &header[356], lswap);
+    packi4(pImpl->istreg,     &header[360], lswap);
+    packi4(pImpl->ievreg,     &header[364], lswap);
+    packi4(pImpl->ievtyp,     &header[368], lswap);
+    packi4(pImpl->iqual,      &header[372], lswap);
+    packi4(pImpl->isynth,     &header[376], lswap);
+    packi4(pImpl->imagtyp,    &header[380], lswap);
+    packi4(pImpl->imagsrc,    &header[384], lswap);
+    packi4(pImpl->iunused2,   &header[388], lswap);
+    packi4(pImpl->iunused3,   &header[392], lswap);
+    packi4(pImpl->iunused4,   &header[396], lswap);
+    packi4(pImpl->iunused5,   &header[400], lswap);
+    packi4(pImpl->iunused6,   &header[404], lswap);
+    packi4(pImpl->iunused7,   &header[408], lswap);
+    packi4(pImpl->iunused8,   &header[412], lswap);
+    packi4(pImpl->iunused9,   &header[416], lswap);
+    // Logicals
+    packi4(pImpl->leven,   &header[420], lswap);
+    packi4(pImpl->lpspol,  &header[424], lswap);
+    packi4(pImpl->lovrok,  &header[428], lswap);
+    packi4(pImpl->lcalda,  &header[432], lswap);
+    packi4(pImpl->lunused, &header[436], lswap);
+    // Strings
+    std::memcpy(&header[440], pImpl->kstnm.data(),  8*sizeof(char)); 
+    std::memcpy(&header[448], pImpl->kevnm.data(), 16*sizeof(char));
+    std::memcpy(&header[464], pImpl->khole.data(),  8*sizeof(char));
+    std::memcpy(&header[472], pImpl->ko.data(),     8*sizeof(char));
+    std::memcpy(&header[480], pImpl->ka.data(),     8*sizeof(char));
+    std::memcpy(&header[488], pImpl->kt0.data(),    8*sizeof(char));
+    std::memcpy(&header[496], pImpl->kt1.data(),    8*sizeof(char));
+    std::memcpy(&header[504], pImpl->kt2.data(),    8*sizeof(char));
+    std::memcpy(&header[512], pImpl->kt3.data(),    8*sizeof(char));
+    std::memcpy(&header[520], pImpl->kt4.data(),    8*sizeof(char));
+    std::memcpy(&header[528], pImpl->kt5.data(),    8*sizeof(char));
+    std::memcpy(&header[536], pImpl->kt6.data(),    8*sizeof(char));
+    std::memcpy(&header[544], pImpl->kt7.data(),    8*sizeof(char));
+    std::memcpy(&header[552], pImpl->kt8.data(),    8*sizeof(char));
+    std::memcpy(&header[560], pImpl->kt9.data(),    8*sizeof(char));
+    std::memcpy(&header[568], pImpl->kf.data(),     8*sizeof(char));
+    std::memcpy(&header[576], pImpl->kuser0.data(), 8*sizeof(char));
+    std::memcpy(&header[584], pImpl->kuser1.data(), 8*sizeof(char));
+    std::memcpy(&header[592], pImpl->kuser2.data(), 8*sizeof(char));
+    std::memcpy(&header[600], pImpl->kcmpnm.data(), 8*sizeof(char));
+    std::memcpy(&header[608], pImpl->knetwk.data(), 8*sizeof(char));
+    std::memcpy(&header[616], pImpl->kdatrd.data(), 8*sizeof(char));
+    std::memcpy(&header[624], pImpl->kinst.data(),  8*sizeof(char));
 }
