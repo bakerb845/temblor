@@ -351,10 +351,36 @@ TEST(LibraryDataReadersSAC, waveform)
     }
     ASSERT_NEAR(resmax, 0.0, 1.e-7);
 
-    // Let's try reading and writing the waveform
+    // Let's try writing and reading the waveform
     std::string scratchFile = fs::temp_directory_path();
     scratchFile = scratchFile + + "/temp.sac";
     waveform.write(scratchFile);
+    SAC::Waveform waveformRead;
+    waveformRead.read(scratchFile);
+    waveform = waveformRead;
+    ASSERT_EQ(waveform.getNumberOfSamples(), 100);    
+    ASSERT_NEAR(waveform.getSamplingPeriod(), 0.005, 1.e-7);
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KNETWK).c_str(), "FK");
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KSTNM).c_str(),  "NEW");
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KCMPNM).c_str(), "HHZ");
+    ASSERT_STREQ(waveform.getHeader(SAC::Character::KHOLE).c_str(),  "10");
+    dPtr = waveform.getDataPointer();
+    resmax = 0;
+    for (int i=0; i<waveform.getNumberOfSamples(); ++i)
+    {   
+        double res = dPtr[i] - static_cast<double> (i + 1); 
+        resmax = std::max(std::abs(res), resmax);
+    }   
+    ASSERT_NEAR(resmax, 0.0, 1.e-7);
+
+    dVec = waveform.getData();
+    resmax = 0;
+    for (int i=0; i<waveform.getNumberOfSamples(); ++i)
+    {
+        double res = dVec[i] - static_cast<double> (i + 1); 
+        resmax = std::max(std::abs(res), resmax);
+    }
+    ASSERT_NEAR(resmax, 0.0, 1.e-7);
 }
 
 }

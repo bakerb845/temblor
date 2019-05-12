@@ -36,23 +36,35 @@ class Waveform::WaveformImpl
 public:
     /// Constructor
     WaveformImpl() = default;
+    WaveformImpl(const WaveformImpl &waveform)
+    {
+        *this = waveform;
+    } 
     /// Copy assignment
     WaveformImpl& operator=(const WaveformImpl &waveform)
     {
         if (&waveform == this){return *this;}
+        // Release old memory
+        clear();
         mHeader = waveform.mHeader;
         int npts = mHeader.getHeader(Integer::NPTS);
         if (npts > 0 && waveform.mData)
         {
             mData = alignedAllocDouble(npts);
-            std::memcpy(mData, waveform.mData, static_cast<size_t> (npts));
+            auto nbytes = static_cast<size_t> (npts)*sizeof(double);
+            std::memcpy(mData, waveform.mData, nbytes);
         }
         return *this;
     }
     /// Destructor
     ~WaveformImpl()
     {
+        clear();
+    }
+    void clear()
+    {
         if (mData){free(mData);}
+        mHeader.clear();
         mData = nullptr;
     }
 
@@ -142,7 +154,7 @@ void Waveform::read(const std::string &fileName)
     pImpl->mData = alignedAllocDouble(npts);
     if (!lswap)
     {
-        auto fdata = reinterpret_cast<const float *> (&cdat[632]);
+        auto fdata = reinterpret_cast<const float *> (buffer.data() + 632);
         #pragma omp simd
         for (auto i=0; i<npts; i++)
         {
