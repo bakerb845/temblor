@@ -13,6 +13,8 @@ if (OPENMP_FOUND)
    string(APPEND CMAKE_CXX_FLAGS " ${OpenMP_CXX_FLAGS}")
 endif()
 
+find_package(GeographicLib)
+
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 # TODO - move to ui and scope there.  This generates useless stuff for the core library.
@@ -25,7 +27,6 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${Qt5Widgets_INCLUDE_DIRS}
 )
 
 find_package(GTest REQUIRED)
@@ -48,7 +49,7 @@ find_package(GTest REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(gtkmm REQUIRED gtkmm-3.0)
 
-link_libraries(stdc++fs)
+link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
 #########################################################################################
@@ -61,6 +62,7 @@ set(LIBSRC
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 
 add_library(temblor SHARED ${LIBSRC})
+target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking

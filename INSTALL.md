@@ -6,8 +6,9 @@ Prior to building the software the following dependencies must be met
 
   1. [CMake](https://cmake.org/) 3.6 or greater.
   2. A C++17 compliant C++ compiler.
-  3. [Qt](https://www.qt.io/download) v5.13.  Other 5-series Qt frameworks may work.  This will require that you register with Qt.
-  4. [GoogleTest](https://github.com/google/googletest) >1.8.  This is for testing many of the classes.  While I am aware of of Qt's unit testing framework the idea here is that, should I cut bait, then I still have something useful. 
+  3. [GeographiLib](git clone https://git.code.sf.net/p/geographiclib/code geographiclib-code) for geographic computations.  TODO - make this a dependency that cmake can resolve
+  4. Scratch Qt.  Use gtkmm-3.24 apt-get install gtkmm; [Qt](https://www.qt.io/download) v5.13.  Other 5-series Qt frameworks may work.  This will require that you register with Qt.
+  5. [GoogleTest](https://github.com/google/googletest) >1.8.  This is for testing many of the classes.  While I am aware of of Qt's unit testing framework the idea here is that, should I cut bait, then I still have something useful. 
  
 ## Configure CMake
 
