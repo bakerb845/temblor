@@ -57,6 +57,7 @@ link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
 set(LIBSRC
     lib/dataReaders/sac/waveform.cpp
     lib/dataReaders/sac/header.cpp
+    lib/utilities/location/globalPosition.cpp
     lib/utilities/time.cpp)
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
