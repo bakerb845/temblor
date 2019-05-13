@@ -5,6 +5,7 @@
 namespace Temblor::Library::Utilities::Location
 {
 
+class GlobalPosition;
 /*!
  * @class GlobalPositionPair globalPoisitionPair.hpp "temblor/library/utilities/location/globalPositionPair.hpp"
  * @brief Manages a pair of global locations for computing distance, azimuth,
@@ -13,28 +14,75 @@ namespace Temblor::Library::Utilities::Location
 class GlobalPositionPair
 {
 public:
+    /*! @name Constructors
+     * @{
+     */
     /*!
      * @brief Default constructor.
      */
     GlobalPositionPair();
     /*!
      * @brief Constructs the class from the position pair.
-     * @throws std::invalid_argument if p1 or p2 are not correctly initialized.
+     * @param[in] source    The source position.
+     * @param[in] receiver  The receiver position.
+     * @throws std::invalid_argument if source and receiver do not have
+     *         a latitude and longitude.
      */
-    GlobalPositionPair(const GlobalPosition &p1, const GlobalPosition &p2);
+    GlobalPositionPair(const GlobalPosition &source,
+                       const GlobalPosition &receiver);
+    /*! @} */
+
+    /*! @name Destructors
+     * @{
+     */
     /*!
-     * @brief Flag indicating whether or not the position pair has been set.
-     * @result True indicates the position pair has been set.
+     * @brief Default destructor.
      */
-    bool hasPair() const noexcept;
+    ~GlobalPositionPair();
     /*!
-     * @brief Sets the position pair.
-     * @param[in] p1   The first position.  This will most likely be the source.
-     * @param[in] p2   The second position.  This will most likely be the
-     *                 receiver.
-     * @throws std::invalid_argument if p1 or p2 are not correctly initialized.
+     * @brief Clears the positions.
      */
-    void setPositionPair(const GlobalPosition &p1, const GlobalPosition &p2);
+    void clear() noexcept; 
+    /*! @} */
+
+    /*! 
+     * @brief Flag indicating whether or not the source position was set.
+     * @result True indicates that the source position has been set.
+     */
+    bool hasSourcePosition() const noexcept;
+    /*!
+     * @brief Sets the source position.
+     * @param[in] source   The source position.
+     * @throws std::invalid_argument if the source position does not have a 
+     *         latitude or longitude.
+     */
+    void setSourcePosition(const GlobalPosition &source);
+    /*! 
+     * @brief Gets the source position.
+     * @result The source position.
+     * @throws std::runtime_error if the source position has not been set.
+     */ 
+    GlobalPosition getSourcePosition() const;
+
+    /*! 
+     * @brief Flag indicating whether or not the receiver position was set.
+     * @result True indicates that the receiver position has been set.
+     */
+    bool hasReceiverPosition() const noexcept;
+    /*!
+     * @brief Sets the receiver position.
+     * @param[in] receiver  The receiver position.
+     * @throws std::invalid_argument if the receiver position does not have a
+     *         latitude or longitude.
+     */
+    void setReceiverPosition(const GlobalPosition &receiver);
+    /*!
+     * @brief Gets the receiver position.
+     * @result The receiver position.
+     * @throws std::runtime_error if the receiver position has not been set.
+     */
+    GlobalPosition getReceiverPosition() const;
+
     /*!
      * @brief Gets the azimuth from point 1 to point 2.
      * @result The azimuth in degrees from point 1 to point 2.  Azimuth is
@@ -70,17 +118,8 @@ public:
     double getGreatCircleDistance();
 private:
     class GlobalPositionPairImpl;
-    std::unique_ptr<GlobalPositionPairImpl>;
+    std::unique_ptr<GlobalPositionPairImpl> pImpl;
 };
-
-/*
-double computeAzimuth(const GlobalPosition &p1,
-                      const GlobalPosition &p2);
-double computeBackAzimuth(const GlobalPosition &p1,
-                          const GlobalPosition &p2);
-double computeGreatCircleDistance(const GlobalPosition &p1,
-                                  const GlobalPosition &p2);
-*/
 
 }
 #endif
