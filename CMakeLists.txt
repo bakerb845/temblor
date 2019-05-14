@@ -75,7 +75,8 @@ set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 ##########################################################################################
 add_executable(testLibraryUtilities
                lib/tests/utilities/main.cpp 
-               lib/tests/utilities/time.cpp)
+               lib/tests/utilities/time.cpp
+               lib/tests/utilities/location.cpp)
 set_property(TARGET testLibraryUtilities PROPERTY CXX_STANDARD 17)
 target_link_libraries(testLibraryUtilities PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
 target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
