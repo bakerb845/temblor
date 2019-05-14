@@ -1,10 +1,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
+#include <algorithm>
 #include <GeographicLib/UTMUPS.hpp>
-#include "temblor/library/utilities/location/globalPosition.hpp"
+#include "temblor/library/utilities/geodetic/globalPosition.hpp"
 
-using namespace Temblor::Library::Utilities::Location;
+using namespace Temblor::Library::Utilities::Geodetic;
 
 class GlobalPosition::GlobalPositionImpl
 {
@@ -147,15 +148,26 @@ void GlobalPosition::setLongitude(const double longitude)
         std::string errmsg = "Longitude = " + std::to_string(longitude)
                            + " must be in the range (-540,540)";
     }
+    // Deal with modularity
     double longitudeUse = longitude;
-    while (longitudeUse < 0)
+    if (longitudeUse < 0)
     {
-        longitudeUse = longitudeUse + 360;
+        for (auto k=0; k<2; ++k)
+        {
+            longitudeUse = longitudeUse + 360;
+            if (longitudeUse >= 0){break;}
+        }
     }
-    while (longitudeUse > 360)
+    if (longitudeUse > 360)
     {
-        longitudeUse = longitudeUse - 360;
+        for (auto k=0; k<2; ++k)
+        {
+            longitudeUse = longitudeUse - 360;
+            if (longitudeUse < 360){break;}
+        }
     }
+    // Force into interval 
+    longitudeUse = std::min(360.0, std::max(0.0, longitudeUse));
     pImpl->mHaveLongitude = true;
     pImpl->mLongitude = longitudeUse;
 }

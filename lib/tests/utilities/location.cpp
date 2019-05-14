@@ -1,14 +1,15 @@
 #include <cstdio>
 #include <cstdlib>
-#include "temblor/library/utilities/location/globalPosition.hpp"
-#include "temblor/library/utilities/location/globalPositionPair.hpp"
+#include "temblor/library/utilities/geodetic/globalPosition.hpp"
+#include "temblor/library/utilities/geodetic/globalPositionPair.hpp"
 #include <gtest/gtest.h>
 
 namespace
 {
 
-using namespace Temblor::Library::Utilities::Location;
-TEST(LibraryUtilitiesPosition, GlobalPosition)
+using namespace Temblor::Library::Utilities::Geodetic;
+
+TEST(LibraryUtilitiesGeodetic, GlobalPosition)
 {
     GlobalPosition position; 
     EXPECT_FALSE(position.haveLatitude());
@@ -41,6 +42,17 @@ TEST(LibraryUtilitiesPosition, GlobalPosition)
     EXPECT_NEAR(position2.getNorthing(), 3321417.0304058315,  1.e-3); // Close to mm
     EXPECT_EQ(position2.getUTMZone(),    51);
 
+    // Test whacky longitudes
+    position.setLongitude(-111.89);
+    EXPECT_NEAR(position.getLongitude(), -111.89+360.0, 1.e-13); 
+    position.setLongitude(5.0-360.0);
+    EXPECT_NEAR(position.getLongitude(),   5.0, 1.e-13);
+    position.setLongitude(0.0-540.0);
+    EXPECT_NEAR(position.getLongitude(), 180.0, 1.e-13);
+    position.setLongitude(360.0 + 5.0);
+    EXPECT_NEAR(position.getLongitude(),   5.0, 1.e-13);
+    position.setLongitude(360.0 + 540.0);
+    EXPECT_NEAR(position.getLongitude(), 180.0, 1.e-13);
 }
 
 }

@@ -1,8 +1,8 @@
-#ifndef TEMBLOR_LIBRARY_UTILITIES_LOCATION_GLOBALPOSITIONPAIR_HPP
-#define TEMBLOR_LIBRARY_UTILITIES_LOCATION_GLOBALPOSITIONPAIR_HPP 1
+#ifndef TEMBLOR_LIBRARY_UTILITIES_GEODETIC_GLOBALPOSITIONPAIR_HPP
+#define TEMBLOR_LIBRARY_UTILITIES_GEODETIC_GLOBALPOSITIONPAIR_HPP 1
 #include <memory>
 
-namespace Temblor::Library::Utilities::Location
+namespace Temblor::Library::Utilities::Geodetic
 {
 
 class GlobalPosition;
@@ -22,6 +22,11 @@ public:
      */
     GlobalPositionPair();
     /*!
+     * @brief Copy constructor.
+     * @param[in] pair  The pair class to copy to this class.
+     */
+    GlobalPositionPair(const GlobalPositionPair &pair);
+    /*!
      * @brief Constructs the class from the position pair.
      * @param[in] source    The source position.
      * @param[in] receiver  The receiver position.
@@ -31,6 +36,13 @@ public:
     GlobalPositionPair(const GlobalPosition &source,
                        const GlobalPosition &receiver);
     /*! @} */
+
+    /*!
+     * @brief Copy assignment operator.
+     * @param[in] pair  The global position pair to copy.
+     * @result A deep copy of the global position pair.
+     */
+    GlobalPositionPair& operator=(const GlobalPositionPair &pair);
 
     /*! @name Destructors
      * @{
