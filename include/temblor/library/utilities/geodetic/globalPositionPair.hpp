@@ -27,6 +27,12 @@ public:
      */
     GlobalPositionPair(const GlobalPositionPair &pair);
     /*!
+     * @brief Move constructor.
+     * @param[in,out] pair  On input pair's memory will be moved to this class.
+     *                      On exit pair's behavior will be undefined.
+     */
+    GlobalPositionPair(GlobalPositionPair &&pair) noexcept;
+    /*!
      * @brief Constructs the class from the position pair.
      * @param[in] source    The source position.
      * @param[in] receiver  The receiver position.
@@ -37,12 +43,24 @@ public:
                        const GlobalPosition &receiver);
     /*! @} */
 
+    /*! @name Operators
+     * @{
+     */
     /*!
      * @brief Copy assignment operator.
      * @param[in] pair  The global position pair to copy.
      * @result A deep copy of the global position pair.
      */
     GlobalPositionPair& operator=(const GlobalPositionPair &pair);
+    /*!
+     * @brief Move assignment operator.
+     * @param[in,out] pair  The global position pair whose memory is
+     *                      to be moved.
+     *                      On exit pair's behavior is undefined.
+     * @result Contains the moved memory from pair.
+     */
+    GlobalPositionPair& operator=(GlobalPositionPair &&pair) noexcept;
+    /*! @} */
 
     /*! @name Destructors
      * @{
@@ -96,38 +114,37 @@ public:
     GlobalPosition getReceiverPosition() const;
 
     /*!
-     * @brief Gets the azimuth from point 1 to point 2.
-     * @result The azimuth in degrees from point 1 to point 2.  Azimuth is
-     *         measured positive clockwise from north.
-     * @throws std::runtime_error if the positiosn are not set.
-     */
-    double getAzimuth() const;
-    /*!
-     * @brief gEts the back-azimuth from point 2 to point 1.
-     * @Result The back-azimuth in degrees from point 2 to point 1.  
-     *         Back-azimuth is measured positive clockwise from north.
+     * @brief Computes the azimuth from the source location to the
+     *        receiver location.
+     * @result The azimuth in degrees from the source to the receiver.
+     *         This is measured positive clockwise from north and is
+     *         in the range [0,360].
      * @throws std::runtime_error if the positions are not set.
      */
-    double getBackAzimuth() const;
+    double computeAzimuth() const;
+    /*!
+     * @brief Computes the back-azimuth from the receiver location to 
+     *        the source location.
+     * @result The back-azimuth in degrees from the receiver to the
+     *         source.  This is measured positive clockwise from north
+     *         and is in the range [0,360].
+     * @throws std::runtime_error if the positions are not set.
+     */
+    double computeBackAzimuth() const;
     /*! 
-     * @brief Gets the distance between the two points in meters.
-     * @result The distance between point 1 and point 2 in meters
+     * @brief Gets the distance between the source and receiver.
+     * @result The distance in meters between the source and receiver.
      * @throws std::runtime_error if the positions are not set.
      */
-    double getDistance();
-    /*!
-     * @brief Gets the distance between the two points in kilometers.
-     * @result The distance between point 1 and point 2 in kilometers
-     * @throws std::runtime_error if the positions are not set.
-     */
-    double getDistanceInKilometers();
+    double computeDistance() const;
     /*!
      ° @brief Gets the great-circle distance between the two points in
      *        degrees.
-     * @result The distance between point 1 and point 2 in degrees.
+     * @result The great circle distance in degrees between the source and
+     *         receiver.
      * @throws std::runtime_Error if the positions are not set.
      */
-    double getGreatCircleDistance();
+    double computeGreatCircleDistance() const;
 private:
     class GlobalPositionPairImpl;
     std::unique_ptr<GlobalPositionPairImpl> pImpl;

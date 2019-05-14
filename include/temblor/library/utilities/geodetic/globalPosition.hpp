@@ -168,19 +168,19 @@ public:
      * @result The UTM northing in meters.
      * @throws std::runtime_error if the position has not been set.
      */
-    double getEasting() const;
+    double computeEasting() const;
     /*!
      * @brief Gets the UTM northing position.
      * @result The UTM easting in meters.
      * @throws std::runtime_error if the position has not been set.
      */
-    double getNorthing() const;
+    double computeNorthing() const;
     /*!
      * @brief Gets the UTM zone.
      * @result The UTM zone.
      * throws std::runtime_error if the position has not been set.
      */ 
-    int getUTMZone() const;
+    int computeUTMZone() const;
 private:
     class GlobalPositionImpl;
     std::unique_ptr<GlobalPositionImpl> pImpl;

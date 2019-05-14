@@ -211,19 +211,19 @@ double GlobalPosition::getLatitude() const
 }
 
 /// UTM info
-double GlobalPosition::getEasting() const
+double GlobalPosition::computeEasting() const
 {
     pImpl->computeUTM();
     return pImpl->mEasting;
 }
 
-double GlobalPosition::getNorthing() const
+double GlobalPosition::computeNorthing() const
 {
     pImpl->computeUTM();
     return pImpl->mNorthing;
 }
 
-int GlobalPosition::getUTMZone() const
+int GlobalPosition::computeUTMZone() const
 {
     pImpl->computeUTM();
     return pImpl->mZone;
