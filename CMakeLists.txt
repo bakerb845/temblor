@@ -57,6 +57,7 @@ link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
 set(LIBSRC
     lib/dataReaders/sac/waveform.cpp
     lib/dataReaders/sac/header.cpp
+    lib/models/timeSeriesData/singleChannelWaveform.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)
