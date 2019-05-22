@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.2)
 project(temblor VERSION 0.1.1 LANGUAGES CXX)
 enable_testing()
 
@@ -7,15 +7,19 @@ enable_testing()
 ##########################################################################################
 include(CheckCXXCompilerFlag)
 
-include(FindOpenMP QUIET)
+include(FindOpenMP)
 if (OPENMP_FOUND)
    message("OpenMP found")
    string(APPEND CMAKE_CXX_FLAGS " ${OpenMP_CXX_FLAGS}")
 endif()
 
+#set(CMAKE_CXX_STANDARD 17) 
+#set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+#set(CMAKE_CXX_EXTENSIONS OFF)
+
 find_package(GeographicLib)
 
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+#find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 # TODO - move to ui and scope there.  This generates useless stuff for the core library.
 # Run MOC when required
@@ -23,11 +27,6 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 #set(CMAKE_AUTOUIC ON)
 #set(CMAKE_AUTORCC ON)
 
-# Includes
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
 
 find_package(GTest REQUIRED)
 
@@ -47,9 +46,17 @@ find_package(GTest REQUIRED)
 
 # In case i switch to gtkmm
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(gtkmm REQUIRED gtkmm-3.0)
+pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
+find_package(OpenGL REQUIRED)
 
-link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
+# Includes
+#set(CMAKE_INCLUDE_CURRENT_DIR ON) 
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${GTKMM_INCLUDE_DIRS}
+)
+
+#link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
 #########################################################################################
@@ -63,10 +70,14 @@ set(LIBSRC
     lib/utilities/time.cpp)
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
+add_executable(glwave ui/applications/glwave.cpp)
+#target_include_directories(glwave PUBLIC ${GTKMM_INCLUDE_DIRS})
+target_link_libraries(glwave PUBLIC temblor ${GTKMM_LIBRARY_DIRS})
 
 add_library(temblor SHARED ${LIBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
-set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
+target_link_libraries(temblor stdc++fs ${GeographicLib_LIBRARIES})
+#set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
 #target_link_libraries(helloworld Qt5::Widgets)
@@ -78,7 +89,7 @@ add_executable(testLibraryUtilities
                lib/tests/utilities/main.cpp 
                lib/tests/utilities/time.cpp
                lib/tests/utilities/location.cpp)
-set_property(TARGET testLibraryUtilities PROPERTY CXX_STANDARD 17)
+#set_property(TARGET testLibraryUtilities PROPERTY CXX_STANDARD 17)
 target_link_libraries(testLibraryUtilities PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
 target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryUtilities
@@ -87,7 +98,7 @@ add_test(NAME testLibraryUtilities
 add_executable(testLibraryDataReaders
                lib/tests/dataReaders/main.cpp
                lib/tests/dataReaders/sac.cpp)
-set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)
+#set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)
 target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
 target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryDataReaders
