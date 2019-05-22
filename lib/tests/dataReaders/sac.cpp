@@ -1,16 +1,24 @@
 #include <cstdio>
 #include <cstdlib>
 #include <climits>
+#include <cmath>
+#include <algorithm>
 #include "temblor/library/dataReaders/sac/waveform.hpp"
 #include "temblor/library/dataReaders/sac/header.hpp"
 #include "temblor/library/dataReaders/sac/enums.hpp"
 #include <gtest/gtest.h>
 #if __has_include(<filesystem>)
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
+ #include <filesystem>
+ namespace fs = std::filesystem;
+ #define TEMBLOR_USE_FS 1
+#elif __has_include(<experimental/filesystem>)
+ #include <experimental/filesystem>
+ namespace fs = std::experimental::filesystem;
+ #define TEMBLOR_USE_FS 1
+#elif __has_include(<boost/filesystem.hpp>)
+ #include <boost/filesystem.hpp>
+ namespace fs = boost::filesystem;
+ #define TEMBLOR_USE_FS 1
 #endif
 
 namespace
@@ -352,8 +360,12 @@ TEST(LibraryDataReadersSAC, waveform)
     ASSERT_NEAR(resmax, 0.0, 1.e-7);
 
     // Let's try writing and reading the waveform
+#ifdef TEMBLOR_USE_FS
     std::string scratchFile = fs::temp_directory_path();
-    scratchFile = scratchFile + + "/temp.sac";
+    scratchFile = scratchFile + "/temp.sac";
+#else
+    std::string scratchFile = "temp.txt";
+#endif
     waveform.write(scratchFile);
     SAC::Waveform waveformRead;
     waveformRead.read(scratchFile);

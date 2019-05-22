@@ -6,28 +6,22 @@
 #include <algorithm>
 #include <fstream>
 #if __has_include(<filesystem>)
-#include <filesystem>
-#define TEMBLOR_USE_FILESYSTEM 1
-#else
-#include <experimental/filesystem>
-#define TEMBLOR_USE_FILESYSTEM 0
+ #include <filesystem>
+ namespace fs = std::filesystem;
+ #define TEMBLOR_USE_FILESYSTEM 1
+#elif __has_include(<experimental/filesystem>)
+ #include <experimental/filesystem>
+ namespace fs = std::experimental::filesystem;
+ #define TEMBLOR_USE_FILESYSTEM 1
+#elif __has_include(<boost/filesystem.hpp>)
+ #include <boost/filesystem.hpp>
+ namespace fs = boost::filesystem;
+ #define TEMBLOR_USE_FILESYSTEM 1
 #endif
-/*
-#ifdef TEMBLOR_USE_FILESYTEM
-#include <filesystem>
-#else
-#include <experimental/filesystem>
-#endif
-*/
 #include "temblor/library/dataReaders/sac/waveform.hpp"
 #include "temblor/library/dataReaders/sac/header.hpp"
 
 using namespace Temblor::Library::DataReaders::SAC;
-#if TEMBLOR_USE_FILESYSTEM == 1
-namespace fs = std::filesystem;
-#else
-namespace fs = std::experimental::filesystem;
-#endif
 
 static double *alignedAllocDouble(const int npts);
 
@@ -103,11 +97,13 @@ void Waveform::clear() noexcept
 void Waveform::read(const std::string &fileName)
 {
     clear();
+#if TEMBLOR_USE_FILESYSTEM == 1
     if (!fs::exists(fileName))
     {
         std::string errmsg = "SAC file = " + fileName + " does not exist";
         throw std::invalid_argument(errmsg);
     }
+#endif
     // Read the binary file
     std::ifstream sacfl(fileName, std::ios::binary);
     std::vector<char> buffer(std::istreambuf_iterator<char> (sacfl), {});
@@ -189,6 +185,7 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
         throw std::runtime_error("SAC waveform is not valid");
     }
     // Make sure the root directory exists
+#if TEMBLOR_USE_FILESYSTEM == 1
     fs::path path(fileName);
     if (!path.has_relative_path())
     {
@@ -199,6 +196,7 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
             throw std::invalid_argument(errmsg);
         }
     }
+#endif
     // Pack the header
     int npts = getNumberOfSamples();
     size_t nbytes = 632 + 4*static_cast<size_t> (npts);
