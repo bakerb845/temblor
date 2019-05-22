@@ -49,14 +49,15 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
 find_package(OpenGL REQUIRED)
 
-# Includes
-#set(CMAKE_INCLUDE_CURRENT_DIR ON) 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${GTKMM_INCLUDE_DIRS}
 )
 
+
 #link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
+link_directories(${GTKMM_LIBRARY_DIRS})
+#link_libraries(stdc++fs stdc++) #${GeographicLib_LIBRARIES})
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
 #########################################################################################
@@ -64,23 +65,26 @@ include_directories(
 set(LIBSRC
     lib/dataReaders/sac/waveform.cpp
     lib/dataReaders/sac/header.cpp
+    lib/dataReaders/segy/binaryFileHeader.cpp
+    lib/dataReaders/segy/segy2.cpp
     lib/models/timeSeriesData/singleChannelWaveform.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
-add_executable(glwave ui/applications/glwave.cpp)
-#target_include_directories(glwave PUBLIC ${GTKMM_INCLUDE_DIRS})
-target_link_libraries(glwave PUBLIC temblor ${GTKMM_LIBRARY_DIRS})
+add_executable(gltest ui/applications/gltest.cpp)
+set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
 add_library(temblor SHARED ${LIBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
-target_link_libraries(temblor stdc++fs ${GeographicLib_LIBRARIES})
-#set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
+target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES})
+set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
 #target_link_libraries(helloworld Qt5::Widgets)
+target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS})
+target_link_libraries(gltest temblor ${GTKMM_LIBRARIES})
 
 ##########################################################################################
 #                                      Unit Tests                                        #
@@ -97,15 +101,17 @@ add_test(NAME testLibraryUtilities
 
 add_executable(testLibraryDataReaders
                lib/tests/dataReaders/main.cpp
-               lib/tests/dataReaders/sac.cpp)
-#set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)
+               lib/tests/dataReaders/sac.cpp
+               lib/tests/dataReaders/segy.cpp
+               )
+set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)
 target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
 target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryDataReaders
          COMMAND testLibraryDataReaders)
 
 # Also need to copy some test data
-file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)
+#file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)
           
 
 ##########################################################################################
