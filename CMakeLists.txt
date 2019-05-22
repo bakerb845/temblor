@@ -56,7 +56,7 @@ include_directories(
 
 
 #link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
-link_directories(${GTKMM_LIBRARY_DIRS})
+link_directories(stdc++fs ${GTKMM_LIBRARY_DIRS})
 #link_libraries(stdc++fs stdc++) #${GeographicLib_LIBRARIES})
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
@@ -78,7 +78,7 @@ set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
 add_library(temblor SHARED ${LIBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
-target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES})
+target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} stdc++fs)
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
@@ -111,7 +111,7 @@ add_test(NAME testLibraryDataReaders
          COMMAND testLibraryDataReaders)
 
 # Also need to copy some test data
-#file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)
+file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)
           
 
 ##########################################################################################
