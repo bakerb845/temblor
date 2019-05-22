@@ -54,9 +54,19 @@ include_directories(
   ${GTKMM_INCLUDE_DIRS}
 )
 
-
+include(CheckIncludeFileCXX)
+check_include_file_cxx("<filesystem>" TEMBLOR_HAVE_STD_FS)
 #link_libraries(stdc++fs ${GeographicLib_LIBRARIES})
-link_directories(stdc++fs ${GTKMM_LIBRARY_DIRS})
+if (TEMBLOR_HAVE_STD_FS)
+   MESSAGE("Here")
+   link_directories(stdc++fs)
+else()
+   check_include_file_cxx("<experimental/filesystem>" TEMBLOR_HAVE_EXP_FS)
+   if (TEMBLOR_HAVE_EXP_FS)
+      link_directories(stdc++fs)
+   endif()
+endif()
+link_directories(${GTKMM_LIBRARY_DIRS})
 #link_libraries(stdc++fs stdc++) #${GeographicLib_LIBRARIES})
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
@@ -78,7 +88,7 @@ set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
 add_library(temblor SHARED ${LIBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
-target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} stdc++fs)
+target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES})
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
