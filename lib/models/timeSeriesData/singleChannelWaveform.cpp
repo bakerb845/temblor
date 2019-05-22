@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <algorithm>
 #include <vector>
 #include "temblor/library/models/timeSeriesData/singleChannelWaveform.hpp"
 #include "temblor/library/utilities/time.hpp"
@@ -8,7 +9,6 @@
 
 using namespace Temblor::Library::Utilities;
 using namespace Temblor::Library::Models::TimeSeriesData;
-
 
 class SingleChannelWaveform::SingleChannelWaveformImpl
 {
@@ -66,9 +66,22 @@ double SingleChannelWaveform::getEndtime() const noexcept
 }
 */
 
+
+void SingleChannelWaveform::setNetworkName(const std::string &str) noexcept
+{
+    auto len = std::min(pImpl->networkName.capacity(), str.size());
+    pImpl->networkName.assign(str, len);
+}
+
 std::string SingleChannelWaveform::getNetworkName() const noexcept
 {
     return pImpl->networkName;
+}
+
+void SingleChannelWaveform::setStationName(const std::string &str) noexcept
+{
+    auto len = std::min(pImpl->stationName.capacity(), str.size());
+    pImpl->stationName.assign(str, len);
 }
 
 std::string SingleChannelWaveform::getStationName() const noexcept
@@ -76,9 +89,21 @@ std::string SingleChannelWaveform::getStationName() const noexcept
     return pImpl->stationName;
 }
 
+void SingleChannelWaveform::setChannelName(const std::string &str) noexcept
+{
+    auto len = std::min(pImpl->channelName.capacity(), str.size());
+    pImpl->channelName.assign(str, len);
+}
+
 std::string SingleChannelWaveform::getChannelName() const noexcept
 {
     return pImpl->channelName;
+}
+
+void SingleChannelWaveform::setLocationCode(const std::string &str) noexcept
+{
+    auto len = std::min(pImpl->locationCode.capacity(), str.size());
+    pImpl->locationCode.assign(str, len);
 }
 
 std::string SingleChannelWaveform::getLocationCode() const noexcept
