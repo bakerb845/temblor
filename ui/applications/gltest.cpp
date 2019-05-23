@@ -89,6 +89,9 @@ TestApplicationWindow::TestApplicationWindow() :
     
     mGLArea.set_hexpand(true);
     mGLArea.set_vexpand(true);
+    mGLArea.set_halign(Gtk::ALIGN_FILL);
+    mGLArea.set_valign(Gtk::ALIGN_FILL);
+    //mGLArea.set_size_request(640, 340);
     //mGLArea.signal_unrealize().connect(sigc::mem_fun(*this, &TestGLArea::unrealize), false);
     mGLArea.set_auto_render(true);
     mVbox.add(mGLArea);
@@ -141,9 +144,15 @@ void TestApplication::onHideWindow(Gtk::Window *window)
 }
 
 //----------------------------------------------------------------------------//
+#include <GL/glew.h>
 #include <GL/gl.h>
+//#include <glm/glm.h>
+//#include <epoxy/gl.h>
+//#include <GLFW/glfw3.h>
+
 TestGLArea::TestGLArea()
 {
+    set_required_version(3, 3);
 /*
     set_hexpand(true);
     set_vexpand(true);
@@ -184,7 +193,10 @@ static const GLfloat vertex_data[] = {
  -0.5f, -0.366f, 0.f, 1.f,
 };
 
-TestGLArea::~TestGLArea() = default;
+TestGLArea::~TestGLArea()
+{
+    //if (glfwInit()){glfwTerminate();}
+}
 
 void TestGLArea::unrealize()
 {
@@ -204,6 +216,15 @@ void TestGLArea::unrealize()
 void TestGLArea::realize()
 {
     make_current();
+   
+/*
+    if (!glfwInit())
+    {
+        fprintf(stderr, "gflwInit failed\n");
+        return;
+    }
+*/
+
     try
     {
         throw_if_error();
@@ -227,19 +248,29 @@ void TestGLArea::realize()
 
 bool TestGLArea::render(const Glib::RefPtr<Gdk::GLContext> &context)
 {
+    auto allocation = get_allocation();
+    int height = allocation.get_height();
+    int width = allocation.get_width();
+printf("%d %d\n", height, width);
+    auto ratio = static_cast<float> (width)/static_cast<float> (height);
     try
     {
         throw_if_error();
+        glViewport(0, 0, width, height);
         glClearColor(0.5, 0.5, 0.5, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-                glBegin(GL_TRIANGLES);
-                glColor3f(1.f, 0.f, 0.f);
-                glVertex3f(-0.6f, -0.4f, 0.f);
-                glColor3f(0.f, 1.f, 0.f);
-                glVertex3f(0.6f, -0.4f, 0.f);
-                glColor3f(0.f, 0.f, 1.f);
-                glVertex3f(0.f, 0.6f, 0.f);
+        // Set up the camera
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                glBegin(GL_POINTS);
+                glColor4f(1.f, 1.f, 1.f, 1.0);
+                glVertex3f(0.0, 0.0, 0.0);
                 glEnd();
 
         glFlush();
@@ -252,7 +283,7 @@ bool TestGLArea::render(const Glib::RefPtr<Gdk::GLContext> &context)
     } 
 }
 
-int main(int argc, char *argv[])
+int main2(int argc, char *argv[])
 {
     auto app = TestApplication::create();
     app->run(argc, argv); 

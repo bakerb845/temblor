@@ -92,7 +92,10 @@ set(LIBSRC
     lib/utilities/time.cpp)
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
-add_executable(gltest ui/applications/gltest.cpp)
+add_executable(gltest
+               ui/applications/gltest.cpp
+               ui/applications/glarea.cpp
+               )
 set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
 add_library(temblor SHARED ${LIBSRC})
@@ -103,7 +106,7 @@ set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 # Add the Qt5 Widgets for linking
 #target_link_libraries(helloworld Qt5::Widgets)
 target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS} ${GL_INCLUDE_DIR})
-target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GLFW_LIBRARY} ${GL_LIBRARY})
+target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY})
 
 ##########################################################################################
 #                                      Unit Tests                                        #
