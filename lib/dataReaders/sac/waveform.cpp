@@ -15,6 +15,7 @@
  #define TEMBLOR_USE_FILESYSTEM 1
 #elif __has_include(<boost/filesystem.hpp>)
  #include <boost/filesystem.hpp>
+ #include <boost/filesystem/path.hpp>
  namespace fs = boost::filesystem;
  #define TEMBLOR_USE_FILESYSTEM 1
 #endif
@@ -189,10 +190,11 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
     fs::path path(fileName);
     if (!path.has_relative_path())
     {
-        std::string pathName = path.parent_path();
+        fs::path pathName = path.parent_path();
         if (!fs::create_directories(pathName))
         {
-            std::string errmsg = "Failed to make directory " + pathName;
+            std::string errmsg = "Failed to make directory "
+                               + std::string(pathName.c_str());
             throw std::invalid_argument(errmsg);
         }
     }

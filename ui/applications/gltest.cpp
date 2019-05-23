@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include "gltest.hpp"
 
+/*
 ExampleApplication::ExampleApplication()
 : Gtk::Application("org.gtkmm.examples.application", Gio::APPLICATION_HANDLES_OPEN)
 {
@@ -40,7 +41,7 @@ void ExampleApplication::on_activate()
 }
 
 void ExampleApplication::on_open(const Gio::Application::type_vec_files& files,
-  const Glib::ustring& /* hint */)
+  const Glib::ustring& )
 {
   // The application has been asked to open some files,
   // so let's open a new view for each one.
@@ -69,15 +70,42 @@ ExampleAppWindow::ExampleAppWindow()
 {
 }
 
-void ExampleAppWindow::open_file_view(const Glib::RefPtr<Gio::File>& /* file */)
+void ExampleAppWindow::open_file_view(const Glib::RefPtr<Gio::File>& )
 {
 }
+*/
+
+TestApplicationWindow::TestApplicationWindow() :
+    Gtk::ApplicationWindow(),
+    mVbox(Gtk::ORIENTATION_VERTICAL),
+    mCloseButton("Close", true)
+{
+    set_title("Test Window");
+    set_default_size(512, 512);
+
+    //TestGLArea *area = new TestGLArea();
+    //add(*area);
+    mCloseButton.signal_clicked().connect(sigc::mem_fun(*this, &Gtk::Window::close));
+    
+    mGLArea.set_hexpand(true);
+    mGLArea.set_vexpand(true);
+    //mGLArea.signal_unrealize().connect(sigc::mem_fun(*this, &TestGLArea::unrealize), false);
+    mGLArea.set_auto_render(true);
+    mVbox.add(mGLArea);
 
 /*
-TestApplicationWindow::TestApplicationWindow() :
-    Gtk::ApplicationWindow()
-{
+    mGLArea.signal_realize().connect(sigc::mem_fun(*this, &TestGLArea::realize));
+    mGLArea.signal_unrealize().connect(sigc::mem_fun(*this, &TestGLArea::unrealize), false);
+    mGLArea.signal_render().connect(sigc::mem_fun(*this, &TestGLArea::render), false);
+*/
+    
+
+    mVbox.add(mCloseButton);
+    add(mVbox);
+    show_all_children();
 }
+
+TestApplicationWindow::~TestApplicationWindow() = default;
 
 //----------------------------------------------------------------------------//
 /// Constructor
@@ -107,21 +135,126 @@ TestApplicationWindow *TestApplication::createApplicationWindow()
     return appWindow;
 }
 /// Delete event
-void onHideWindow(Gtk::Window *window)
+void TestApplication::onHideWindow(Gtk::Window *window)
 {
     delete window;
 }
+
+//----------------------------------------------------------------------------//
+#include <GL/gl.h>
+TestGLArea::TestGLArea()
+{
+/*
+    set_hexpand(true);
+    set_vexpand(true);
+    set_auto_render(true);
+    //glViewport(0, 0, 100, 100);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-1, 1, -1.f, 1.f, 1.f, -1.f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity(); 
+
+    glBegin(GL_TRIANGLES);
+    glColor3f(1.f, 0.f, 0.f);
+    glVertex3f(-0.6f, -0.4f, 0.f);
+    glColor3f(0.f, 1.f, 0.f);
+    glVertex3f(0.6f, -0.4f, 0.f);
+    glColor3f(0.f, 0.f, 1.f);
+    glVertex3f(0.f, 0.6f, 0.f);
+    glEnd();
 */
 
+    
 /*
-TestGLArea::TestGLArea() = default;
+    GLfloat vertex_data[] = {0.f,   0.5f,   0.f, 1.f,
+                             0.5f, -0.366f, 0.f, 1.f,
+                            -0.5f, -0.366f, 0.f, 1.f};
+*/
+    signal_realize().connect(sigc::mem_fun(*this, &TestGLArea::realize));
+    signal_unrealize().connect(sigc::mem_fun(*this, &TestGLArea::unrealize), false);
+    signal_render().connect(sigc::mem_fun(*this, &TestGLArea::render), false);
+}
+
+static const GLfloat vertex_data[] = {
+  0.f,   0.5f,   0.f, 1.f,
+  0.5f, -0.366f, 0.f, 1.f,
+ -0.5f, -0.366f, 0.f, 1.f,
+};
 
 TestGLArea::~TestGLArea() = default;
-*/
+
+void TestGLArea::unrealize()
+{
+    make_current();
+    try
+    {
+        throw_if_error();
+        //glDeleteBuffers(1, mVao);
+        //glDeleteProgram(mProgram);
+    }
+    catch (const Gdk::GLError &gle)
+    {
+        fprintf(stderr, "Error unrealizing\n");
+    }
+}
+
+void TestGLArea::realize()
+{
+    make_current();
+    try
+    {
+        throw_if_error();
+        // init_buffers()
+        // init_shaders()
+        //enable anti-aliasing
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+        glEnable(GL_POINT_SMOOTH);
+        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    }
+    catch (const Gdk::GLError &gle)
+    {
+        fprintf(stderr, "Error initializing\n"); 
+    }
+}
+
+bool TestGLArea::render(const Glib::RefPtr<Gdk::GLContext> &context)
+{
+    try
+    {
+        throw_if_error();
+        glClearColor(0.5, 0.5, 0.5, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+                glBegin(GL_TRIANGLES);
+                glColor3f(1.f, 0.f, 0.f);
+                glVertex3f(-0.6f, -0.4f, 0.f);
+                glColor3f(0.f, 1.f, 0.f);
+                glVertex3f(0.6f, -0.4f, 0.f);
+                glColor3f(0.f, 0.f, 1.f);
+                glVertex3f(0.f, 0.6f, 0.f);
+                glEnd();
+
+        glFlush();
+        return true;
+    }
+    catch (const Gdk::GLError &gle)
+    {
+        fprintf(stderr, "Error plotting\n");
+        return false;
+    } 
+}
 
 int main(int argc, char *argv[])
 {
-    auto app = ExampleApplication::create();
+    auto app = TestApplication::create();
     app->run(argc, argv); 
     return EXIT_SUCCESS;
 }

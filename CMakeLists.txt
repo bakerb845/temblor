@@ -65,6 +65,14 @@ else()
    if (TEMBLOR_HAVE_EXP_FS)
       MESSAGE("Using experimental/filesystem")
       link_libraries(stdc++fs)
+   else()
+       check_include_file_cxx(boost/filesystem.hpp TEMBLOR_HAVE_BOOST_FS)
+       set(Boost_USE_STATIC_LIBS ON)
+       find_package(Boost COMPONENTS filesystem REQUIRED)
+       if (TEMBLOR_HAVE_BOOST_FS)
+          MESSAGE("Using boost filesystem")
+          link_libraries(${Boost_FILESYSTEM_LIBRARY})
+       endif()
    endif()
 endif()
 link_directories(${GTKMM_LIBRARY_DIRS})
@@ -94,8 +102,8 @@ set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
 #target_link_libraries(helloworld Qt5::Widgets)
-target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS})
-target_link_libraries(gltest temblor ${GTKMM_LIBRARIES})
+target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS} ${GL_INCLUDE_DIR})
+target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GLFW_LIBRARY} ${GL_LIBRARY})
 
 ##########################################################################################
 #                                      Unit Tests                                        #

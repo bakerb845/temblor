@@ -1,3 +1,4 @@
+/*
 #ifndef GTKMM_EXAMPLEAPPLICATION_H
 #define GTKMM_EXAMPLEAPPLICATION_H
 
@@ -32,13 +33,27 @@ public:
   void open_file_view(const Glib::RefPtr<Gio::File>& file);
 };
 
-#endif /* GTKMM_EXAMPLEAPPLICATION_H */
-/*
+#endif
+*/
+
 #ifndef TEST_APP
 #define TEST_APP
 
+#include <gtkmm/glarea.h>
+class TestGLArea : public Gtk::GLArea
+{
+public:
+    TestGLArea(); 
+    virtual ~TestGLArea() override;
+    void realize();
+    void unrealize();
+    bool render(const Glib::RefPtr<Gdk::GLContext>& context);
+};
+
 class TestApplicationWindow;
 #include <gtkmm/application.h>
+
+
 class TestApplication : public Gtk::Application
 {
 protected:
@@ -52,12 +67,18 @@ private:
 };
 
 #include <gtkmm/applicationwindow.h>
+#include <gtkmm/box.h>
+#include <gtkmm/button.h>
 class TestApplicationWindow : public Gtk::ApplicationWindow
 {
 public:
     TestApplicationWindow();
+    virtual ~TestApplicationWindow();
+protected:
+    TestGLArea mGLArea;
+    Gtk::Box mVbox; 
+    Gtk::Button mCloseButton;
 };
 
 
 #endif
-*/

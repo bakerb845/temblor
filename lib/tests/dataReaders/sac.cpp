@@ -361,8 +361,9 @@ TEST(LibraryDataReadersSAC, waveform)
 
     // Let's try writing and reading the waveform
 #ifdef TEMBLOR_USE_FS
-    std::string scratchFile = fs::temp_directory_path();
-    scratchFile = scratchFile + "/temp.sac";
+    fs::path scratchFilePath = fs::temp_directory_path();
+    std::string scratchFile = std::string(scratchFilePath.c_str())
+                            + "/temp.sac";
 #else
     std::string scratchFile = "temp.txt";
 #endif
