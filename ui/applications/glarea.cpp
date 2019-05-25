@@ -163,12 +163,21 @@ bool Example_GLArea::render(const Glib::RefPtr<Gdk::GLContext>& /* context */)
     glClear(GL_COLOR_BUFFER_BIT);
 
 
+/*
+m_GLArea.make_current();
 glMatrixMode(GL_PROJECTION);
 glLoadIdentity();
 glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 glMatrixMode(GL_MODELVIEW);
 glLoadIdentity();
 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+glPointSize(100);
+            glBegin(GL_POINTS);
+            glColor4f(1.f, 1.f, 1.f, 1.0);
+            glVertex3f(0.0, 0.0, 0.0);
+            glEnd(); 
+glFlush();
+*/
 
 
     draw_triangle();

@@ -261,17 +261,19 @@ printf("%d %d\n", height, width);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Set up the camera
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        {
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                glBegin(GL_POINTS);
-                glColor4f(1.f, 1.f, 1.f, 1.0);
-                glVertex3f(0.0, 0.0, 0.0);
-                glEnd();
+            glBegin(GL_POINTS);
+            glColor4f(1.f, 1.f, 1.f, 1.0);
+            glVertex3f(0.0, 0.0, 0.0);
+            glEnd();
+        }
 
         glFlush();
         return true;
