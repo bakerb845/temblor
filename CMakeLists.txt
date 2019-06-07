@@ -95,6 +95,7 @@ set(LIBSRC
 add_executable(gltest
                ui/applications/gltest.cpp
                ui/applications/glarea.cpp
+               #ui/widgets/firDesigner.cpp
                )
 set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
