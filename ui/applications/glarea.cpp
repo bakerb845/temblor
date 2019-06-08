@@ -194,16 +194,43 @@ public:
         glDeleteShader(mGeometryShader);
     }
     /*!
-     * @brief Uses the shader program.
+     * @brief Adds an attribute so we can later link the data to the shader
+     *        program.
+     * @param[in] attribute   The name of the attribute to add.
+     * @throws std::runtime_error if the attribute ID cannot be found. 
+     */
+    void addAttribute(const std::string &attribute)
+    {
+        if (!glIsProgram(mProgram))
+        {
+            throw std::runtime_error("Program not yet compiled");
+        }
+        GLint attrId = glGetAttribLocation(mProgram, attribute.c_str());
+        if (attrId == GL_INVALID_OPERATION)
+        {
+            fprintf(stderr, "May have failed to get attriblocation\n"); 
+        } 
+        mAttributeList[attribute] = attrId;
+printf("%d\n", attrId);
+    }
+    /*!
+     * @brief An index that returns the location of the attribute.
+     */
+    uint32_t operator[](const std::string &attribute)
+    {
+        return static_cast<uint32_t> (mAttributeList[attribute]);
+    }
+    /*!
+     * @brief Sets the shader program on the GPU.
      */
     void useProgram()
     {
         if (glIsProgram(mProgram)){glUseProgram(mProgram);}
     }
     /*!
-     * @brief
+     * @brief Releases the shader program on the GPU.
      */
-    void unUseProgram()
+    void releaseProgram()
     {
         glUseProgram(0);
     }
@@ -220,6 +247,7 @@ private:
     GLuint mVertexShader = 0;
     GLuint mFragmentShader = 0;
     GLuint mGeometryShader = 0;
+    std::map<string, GLuint> mAttributeList;
 };
 
 class TestGLArea : public Gtk::GLArea
@@ -268,20 +296,6 @@ public:
         mGLArea.set_vexpand(true);
         mGLArea.set_auto_render(true); 
         mVBox.add(mGLArea);
-        // Create a shader program
-/*
-        try
-        {
-            mShader.createVertexShader(mVertexProgram);
-            mShader.createFragmentShader(mFragmentProgram);
-            mShader.makeShaderProgram();
-        }
-        catch (const std::exception &e)
-        {
-            fprintf(stderr, "%s\n", e.what());
-            throw std::runtime_error("Failed to initialize shader\n");
-        }
-*/
         // Hook up the signals for the GLArea
         mGLArea.signal_realize().connect(sigc::mem_fun(*this,
                                          &TestArea::initializeRenderer));
@@ -289,6 +303,7 @@ public:
         // GL resources _before_ the default unrealize handler is called (the "false")
         mGLArea.signal_unrealize().connect(sigc::mem_fun(*this,
                                            &TestArea::destroyRenderer), false);
+        // This does the actual drawing
         mGLArea.signal_render().connect(sigc::mem_fun(*this,
                                         &TestArea::render), false);
         // 
@@ -336,10 +351,15 @@ protected:
         {
             mGLArea.throw_if_error();
             mShader.createVertexShader(mVertexProgram);
-            mShader.createFragmentShader(mFragmentProgram);
+            //mShader.createFragmentShader(mFragmentProgram);
             mShader.makeShaderProgram();
             //init_buffers();
+
+
+            //mShader.addAttribute("vColor\0");
+            //mShader.addAttribute("vPosition\0");
             //init_shaders();
+            initializeBuffers();
         }
         catch (const Gdk::GLError &gle)
         {
@@ -349,6 +369,16 @@ protected:
         catch (const std::exception &e)
         {
             fprintf(stderr, "%s: Failed to initialize renderer\n", __func__);
+        }
+        // Add the attributes
+        try
+        {
+            mShader.addAttribute("vPosition\0");
+            mShader.addAttribute("vColor\0");
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "Failed to add attributes\n");
         }
     }
     /// Deletes the renderer and frees resources
@@ -369,6 +399,39 @@ protected:
             cerr << gle.domain() << "-" << gle.code() << "-" << gle.what() << endl;
         }
     }
+    #define BUFFER_OFFSET(i) ((char *) NULL + (i))
+    void draw()
+    {
+        GLuint positionID = mShader["vPosition"];
+        GLuint colorID = mShader["vColor"];
+printf("%d %d\n", positionID, colorID);
+
+        // Load the vertex points
+printf("%d\n", mNumVertices);
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        0,  
+                        mNumVertices*3*sizeof(GLfloat),
+                        mDataVertices.data());
+        // Load the colors
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        mNumVertices*3*sizeof(GLfloat),
+                        mNumVertices*4*sizeof(GLfloat),
+                        mDataColors.data());
+
+        glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        size_t offset = 3*3*sizeof(GLfloat);
+        glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0,
+                              BUFFER_OFFSET(offset));
+
+        glEnableVertexAttribArray(positionID);
+        glEnableVertexAttribArray(colorID);
+        mShader.useProgram();
+
+        glEnableVertexAttribArray(positionID);
+        glEnableVertexAttribArray(colorID);
+
+        mShader.releaseProgram();
+    }
     bool render(const Glib::RefPtr<Gdk::GLContext> &context)
     {
         auto allocation = get_allocation();
@@ -379,9 +442,11 @@ protected:
         try 
         {
             mGLArea.throw_if_error();
-            glClearColor(1.0, 1.0, 1.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT);
-            //draw_triangle();
+            glClearColor(0.5, 0.5, 0.5, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            draw(); //_triangle();
+
             glFlush();
         }
         catch(const Gdk::GLError& gle)
@@ -392,13 +457,62 @@ protected:
         }
         return true;
     }
+
+    void initializeBuffers(const int numVertices = 3)
+    {
+        mNumVertices = static_cast<GLsizeiptr> (numVertices);
+        //mDataVertices.resize(3*mNumVertices);
+        //mDataColors.resize(4*mNumVertices);
+        mDataVertices = {-0.5f, -0.5f, 0.0f,
+                          0.5f, -0.5f, 0.0f,
+                          0.0f,  0.5f, 0.0f};
+        mDataColors = {1.0f, 0.0f, 0.0f, 1.0f,
+                       0.0f, 1.0f, 0.0f, 1.0f,
+                       0.0f, 0.0f, 1.0f, 1.0f};
+        GLsizeiptr glSize = static_cast<GLsizeiptr> (mNumVertices)
+                           *(4 + 3)*sizeof(GLfloat);
+
+for (auto i=0; i<mDataVertices.size(); i++){printf("%f\n", mDataVertices[i]);}
+for (auto i=0; i<mDataColors.size(); i++){printf("%f\n", mDataColors[i]);}
+        // Create the "remember all"
+        glGenVertexArrays(1, &mVAO);
+        glBindVertexArray(mVAO);
+        // Create a buffer and bind it as active
+        glGenBuffers(1, &mVBO); // OpenGL generates an ID
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO); // Make this buffer active
+        // Create the buffer, but don don't load anything yet
+        glBufferData(GL_ARRAY_BUFFER, glSize, NULL, GL_STATIC_DRAW);
+        // Load the vertex points
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        0,
+                        mNumVertices*3*sizeof(GLfloat),
+                        mDataVertices.data());
+        // Load the colors
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        mNumVertices*3*sizeof(GLfloat),
+                        mNumVertices*4*sizeof(GLfloat),
+                        mDataColors.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 private:
-    std::string mVertexProgram = "#version 330\nlayout(location = 0) in vec4 position;\nuniform mat4 mvp;\nvoid main() {\ngl_Position = mvp * position;\n}";
-    std::string mFragmentProgram = "#version 330\nout vec4 outputColor;\nvoid main() {\nfloat lerpVal = gl_FragCoord.y / 500.0f;\noutputColor = mix(vec4(0.0f, 0.85f, 0.35f, 1.0f), vec4(0.0f, 0.85f, 0.35f, 1.0f), lerpVal);\n}";
+
+    //std::string mVertexProgram = "#version 330\nlayout(location = 0) in vec4 position;\nuniform mat4 mvp;\nvoid main() {\ngl_Position = mvp * position;\n}";
+    std::string mVertexProgram = " \
+#version 330\nin vec4 vPosition; in vec4 vColor; out vec4 color;\n \
+void main() { color = vColor; gl_Position = vPosition; }";
+//    std::string mFragmentProgram = "#version 330\nout vec4 outputColor;\nvoid main() {\nfloat lerpVal = gl_FragCoord.y / 500.0f;\noutputColor = mix(vec4(0.0f, 0.85f, 0.35f, 1.0f), vec4(0.0f, 0.85f, 0.35f, 1.0f), lerpVal);\n}";
+
+int numVertices = 3;
+
     class GLSLShader mShader;
     class Gtk::GLArea mGLArea;
     class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false};
     class PopupMenu mPopupMenu;
+
+    GLsizeiptr mNumVertices = 0;
+    std::vector<GLfloat> mDataVertices;
+    std::vector<GLfloat> mDataColors;
+    GLuint mVBO = 0;
     
     GLuint mVBOVerticesID = 0;
     GLuint mVBOIndicesID = 0;
