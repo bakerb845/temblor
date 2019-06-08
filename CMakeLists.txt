@@ -93,6 +93,7 @@ set(LIBSRC
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 add_executable(gltest
+               ui/applications/glslShader.cpp
                ui/applications/gltest.cpp
                ui/applications/glarea.cpp
                ui/widgets/firDesigner.cpp
@@ -109,6 +110,17 @@ set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS} ${GL_INCLUDE_DIR})
 target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY})
 
+##########################################################################################
+#                                 Copy Shader Files                                      #
+##########################################################################################
+#add_custom_target(copy_shader_files
+                  #${CMAKE_COMMAND}
+                  #-D SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/
+                  #-D DESTINATION_DIR=${CMAKE_CURRENT_BINARY_DIR}
+                  #-P CopyFile.cmake
+                  #COMMENT "Copying files for target ")
+#add_dependencies(gltest copy_shader_files)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ui/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 ##########################################################################################
 #                                      Unit Tests                                        #
 ##########################################################################################
