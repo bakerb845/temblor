@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <exception>
 
 #include <gtkmm.h>
 #include <giomm/resource.h>
@@ -28,6 +29,494 @@ static const GLfloat vertex_data[] = {
   0.f,   0.5f,   0.f, 1.f,
   0.5f, -0.366f, 0.f, 1.f,
  -0.5f, -0.366f, 0.f, 1.f,
+};
+
+class GLSLShader
+{
+public:
+    /*! @name Constructors
+     * @{
+     */
+    /*!
+     * @brief Constructor.
+     */
+    GLSLShader() = default;
+    /*! @} */
+ 
+    GLSLShader(const GLSLShader &) = delete;
+    GLSLShader(GLSLShader &&) = delete;
+    GLSLShader& operator=(const GLSLShader &) = delete;
+    GLSLShader& operator=(GLSLShader &&) = delete;
+    /*!
+     * @brief Destructor.
+     */
+    ~GLSLShader()
+    {
+        if (glIsShader(mVertexShader)){glDeleteShader(mVertexShader);}
+        if (glIsShader(mFragmentShader)){glDeleteShader(mFragmentShader);}
+        if (glIsShader(mGeometryShader)){glDeleteShader(mGeometryShader);}
+        if (glIsProgram(mProgram)){glDeleteProgram(mProgram);}
+    }
+    /*!
+     * @brief Creates a vertex shader a string.
+     * @param[in] source  The source code that defines the vertex shader.
+     * @throws std::invalid_argument if the vertex shader cannot be compiled.
+     */
+    void createVertexShader(const std::string &source)
+    {
+        if (glIsShader(mVertexShader)){glDeleteShader(mVertexShader);}
+        // Get a shader ID
+        mVertexShader = glCreateShader(GL_VERTEX_SHADER);
+        // Bind source to shader ID
+        auto pSrc = source.c_str();
+        glShaderSource(mVertexShader, 1, (const GLchar **) &pSrc, NULL);
+        // Compile the source code
+        glCompileShader(mVertexShader);
+        // Error check
+        GLint status;
+        glGetShaderiv(mVertexShader, GL_COMPILE_STATUS, &status);
+        if (status == GL_FALSE)
+        {
+            GLint infoLogLength;
+            glGetProgramiv(mVertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+            std::string infoLog(infoLogLength, ' ');
+            auto msg = reinterpret_cast<GLchar *> (infoLog.data());
+            glGetProgramInfoLog(mVertexShader, infoLogLength, NULL, msg);
+            fprintf(stderr, "%s:%d: Error compiling shader: %s\n",
+                    __func__, __LINE__, infoLog.c_str());
+            throw std::invalid_argument("Failed to create vertex shader program");
+        }
+    }
+    /*! 
+     * @brief Creates a fragment shader a string.
+     * @param[in] source  The source code that defines the fragment shader.
+     * @throws std::invalid_argument if the fragment shader cannot be compiled.
+     */
+    void createFragmentShader(const std::string &source)
+    {   
+        if (glIsShader(mFragmentShader)){glDeleteShader(mFragmentShader);}
+        // Get a shader ID
+        mFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        // Bind source to shader ID
+        auto pSrc = source.c_str();
+        glShaderSource(mFragmentShader, 1, (const GLchar **) &pSrc, NULL);
+        // Compile the source code
+        glCompileShader(mFragmentShader);
+        // Error check
+        GLint status;
+        glGetShaderiv(mFragmentShader, GL_COMPILE_STATUS, &status);
+        if (status == GL_FALSE)
+        {   
+            GLint infoLogLength;
+            glGetProgramiv(mFragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+            std::string infoLog(infoLogLength, ' ');
+            auto msg = reinterpret_cast<GLchar *> (infoLog.data());
+            glGetProgramInfoLog(mFragmentShader, infoLogLength, NULL, msg);
+            fprintf(stderr, "%s:%d: Error compiling shader: %s\n",
+                    __func__, __LINE__, infoLog.c_str());
+            throw std::invalid_argument("Failed to create fragment shader program"); 
+        }
+    }
+    /*! 
+     * @brief Creates a geometry shader a string.
+     * @param[in] source  The source code that defines the geometry shader.
+     * @throws std::invalid_argument if the geometry shader cannot be compiled.
+     */
+    void createGeometryShader(const std::string &source)
+    {   
+        if (glIsShader(mGeometryShader)){glDeleteShader(mGeometryShader);}
+        // Get a shader ID
+        mGeometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+        // Bind source to shader ID
+        auto pSrc = source.c_str();
+        glShaderSource(mGeometryShader, 1, (const GLchar **) &pSrc, NULL);
+        // Compile the source code
+        glCompileShader(mGeometryShader);
+        // Error check
+        GLint status;
+        glGetShaderiv(mGeometryShader, GL_COMPILE_STATUS, &status);
+        if (status == GL_FALSE)
+        {   
+            GLint infoLogLength;
+            glGetProgramiv(mGeometryShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+            std::string infoLog(infoLogLength, ' ');
+            auto msg = reinterpret_cast<GLchar *> (infoLog.data());
+            glGetProgramInfoLog(mGeometryShader, infoLogLength, NULL, msg);
+            fprintf(stderr, "%s:%d: Error compiling shader: %s\n",
+                    __func__, __LINE__, infoLog.c_str());
+            throw std::invalid_argument("Failed to throw geometry shader program");
+        }
+    }
+
+    /*!
+     * @brief Makes the shader program.
+     * @throws std::runtime_error if the vertex and fragment shader are
+     *         not yet created or if there is an error linking the program.
+     * @note This is called after the shaders have been created.
+     * @sa \c createVertexShader() \c createFragmentShader()
+     */
+    void makeShaderProgram()
+    {
+        // Get an ID that exists for the life of this program
+        mProgram = glCreateProgram();
+        // Attach shaders
+        if (glIsShader(mVertexShader))
+        {
+            glAttachShader(mProgram, mVertexShader);
+        }
+        if (glIsShader(mFragmentShader))
+        {
+            glAttachShader(mProgram, mFragmentShader);
+        }
+        if (glIsShader(mGeometryShader))
+        {
+            glAttachShader(mProgram, mGeometryShader);
+        }
+        // Link the program 
+        glLinkProgram(mProgram);
+        // Check for errors
+        GLint status; 
+        glGetProgramiv(mProgram, GL_LINK_STATUS, &status);
+        if (status == GL_FALSE)
+        {
+            GLint infoLogLength;
+            glGetProgramiv (mProgram, GL_INFO_LOG_LENGTH, &infoLogLength);
+            std::string infoLog(infoLogLength, ' ');
+            auto msg = reinterpret_cast<GLchar *> (infoLog.data());
+            glGetProgramInfoLog (mProgram, infoLogLength, NULL, msg);
+            fprintf(stderr, "%s:%d: Error compiling program: %s\n",
+                    __func__, __LINE__, infoLog.c_str());
+            throw std::runtime_error("Failed to compile program");
+        }
+        // After the program is compiled there is no point keeping these around
+        glDeleteShader(mVertexShader);
+        glDeleteShader(mFragmentShader);
+        glDeleteShader(mGeometryShader);
+    }
+    /*!
+     * @brief Adds an attribute so we can later link the data to the shader
+     *        program.
+     * @param[in] attribute   The name of the attribute to add.
+     * @throws std::runtime_error if the attribute ID cannot be found. 
+     */
+    void addAttribute(const std::string &attribute)
+    {
+        if (!glIsProgram(mProgram))
+        {
+            throw std::runtime_error("Program not yet compiled");
+        }
+        GLint attrId = glGetAttribLocation(mProgram, attribute.c_str());
+        if (attrId == GL_INVALID_OPERATION)
+        {
+            fprintf(stderr, "May have failed to get attriblocation\n"); 
+        } 
+        mAttributeList[attribute] = attrId;
+printf("%d\n", attrId);
+    }
+    /*!
+     * @brief An index that returns the location of the attribute.
+     */
+    uint32_t operator[](const std::string &attribute)
+    {
+        return static_cast<uint32_t> (mAttributeList[attribute]);
+    }
+    /*!
+     * @brief Sets the shader program on the GPU.
+     */
+    void useProgram()
+    {
+        if (glIsProgram(mProgram)){glUseProgram(mProgram);}
+    }
+    /*!
+     * @brief Releases the shader program on the GPU.
+     */
+    void releaseProgram()
+    {
+        glUseProgram(0);
+    }
+    /*!
+     * @brief Deletes the currently compiled shader program.
+     * @sa \c makeShaderProgram()
+     */
+    void deleteShaderProgram()
+    {
+        if (glIsProgram(mProgram)){glDeleteProgram(mProgram);}
+    }
+private:
+    GLuint mProgram = 0;
+    GLuint mVertexShader = 0;
+    GLuint mFragmentShader = 0;
+    GLuint mGeometryShader = 0;
+    std::map<string, GLuint> mAttributeList;
+};
+
+class TestGLArea : public Gtk::GLArea
+{
+public:
+    TestGLArea() = default;
+    virtual ~TestGLArea() = default;
+    bool on_button_press_event(GdkEventButton *event) override
+    {
+        return false;
+    }
+};
+
+#include <gtkmm/menu.h>
+#include <gtkmm/menuitem.h>
+
+class PopupMenu : public Gtk::Menu
+{
+public:
+    PopupMenu() :
+        mIIRMenuItem("IIR"),
+        mFIRMenuItem("FIR")
+    {
+        append(mIIRMenuItem);
+        append(mFIRMenuItem);
+        show_all();
+    }
+    virtual ~PopupMenu() = default;
+private:
+    Gtk::MenuItem mIIRMenuItem;
+    Gtk::MenuItem mFIRMenuItem;
+};
+
+class TestArea : public Gtk::Window 
+{
+public:
+    TestArea()
+    {
+        // Set up main window 
+        set_title("GL Area"),
+        set_default_size(400, 600);
+        // Add a container for the GLArea
+        add(mVBox);
+        // Add the GLArea to the vertical box container 
+        mGLArea.set_hexpand(true);
+        mGLArea.set_vexpand(true);
+        mGLArea.set_auto_render(true); 
+        mVBox.add(mGLArea);
+        // Hook up the signals for the GLArea
+        mGLArea.signal_realize().connect(sigc::mem_fun(*this,
+                                         &TestArea::initializeRenderer));
+        // Important that the unrealize signal calls our handler to clean up
+        // GL resources _before_ the default unrealize handler is called (the "false")
+        mGLArea.signal_unrealize().connect(sigc::mem_fun(*this,
+                                           &TestArea::destroyRenderer), false);
+        // This does the actual drawing
+        mGLArea.signal_render().connect(sigc::mem_fun(*this,
+                                        &TestArea::render), false);
+        // 
+        //mGLArea.button_press_signal().connect(sigc::ptr_fun(*this,
+        //                                      &TestArea::on_button_press_event) );
+        // Make a right-click menu
+        mPopupMenu.accelerate(*this);
+        // Set the masks for mouse events
+        add_events(Gdk::BUTTON_PRESS_MASK);
+        // Finally display all the widgets
+        show_all();
+    }
+    virtual ~TestArea() = default;
+
+protected:
+    /// Test event
+    bool on_button_press_event(GdkEventButton *event)
+    {
+        if (event->type == GDK_BUTTON_PRESS)
+        {
+            if (event->button == 1)
+            {
+                printf("left clicked %lf, %lf\n", event->x, event->y);
+                return true;
+            }
+            else if (event->button == 2)
+            {
+                printf("zoom\n");
+                return true;
+            }
+            else if (event->button == 3)
+            {
+                printf("right clicked\n");
+                mPopupMenu.popup(event->button, event->time);
+                return true;
+            }
+        }
+        return false;
+    }
+    /// Creates the renderer
+    void initializeRenderer()
+    {
+        mGLArea.make_current();
+        try 
+        {
+            mGLArea.throw_if_error();
+            mShader.createVertexShader(mVertexProgram);
+            //mShader.createFragmentShader(mFragmentProgram);
+            mShader.makeShaderProgram();
+            //init_buffers();
+
+
+            //mShader.addAttribute("vColor\0");
+            //mShader.addAttribute("vPosition\0");
+            //init_shaders();
+            initializeBuffers();
+        }
+        catch (const Gdk::GLError &gle)
+        {
+            cerr << "An error occured making the context current during realize:" << endl;
+            cerr << gle.domain() << "-" << gle.code() << "-" << gle.what() << endl;
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "%s: Failed to initialize renderer\n", __func__);
+        }
+        // Add the attributes
+        try
+        {
+            mShader.addAttribute("vPosition\0");
+            mShader.addAttribute("vColor\0");
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "Failed to add attributes\n");
+        }
+    }
+    /// Deletes the renderer and frees resources
+    void destroyRenderer()
+    {
+        mGLArea.make_current();
+        try
+        {
+            mGLArea.throw_if_error();
+            mShader.deleteShaderProgram();
+            glDeleteBuffers(1, &mVBOVerticesID);
+            glDeleteBuffers(1, &mVBOIndicesID);
+            glDeleteBuffers(1, &mVAO);
+        }
+        catch (const Gdk::GLError &gle)
+        {
+            cerr << "An error occured making the context current during unrealize" << endl;
+            cerr << gle.domain() << "-" << gle.code() << "-" << gle.what() << endl;
+        }
+    }
+    #define BUFFER_OFFSET(i) ((char *) NULL + (i))
+    void draw()
+    {
+        GLuint positionID = mShader["vPosition"];
+        GLuint colorID = mShader["vColor"];
+printf("%d %d\n", positionID, colorID);
+
+        // Load the vertex points
+printf("%d\n", mNumVertices);
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        0,  
+                        mNumVertices*3*sizeof(GLfloat),
+                        mDataVertices.data());
+        // Load the colors
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        mNumVertices*3*sizeof(GLfloat),
+                        mNumVertices*4*sizeof(GLfloat),
+                        mDataColors.data());
+
+        glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        size_t offset = 3*3*sizeof(GLfloat);
+        glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0,
+                              BUFFER_OFFSET(offset));
+
+        glEnableVertexAttribArray(positionID);
+        glEnableVertexAttribArray(colorID);
+        mShader.useProgram();
+
+        glEnableVertexAttribArray(positionID);
+        glEnableVertexAttribArray(colorID);
+
+        mShader.releaseProgram();
+    }
+    bool render(const Glib::RefPtr<Gdk::GLContext> &context)
+    {
+        auto allocation = get_allocation();
+        int height = allocation.get_height();
+        int width  = allocation.get_width();
+        //float ratio = static_cast<float> (width)/static_cast<float> (height);
+        //glViewport(0, 0, width, height); // Shifts triangle
+        try 
+        {
+            mGLArea.throw_if_error();
+            glClearColor(0.5, 0.5, 0.5, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            draw(); //_triangle();
+
+            glFlush();
+        }
+        catch(const Gdk::GLError& gle)
+        {
+            cerr << "An error occurred in the render callback of the GLArea" << endl;
+            cerr << gle.domain() << "-" << gle.code() << "-" << gle.what() << endl;
+            return false;
+        }
+        return true;
+    }
+
+    void initializeBuffers(const int numVertices = 3)
+    {
+        mNumVertices = static_cast<GLsizeiptr> (numVertices);
+        //mDataVertices.resize(3*mNumVertices);
+        //mDataColors.resize(4*mNumVertices);
+        mDataVertices = {-0.5f, -0.5f, 0.0f,
+                          0.5f, -0.5f, 0.0f,
+                          0.0f,  0.5f, 0.0f};
+        mDataColors = {1.0f, 0.0f, 0.0f, 1.0f,
+                       0.0f, 1.0f, 0.0f, 1.0f,
+                       0.0f, 0.0f, 1.0f, 1.0f};
+        GLsizeiptr glSize = static_cast<GLsizeiptr> (mNumVertices)
+                           *(4 + 3)*sizeof(GLfloat);
+
+for (auto i=0; i<mDataVertices.size(); i++){printf("%f\n", mDataVertices[i]);}
+for (auto i=0; i<mDataColors.size(); i++){printf("%f\n", mDataColors[i]);}
+        // Create the "remember all"
+        glGenVertexArrays(1, &mVAO);
+        glBindVertexArray(mVAO);
+        // Create a buffer and bind it as active
+        glGenBuffers(1, &mVBO); // OpenGL generates an ID
+        glBindBuffer(GL_ARRAY_BUFFER, mVBO); // Make this buffer active
+        // Create the buffer, but don don't load anything yet
+        glBufferData(GL_ARRAY_BUFFER, glSize, NULL, GL_STATIC_DRAW);
+        // Load the vertex points
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        0,
+                        mNumVertices*3*sizeof(GLfloat),
+                        mDataVertices.data());
+        // Load the colors
+        glBufferSubData(GL_ARRAY_BUFFER,
+                        mNumVertices*3*sizeof(GLfloat),
+                        mNumVertices*4*sizeof(GLfloat),
+                        mDataColors.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+private:
+
+    //std::string mVertexProgram = "#version 330\nlayout(location = 0) in vec4 position;\nuniform mat4 mvp;\nvoid main() {\ngl_Position = mvp * position;\n}";
+    std::string mVertexProgram = " \
+#version 330\nin vec4 vPosition; in vec4 vColor; out vec4 color;\n \
+void main() { color = vColor; gl_Position = vPosition; }";
+//    std::string mFragmentProgram = "#version 330\nout vec4 outputColor;\nvoid main() {\nfloat lerpVal = gl_FragCoord.y / 500.0f;\noutputColor = mix(vec4(0.0f, 0.85f, 0.35f, 1.0f), vec4(0.0f, 0.85f, 0.35f, 1.0f), lerpVal);\n}";
+
+int numVertices = 3;
+
+    class GLSLShader mShader;
+    class Gtk::GLArea mGLArea;
+    class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false};
+    class PopupMenu mPopupMenu;
+
+    GLsizeiptr mNumVertices = 0;
+    std::vector<GLfloat> mDataVertices;
+    std::vector<GLfloat> mDataColors;
+    GLuint mVBO = 0;
+    
+    GLuint mVBOVerticesID = 0;
+    GLuint mVBOIndicesID = 0;
+    GLuint mVAO = 0;
 };
 
 class Example_GLArea : public Gtk::Window
@@ -424,11 +913,12 @@ void Example_GLArea::draw_triangle()
 
 #include <gtkmm/main.h>
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   auto app = Gtk::Application::create();
 
-  Example_GLArea window; //DemoWindow window;
+  //Example_GLArea window; //DemoWindow window;
+  TestArea window;
 
   return app->run(window, argc, argv);
 }
