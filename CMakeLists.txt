@@ -86,7 +86,10 @@ set(LIBSRC
     lib/dataReaders/sac/header.cpp
     lib/dataReaders/segy/binaryFileHeader.cpp
     lib/dataReaders/segy/segy2.cpp
+    lib/models/event/origin.cpp
     lib/models/timeSeriesData/singleChannelWaveform.cpp
+    lib/solvers/rayTrace1D/isotropicLayer.cpp
+    lib/solvers/rayTrace1D/layerCakeModel.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)
@@ -144,6 +147,15 @@ target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRAR
 target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryDataReaders
          COMMAND testLibraryDataReaders)
+
+add_executable(testLibrarySolvers
+               lib/tests/solvers/main.cpp
+               lib/tests/solvers/rayTrace1D.cpp)
+set_property(TARGET testLibrarySolvers PROPERTY CXX_STANDARD 17)
+target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
+add_test(NAME testLibrarySolvers
+         COMMAND testLibrarySolvers)
 
 # Also need to copy some test data
 file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)

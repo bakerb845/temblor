@@ -139,7 +139,7 @@ bool IsotropicLayer::isValid() const noexcept
     if (pImpl->mVp <= pImpl->mVs){return false;}
     if (pImpl->mRho <= 0){return false;}
     if (pImpl->mThickness <= 0){return false;}
-    return false;
+    return true;
 }
 
 void IsotropicLayer::print(FILE *handle) noexcept
