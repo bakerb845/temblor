@@ -5,20 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <fstream>
-#if __has_include(<filesystem>)
- #include <filesystem>
- namespace fs = std::filesystem;
- #define TEMBLOR_USE_FILESYSTEM 1
-#elif __has_include(<experimental/filesystem>)
- #include <experimental/filesystem>
- namespace fs = std::experimental::filesystem;
- #define TEMBLOR_USE_FILESYSTEM 1
-#elif __has_include(<boost/filesystem.hpp>)
- #include <boost/filesystem.hpp>
- #include <boost/filesystem/path.hpp>
- namespace fs = boost::filesystem;
- #define TEMBLOR_USE_FILESYSTEM 1
-#endif
+#include "temblor/library/private/filesystem.hpp"
 #include "temblor/library/dataReaders/sac/waveform.hpp"
 #include "temblor/library/dataReaders/sac/header.hpp"
 
@@ -78,11 +65,24 @@ Waveform::Waveform(const Waveform &waveform)
     *this = waveform;
 }
 
+Waveform::Waveform(Waveform &&waveform) noexcept
+{
+    *this = std::move(waveform);
+}
+
 Waveform& Waveform::operator=(const Waveform &waveform)
 {
     if (&waveform == this){return *this;}
     if (pImpl){pImpl.reset();}
     pImpl = std::make_unique<WaveformImpl> (*waveform.pImpl);
+    return *this;
+}
+
+Waveform& Waveform::operator=(Waveform &&waveform) noexcept
+{
+    if (&waveform == this){return *this;}
+    if (pImpl){pImpl.reset();}
+    pImpl = std::move(waveform.pImpl);
     return *this;
 }
 

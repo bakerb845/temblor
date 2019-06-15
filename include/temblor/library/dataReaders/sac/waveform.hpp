@@ -33,7 +33,7 @@ public:
      * @param[in,out] waveform  The waveform class to move to this class.
      *                          On exit, waveform's behavior will be undefined.
      */
-    Waveform(Waveform &&waveform);
+    Waveform(Waveform &&waveform) noexcept;
     /*! @} */
 
     /*! @name Operators
@@ -50,7 +50,7 @@ public:
      * @param[in,out] waveform  The waveform to move.  On exit waveform's
      *                          behavior will be undefined.
      */
-    Waveform& operator=(Waveform &&waveform);
+    Waveform& operator=(Waveform &&waveform) noexcept;
     /*! @} */
 
     /*! @name Destructors

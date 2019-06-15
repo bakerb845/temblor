@@ -51,6 +51,7 @@ find_package(OpenGL REQUIRED)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${MSEED_INCLUDE_DIR}
   ${GTKMM_INCLUDE_DIRS}
 )
 
@@ -86,6 +87,8 @@ set(LIBSRC
     lib/dataReaders/sac/header.cpp
     lib/dataReaders/segy/binaryFileHeader.cpp
     lib/dataReaders/segy/segy2.cpp
+    lib/dataReaders/miniseed/sncl.cpp
+    lib/dataReaders/miniseed/trace.cpp
     lib/models/event/origin.cpp
     lib/models/timeSeriesData/singleChannelWaveform.cpp
     lib/solvers/rayTrace1D/isotropicLayer.cpp
@@ -105,7 +108,7 @@ set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
 add_library(temblor SHARED ${LIBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
-target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES})
+target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} ${MSEED_LIBRARY})
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 # Add the Qt5 Widgets for linking
@@ -140,6 +143,7 @@ add_test(NAME testLibraryUtilities
 add_executable(testLibraryDataReaders
                lib/tests/dataReaders/main.cpp
                lib/tests/dataReaders/sac.cpp
+               lib/tests/dataReaders/miniseed.cpp
                lib/tests/dataReaders/segy.cpp
                )
 set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)

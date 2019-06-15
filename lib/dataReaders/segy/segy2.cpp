@@ -4,22 +4,10 @@
 #include <string>
 #include <array>
 #include <algorithm>
+#include <fstream>
+#include "temblor/library/private/filesystem.hpp"
 #include "temblor/library/dataReaders/segy/segy2.hpp"
 #include "temblor/library/dataReaders/segy/binaryFileHeader.hpp"
-#include <fstream>
-#if __has_include(<filesystem>)
- #include <filesystem>
- namespace fs = std::filesystem;
- #define TEMBLOR_USE_FILESYSTEM 1
-#elif __has_include(<experimental/filesystem>)
- #include <experimental/filesystem>
- namespace fs = std::experimental::filesystem;
- #define TEMBLOR_USE_FILESYSTEM 1
-#elif __has_include(<boost/filesystem.hpp>)
- #include <boost/filesystem.hpp>
- namespace fs = boost::filesystem;
- #define TEMBLOR_USE_FILESYSTEM 1
-#endif
 
 
 using namespace Temblor::Library::DataReaders::SEGY; 
@@ -246,7 +234,7 @@ void Segy2::read(const std::string &fileName)
         throw std::invalid_argument(errmsg);
     }
     convertToASCIIHeader(buffer.data(), pImpl->mTextualHeader.data());
-printf("%s\n", pImpl->mTextualHeader.data());
+//printf("%s\n", pImpl->mTextualHeader.data());
 }
 
 /*

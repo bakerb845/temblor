@@ -1,6 +1,7 @@
 #ifndef TEMBLOR_LIBRARY_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
 #define TEMBLOR_LIBRARY_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
 #include <memory>
+#include "temblor/library/dataReaders/fileFormats.hpp"
 
 // Forward declarations
 namespace Temblor::Utilities
@@ -103,22 +104,14 @@ public:
      */
     int getNumberOfSamples() const noexcept;
 
-    /*! @name Sampling Period
+    /*! @name Sampling Rate 
      * @{
      */
     /*!
-     * @brief Sets the sampling period.
-     * @param[in] samplingPeriod  The sampling period in seconds.
-     * @throws std::invalid_argument if the sampling period  or sampling rate
-     *         was not positive.
+     * @brief Checks if the sampling rate was set.
+     * @result True indicates that the sampling rate was set.
      */
-    void setSamplingPeriod(const double samplingPeriod);
-    /*!
-     * @brief Gets the sampling period.
-     * @result The sampling period in seconds.
-     * @throws std::runtime_error if the sampling period is not set.
-     */
-    double getSamplingPeriod() const;
+    bool haveSamplingRate() const noexcept;
     /*! 
      * @brief Sets the sampling rate.
      * @param[in] samplingRate  The sampling rate in Hertz.
@@ -128,10 +121,21 @@ public:
     /*! 
      * @brief Gets the sampling rate.
      * @result The sampling rate in Hz.
-     * @throws std::runtime_error if the sampling period or sampling rate
-     *         was not set.
+     * @throws std::runtime_error if the sampling rate was not set.
      */
     double getSamplingRate() const;
+    /*!
+     * @brief Gets the Nyquist frequency.
+     * @result The Nyquist frequency in Hz.
+     * @throws std::runtime_error if the sampling rate was not set.
+     */
+    double getNyquistFrequency() const;
+    /*! 
+     * @brief Gets the sampling period.
+     * @result The sampling period in seconds.
+     * @throws std::runtime_error if the sampling rate was not set.
+     */
+    double getSamplingPeriod() const;
     /*! @} */
 
     /*! @Name Network, Station, Channel, Location Code Naming
@@ -179,6 +183,50 @@ public:
     std::string getLocationCode() const noexcept;
     /*! @} */
  
+    /*! @name File Input/Output
+     * @{
+     */
+    /*!
+     * @brief Creates a single channel waveform from a SAC file.
+     * @param[in] sacFileName  The name of the SAC file to read.
+     * @throws std::invalid_argument if the SAC file does not exist or
+     *         is malformed.
+     */
+    void readSAC(const std::string &sacFileName);
+    /*!
+     * @brief Writes a single channel waveform.
+     * @param[in] fileName   The name of the file to write.
+     * @param[in] format     The file format to write.
+     * @throws std::runtime_error if the file can't be written or there is
+     *         no data to write.
+     */
+    void write(const std::string fileName,
+               const Temblor::Library::DataReaders::FileFormatTypes format =
+                     Temblor::Library::DataReaders::FileFormatTypes::SAC) const;
+    /*! @} */
+
+
+    /*! @name Custom Header Information
+     * @{ 
+     */
+    /*!
+     * @brief Sets an integer header value.
+     * @param[in] name   The name of the header variable.
+     * @param[in] value  The value of the header variable.
+     */
+    void setIntegerHeader(const std::string &name, const int value);
+    /*!
+     * @param[in] name   The name of the header variable.
+     * @result The value corresponding to the integer header variable.
+     * @throws std::invalid_argument if the header variable does not exist.
+     */
+    int getIntegerHeader(const std::string &name) const;
+    /*!
+     * @brief Determines if the header variable exists.
+     */
+    bool integerHeaderVariableExists(const std::string &name) const noexcept;
+    /*! @} */
+     
 private:
     class SingleChannelWaveformImpl;
     std::unique_ptr<SingleChannelWaveformImpl> pImpl; 
