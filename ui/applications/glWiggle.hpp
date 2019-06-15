@@ -36,6 +36,7 @@ public:
 
     void setSeismogram(const int npts, const double x[]);
 
+    void drawLinePlot();
     /*! @name Gtk Signals
      * @{
      */
@@ -44,6 +45,11 @@ public:
      * @note This is connected to signal_realize().
      */
     void initializeRenderer();
+    /*!
+     * @brief Performs the rendering.
+     * @note This is connected to signal_render().
+     */
+    bool render(const Glib::RefPtr<Gdk::GLContext> &context);
     /*!
      * @brief This is called when we unrealize the widget.
      * @note This is connected to signal_unrealize().

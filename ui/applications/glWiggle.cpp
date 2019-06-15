@@ -2,7 +2,8 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
-#include <GL/glew.h>
+//#include <giomm/resource.h>
+#include <epoxy/gl.h> //GL/glew.h>
 #if __has_include(<pstl/algorithm>)
 #include <pstl/execution>
 #include <pstl/algorithm>
@@ -33,6 +34,13 @@ GLWiggle::GLWiggle() :
     // Hook up the signals for GLArea
     signal_realize().connect(sigc::mem_fun(*this,
                              &GLWiggle::initializeRenderer));
+    // Important that the unrealize signal calls our handler to clean up
+    // GL resources _before_ the default unrealize handler is called (the "false")
+    signal_unrealize().connect(sigc::mem_fun(*this,
+                               &GLWiggle::destroyRenderer), false);
+    // This does the actual drawing
+    signal_render().connect(sigc::mem_fun(*this,
+                            &GLWiggle::render), false);
 }
 
 GLWiggle::~GLWiggle() = default;
@@ -64,23 +72,46 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
 void GLWiggle::setVertexShaderFileName(const std::string &fileName)
 {
     pImpl->mVertexShaderFile.clear();
+#ifdef TEMBLOR_USE_FILESYSTEM
     if (!fs::exists(fileName))
     {
         throw std::invalid_argument("Vertex shader = " + fileName
                                   + " does not exist");
     }
+#endif
     pImpl->mVertexShaderFile = fileName;
 }
 
 void GLWiggle::setFragmentShaderFileName(const std::string &fileName)
 {
     pImpl->mFragmentShaderFile.clear();
+#ifdef TEMBLOR_USE_FILESYSTEM
     if (!fs::exists(fileName))
     {
         throw std::invalid_argument("Fragment shader = " + fileName
                                   + " does not exist");
     }
+#endif
     pImpl->mFragmentShaderFile = fileName;
+}
+
+void GLWiggle::drawLinePlot()
+//GLfloat *data, unsigned int size,
+//                            GLfloat scale, GLfloat offset)
+{
+    auto gyPositionHandle = pImpl->mShader["yPosition"];
+    auto glOffsetHandle = pImpl->mShader("offset");
+    auto glScaleHandle = pImpl->mShader("scale");
+    const void *data = pImpl->mTimeSeries.data();
+    unsigned int size = pImpl->mTimeSeries.size(); 
+    GLfloat offset = 0;
+    GLfloat scale = pImpl->mMaxAbs;
+
+    glVertexAttribPointer(gyPositionHandle, 1, GL_FLOAT, GL_FALSE, 0, data);
+    glEnableVertexAttribArray(gyPositionHandle);
+    glUniform1f(glOffsetHandle, offset);
+    glUniform1f(glScaleHandle, scale);
+    glDrawArrays(GL_LINE_STRIP, 0, size);  
 }
 
 /// signal_realize: nitialize the renderer
@@ -129,6 +160,42 @@ void GLWiggle::initializeRenderer()
     {
         fprintf(stderr, "%s: Failed to add attributes\n", __func__);
     }
+}
+
+/// signal_render: Does the rendering
+bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
+{
+    //auto allocation = get_allocation();
+    //auto height = allocation.get_height();
+    //auto width  = allocation.get_width();
+    //float ratio = static_cast<float> (width)/static_cast<float> (height);
+    //glViewport(0, 0, width, height); // Shifts triangle
+    try
+    {
+         throw_if_error();
+         glClearColor(0.5, 0.5, 0.5, 1.0);
+         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+         //draw(); //_triangle();
+         pImpl->mShader.useProgram();
+
+         glLineWidth(2.0f);
+         drawLinePlot();
+         //glBindVertexArray(mVAOHandle);
+         //glDrawArrays(GL_LINE_STRIP, 0, 3 );
+         pImpl->mShader.releaseProgram();
+
+         glFlush();
+     }
+     catch(const Gdk::GLError& gle)
+     {
+         fprintf(stderr, "%s: An error occurred in the render callback\n",
+                 __func__);
+         fprintf(stderr, "%s: %u-%d-%s\n",
+                 __func__, gle.domain(), gle.code(), gle.what().c_str());
+         return false;
+     }   
+     return true;
 }
 
 /// signal_unrealize: Deletes the renderer and frees resources
