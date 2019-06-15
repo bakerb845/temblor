@@ -65,8 +65,12 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
     {
         dataPtr[i] = static_cast<GLfloat> (x[i]);
         pImpl->mMaxAbs = std::max(pImpl->mMaxAbs, std::abs(dataPtr[i]));
-        pImpl->mAxis[i] = i;
+        pImpl->mAxis[i] = i/static_cast<float> (npts);
     }
+for (auto i=0; i<npts; ++i)
+{
+ dataPtr[i] = dataPtr[i]/pImpl->mMaxAbs;
+}
 /*
 #ifdef USE_PSTL
     auto minMax = std::minmax(std::execution::unseq,
@@ -121,8 +125,8 @@ void GLWiggle::drawLinePlot()
     const GLvoid *axis = pImpl->mAxis.data();
     const GLvoid *data = pImpl->mTimeSeries.data();
     unsigned int size = pImpl->mTimeSeries.size(); 
-    GLfloat offset = 0.5;
-    GLfloat scale = pImpl->mMaxAbs;
+    GLfloat offset = 0.25;
+    GLfloat scale = 0.5; //pImpl->mMaxAbs;
 printf("%f %f %d\n", offset, scale, size);
 printf("%d %d %d\n", gyPositionHandle, gxPositionHandle, glOffsetHandle);
     glUniform4f(gColorHandle, 1.0f, 0.0f, 0.0f, 1.0f);
