@@ -15,12 +15,20 @@
 #include "glWiggle.hpp"
 #include "glslShader.hpp"
 
+       static void checkGlError(const char* op) {
+         for (GLint error = glGetError(); error; error
+         = glGetError()) {
+           fprintf(stderr, "After %s() glError (0x%d)%d\n", op, error, GL_INVALID_OPERATION);
+         }
+}
+
 class GLWiggle::GLWiggleImpl
 {
 public:
     class GLSLShader mShader;
     std::string mVertexShaderFile;
     std::string mFragmentShaderFile;
+    std::vector<GLfloat> mAxis;
     std::vector<GLfloat> mTimeSeries;
     GLfloat mMaxAbs;
 };
@@ -49,12 +57,17 @@ GLWiggle::~GLWiggle() = default;
 void GLWiggle::setSeismogram(const int npts, const double x[])
 {
     pImpl->mTimeSeries.resize(npts);
+    pImpl->mAxis.resize(npts);
     GLfloat *dataPtr = pImpl->mTimeSeries.data();
-    #pragma omp simd
+    //#pragma omp simd
+    pImpl->mMaxAbs = 0;
     for (auto i=0; i<npts; ++i)
     {
         dataPtr[i] = static_cast<GLfloat> (x[i]);
+        pImpl->mMaxAbs = std::max(pImpl->mMaxAbs, std::abs(dataPtr[i]));
+        pImpl->mAxis[i] = i;
     }
+/*
 #ifdef USE_PSTL
     auto minMax = std::minmax(std::execution::unseq,
                               pImpl->mTimeSeries.begin(),
@@ -65,6 +78,7 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
 #endif
     pImpl->mMaxAbs = std::max(std::abs(*minMax.first),
                               std::abs(*minMax.second));
+*/
 }
 
 //GLWiggle::setShaders(const std::string &
@@ -100,18 +114,41 @@ void GLWiggle::drawLinePlot()
 //                            GLfloat scale, GLfloat offset)
 {
     auto gyPositionHandle = pImpl->mShader["yPosition"];
+    auto gxPositionHandle = pImpl->mShader["xPosition"];
     auto glOffsetHandle = pImpl->mShader("offset");
     auto glScaleHandle = pImpl->mShader("scale");
-    const void *data = pImpl->mTimeSeries.data();
+    auto gColorHandle = pImpl->mShader("color");
+    const GLvoid *axis = pImpl->mAxis.data();
+    const GLvoid *data = pImpl->mTimeSeries.data();
     unsigned int size = pImpl->mTimeSeries.size(); 
-    GLfloat offset = 0;
+    GLfloat offset = 0.5;
     GLfloat scale = pImpl->mMaxAbs;
+printf("%f %f %d\n", offset, scale, size);
+printf("%d %d %d\n", gyPositionHandle, gxPositionHandle, glOffsetHandle);
+    glUniform4f(gColorHandle, 1.0f, 0.0f, 0.0f, 1.0f);
+    checkGlError("glColorHandle");
+
+printf("bgra: %d %d\n", size, GL_BGRA);
+if (axis){printf("okay\n");}
+    glVertexAttribPointer(gxPositionHandle, 1, GL_FLOAT, GL_FALSE, 0, axis);
+    checkGlError("glVertexAttribPointer_x");
+   
+    glEnableVertexAttribArray(gxPositionHandle);
+    checkGlError("gxPosotionHandle");
 
     glVertexAttribPointer(gyPositionHandle, 1, GL_FLOAT, GL_FALSE, 0, data);
+    checkGlError("glVertexAttribPointer_y");
+
     glEnableVertexAttribArray(gyPositionHandle);
+    checkGlError("gyPositionHandle");
+
     glUniform1f(glOffsetHandle, offset);
+    checkGlError("offset");
     glUniform1f(glScaleHandle, scale);
-    glDrawArrays(GL_LINE_STRIP, 0, size);  
+    checkGlError("scale");
+
+    glDrawArrays(GL_LINE_STRIP, 0, size);
+    checkGlError("draw");
 }
 
 /// signal_realize: nitialize the renderer
@@ -140,50 +177,65 @@ void GLWiggle::initializeRenderer()
         fprintf(stderr, "%s: An error occured making the context\n", __func__);
         fprintf(stderr, "%s: %u-%d-%s\n", __func__, gle.domain(),
                 gle.code(), gle.what().c_str());
+        return;
     }
     catch (const std::exception &e) 
     {
-        fprintf(stderr, "%s: Failed to initialize renderer\n", __func__);
+        fprintf(stderr, "%s: Failed to initialize renderer %s\n", __func__, e.what());
     }
     // Add the attributes and uniforms
     try
     {
         pImpl->mShader.useProgram();
         pImpl->mShader.addAttribute("xPosition\0");
+ checkGlError("xpos");
         pImpl->mShader.addAttribute("yPosition\0");
+ checkGlError("yPos");
         pImpl->mShader.addUniform("offset\0");
+ checkGlError("offset");
         pImpl->mShader.addUniform("scale\0");
+ checkGlError("scale");
         pImpl->mShader.addUniform("color\0");
+ checkGlError("color");
         pImpl->mShader.releaseProgram();
     }   
     catch (const std::exception &e) 
     {
         fprintf(stderr, "%s: Failed to add attributes\n", __func__);
+        fprintf(stderr, "%s\n", e.what());
     }
 }
 
 /// signal_render: Does the rendering
 bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
 {
-    //auto allocation = get_allocation();
-    //auto height = allocation.get_height();
-    //auto width  = allocation.get_width();
+    auto allocation = get_allocation();
+    auto height = allocation.get_height();
+    auto width  = allocation.get_width();
     //float ratio = static_cast<float> (width)/static_cast<float> (height);
-    //glViewport(0, 0, width, height); // Shifts triangle
+    glViewport(0, 0, width, height); // Shifts triangle
+checkGlError("viewport");
     try
     {
          throw_if_error();
-         glClearColor(0.5, 0.5, 0.5, 1.0);
+         glClearColor(0.0, 0.0, 0.0, 1.0);
+         checkGlError("clear color");
          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+         checkGlError("clear");
 
          //draw(); //_triangle();
-         pImpl->mShader.useProgram();
 
-         glLineWidth(2.0f);
+         glLineWidth(0.2f);
+         checkGlError("lineWidth");
+
+         pImpl->mShader.useProgram();
+         checkGlError("glUseProgram");
+
          drawLinePlot();
          //glBindVertexArray(mVAOHandle);
          //glDrawArrays(GL_LINE_STRIP, 0, 3 );
          pImpl->mShader.releaseProgram();
+         checkGlError("glUnuseProgram");
 
          glFlush();
      }

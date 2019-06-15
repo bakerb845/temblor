@@ -15,10 +15,14 @@
 #include <epoxy/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "temblor/library/dataReaders/miniseed/trace.hpp"
+#include "temblor/library/dataReaders/miniseed/sncl.hpp"
+#include "glWiggle.hpp"
 
 using std::cerr;
 using std::endl;
 using std::string;
+namespace MiniSEED = Temblor::Library::DataReaders::MiniSEED;
 
 enum {
   X_AXIS,
@@ -97,31 +101,115 @@ private:
     Gtk::MenuItem mFIRMenuItem;
 };
 
-class TestArea : public Gtk::Window 
+class TestArea : public Gtk::Window
 {
 public:
     TestArea()
     {
+        set_title("GL Area"),
+        set_default_size(600, 400);
+        // Add a container for the GLArea
+        add(mVBox);
+        // Add the GLArea to the vertical box container 
+        mGLWiggle.set_hexpand(true);
+        mGLWiggle.set_vexpand(true);
+        mGLWiggle.set_auto_render(true);
+        mVBox.add(mGLWiggle); 
+
+        //class MiniSEED::Trace trace; //data/WY.YWB.EHZ.01.mseed")
+        class MiniSEED::SNCL sncl;
+        sncl.setNetwork("WY");
+        sncl.setStation("YWB");
+        sncl.setChannel("HHZ");
+        sncl.setLocationCode("01");
+        try
+        {
+            mTrace.read("data/WY.YWB.EHZ.01.mseed", sncl);
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "\n", e.what());
+        }   
+        auto data = mTrace.getDataPointer32i();
+        std::vector<double> mData(mTrace.getNumberOfSamples());
+        for (auto i=0; i<mData.size(); ++i){
+            mData[i] = data[i];
+        }
+        mGLWiggle.setSeismogram(50, mData.data());//mData.size(), mData.data());
+
+        mPopupMenu.accelerate(*this);
+        // Set the masks for mouse events
+        add_events(Gdk::BUTTON_PRESS_MASK);
+        // Finally display all the widgets
+        show_all();
+    }
+    ~TestArea() = default;
+protected:
+    /// Test event
+    bool on_button_press_event(GdkEventButton *event)
+    {
+        if (event->type == GDK_BUTTON_PRESS)
+        {
+            if (event->button == 1)
+            {
+                printf("left clicked %lf, %lf\n", event->x, event->y);
+                return true;
+            }
+            else if (event->button == 2)
+            {
+                printf("zoom\n");
+                return true;
+            }
+            else if (event->button == 3)
+            {
+                printf("right clicked\n");
+                mPopupMenu.popup(event->button, event->time);
+                return true;
+            }
+        }
+        return false;
+    }
+    class GLWiggle mGLWiggle;
+    class MiniSEED::Trace mTrace;
+    std::vector<double> mData;
+    class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false};
+    class PopupMenu mPopupMenu;
+};
+
+//==============================================================================//
+
+class TestArea2 : public Gtk::Window 
+{
+public:
+    TestArea2()
+    {
+        // Load the file
+        //class MiniSEED::Trace trace; //data/WY.YWB.EHZ.01.mseed")
+        //mGLArea.setSeismogram(mTrace.data(), mTrace.size());
         // Set up main window 
         set_title("GL Area"),
         set_default_size(600, 400);
         // Add a container for the GLArea
         add(mVBox);
         // Add the GLArea to the vertical box container 
+        //mGLWiggle.set_hexpand(true);
+        //mGLWiggle.set_vexpand(true);
+        //mGLWiggle.set_auto_render(true);
+        
         mGLArea.set_hexpand(true);
         mGLArea.set_vexpand(true);
         mGLArea.set_auto_render(true); 
         mVBox.add(mGLArea);
         // Hook up the signals for the GLArea
         mGLArea.signal_realize().connect(sigc::mem_fun(*this,
-                                         &TestArea::initializeRenderer));
+                                         &TestArea2::initializeRenderer));
         // Important that the unrealize signal calls our handler to clean up
         // GL resources _before_ the default unrealize handler is called (the "false")
         mGLArea.signal_unrealize().connect(sigc::mem_fun(*this,
-                                           &TestArea::destroyRenderer), false);
+                                           &TestArea2::destroyRenderer), false);
         // This does the actual drawing
         mGLArea.signal_render().connect(sigc::mem_fun(*this,
-                                        &TestArea::render), false);
+                                        &TestArea2::render), false);
         // 
         //mGLArea.button_press_signal().connect(sigc::ptr_fun(*this,
         //                                      &TestArea::on_button_press_event) );
@@ -132,7 +220,7 @@ public:
         // Finally display all the widgets
         show_all();
     }
-    virtual ~TestArea() = default;
+    virtual ~TestArea2() = default;
 
 protected:
     /// Test event
