@@ -85,11 +85,26 @@ public:
      * @throws std::runtime_error if the attribute ID cannot be found. 
      */
     void addAttribute(const std::string &attribute);
+    /*!
+     * @brief Adds a uniform variable so we can later link the uniform
+     *        data to the shader program.
+     * @param[in] attribute   The name of the uniform attribute to add.
+     * @throws std::runtime_error if the uniform ID cannot be found.
+     */
+    void addUniform(const std::string &uniform);
 
     /*!
-     * @brief An index that returns the location of the attribute.
+     * @brief Teturns the location of the attribute.
+     * @param[in] attribute  The name of the attribute.
+     * @result The attribute location in the shader.
      */
     uint32_t operator[](const std::string &attribute);
+    /*!
+     * @brief An index that returns the location of the uniform.
+     * @param[in] uniofrm  The name of the uniform.
+     * @result The uniform location in the shader. 
+     */
+    uint32_t operator()(const std::string &uniform);
     /*!
      * @brief Sets the shader program on the GPU.
      */

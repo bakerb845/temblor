@@ -99,6 +99,7 @@ set(LIBSRC
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 add_executable(gltest
+               ui/applications/glWiggle.cpp
                ui/applications/glslShader.cpp
                ui/applications/gltest.cpp
                ui/applications/glarea.cpp

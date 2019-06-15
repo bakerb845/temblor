@@ -38,6 +38,7 @@ public:
     GLuint mFragmentShader = 0;
     GLuint mGeometryShader = 0;
     std::map<std::string, GLuint> mAttributeList;
+    std::map<std::string, GLuint> mUniformList;
 };
 
 /// Constructor
@@ -249,11 +250,32 @@ void GLSLShader::addAttribute(const std::string &attribute)
     pImpl->mAttributeList[attribute] = attrId;
 }
 
+/// Add a uniform
+void GLSLShader::addUniform(const std::string &uniform)
+{
+    if (!glIsProgram(pImpl->mProgram))
+    {   
+        throw std::runtime_error("Program not yet compiled");
+    }
+    GLint uniformId = glGetUniformLocation(pImpl->mProgram, uniform.c_str());
+    if (uniformId == GL_INVALID_OPERATION)
+    {
+        fprintf(stderr, "May have failed to get uniformLocation\n");
+    }
+    pImpl->mUniformList[uniform] = uniformId;
+}
+
 /// Get an attribute ID
 uint32_t GLSLShader::operator[](const std::string &attribute)
 {
     static_assert(sizeof(uint32_t) == sizeof(GLuint));
     return static_cast<uint32_t> (pImpl->mAttributeList[attribute]);
+}
+
+/// Get a uniform ID
+uint32_t GLSLShader::operator()(const std::string &uniform)
+{
+    return static_cast<uint32_t> (pImpl->mUniformList[uniform]);
 }
 
 /// User the shader program
