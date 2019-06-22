@@ -135,7 +135,7 @@ public:
         for (auto i=0; i<mData.size(); ++i){
             mData[i] = data[i];
         }
-        mGLWiggle.setSeismogram(50, mData.data());//mData.size(), mData.data());
+        mGLWiggle.setSeismogram(mData.size(), mData.data());//mData.size(), mData.data());
 
         mPopupMenu.accelerate(*this);
         // Set the masks for mouse events

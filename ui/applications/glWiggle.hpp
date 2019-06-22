@@ -37,6 +37,8 @@ public:
     void setSeismogram(const int npts, const double x[]);
 
     void drawLinePlot();
+    void initializeBuffers();
+    void freeBuffers();
     /*! @name Gtk Signals
      * @{
      */
