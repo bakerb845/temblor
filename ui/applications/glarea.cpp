@@ -13,6 +13,7 @@
 #include "glslShader.hpp"
 #include <giomm/resource.h>
 #include <epoxy/gl.h>
+//#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "temblor/library/dataReaders/miniseed/trace.hpp"
@@ -107,7 +108,7 @@ public:
     TestArea()
     {
         set_title("GL Area"),
-        set_default_size(600, 400);
+        set_default_size(800, 600);
         // Add a container for the GLArea
         add(mVBox);
         // Add the GLArea to the vertical box container 
@@ -597,7 +598,7 @@ bool Example_GLArea::render(const Glib::RefPtr<Gdk::GLContext>& /* context */)
   int height = allocation.get_height();
   int width  = allocation.get_width();
   float ratio = static_cast<float> (width)/static_cast<float> (height);
-//  glViewport(0, 0, width, height); // Shifts triangle
+  glViewport(0, 0, width, height); // Shifts triangle
   try
   {
     m_GLArea.throw_if_error();

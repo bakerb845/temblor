@@ -5,6 +5,7 @@
 #include <cmath>
 //#include <giomm/resource.h>
 #include <epoxy/gl.h> //GL/glew.h>
+//#include <GL/glew.h>
 #if __has_include(<pstl/algorithm>)
 #include <pstl/execution>
 #include <pstl/algorithm>
@@ -67,7 +68,7 @@ GLWiggle::GLWiggle() :
                                &GLWiggle::destroyRenderer), false);
     // This does the actual drawing
     signal_render().connect(sigc::mem_fun(*this,
-                            &GLWiggle::render), false);
+                            &GLWiggle::render));
 }
 
 GLWiggle::~GLWiggle() = default;
@@ -86,10 +87,11 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
         pImpl->mMaxAbs = std::max(pImpl->mMaxAbs, std::abs(dataPtr[i]));
         pImpl->mAxis[i] = i/static_cast<float> (npts);
     }
-for (auto i=0; i<npts; ++i)
-{
- dataPtr[i] = dataPtr[i]/pImpl->mMaxAbs;
-}
+    // Normalize and flip
+    for (auto i=0; i<npts; ++i)
+    {
+        dataPtr[i] =-dataPtr[i]/pImpl->mMaxAbs;
+    }
 /*
 #ifdef USE_PSTL
     auto minMax = std::minmax(std::execution::unseq,
@@ -132,97 +134,23 @@ void GLWiggle::setFragmentShaderFileName(const std::string &fileName)
     pImpl->mFragmentShaderFile = fileName;
 }
 
-void GLWiggle::drawLinePlot()
-//GLfloat *data, unsigned int size,
-//                            GLfloat scale, GLfloat offset)
-{
-    auto gCoord2dHandle = pImpl->mShader["coord2d"];
-    auto glOffsetXHandle = pImpl->mShader("offset_x");
-    auto glOffsetYHandle = pImpl->mShader("offset_y");
-    auto glColorHandle = pImpl->mShader("color");
-
-/*
-    glEnableVertexAttribArray( );
-    glVertexAttribPointer(,
-                          2, // Number of elements per vertex
-                          GL_FLOAT, // Type of each element,
-                          GL_FALSE, // Take the values as-is
-                          0,        // No space between values
-                          0);       // Use the vertex buffer object
-    glDrawArrays(GL_LINE_STRIP, 0, 2000);
-    glDisableVertexAttribArray( );
-*/
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    checkGlError("glBindBuffer");
-
-/*
-    auto gyPositionHandle = pImpl->mShader["yPosition"];
-    auto gxPositionHandle = pImpl->mShader["xPosition"];
-    auto glOffsetHandle = pImpl->mShader("offset");
-    auto glScaleHandle = pImpl->mShader("scale");
-    auto gColorHandle = pImpl->mShader("color");
-    const GLvoid *axis = pImpl->mAxis.data();
-    const GLvoid *data = pImpl->mTimeSeries.data();
-    unsigned int size = pImpl->mTimeSeries.size(); 
-    GLfloat offset = 0.25;
-    GLfloat scale = 0.5; //pImpl->mMaxAbs;
-printf("%f %f %d\n", offset, scale, size);
-printf("%d %d %d\n", gyPositionHandle, gxPositionHandle, glOffsetHandle);
-*/
-/*
-    glUniform4f(gColorHandle, 1.0f, 0.0f, 0.0f, 1.0f);
-    checkGlError("glColorHandle");
-
-printf("bgra: %d %d\n", size, GL_BGRA);
-if (axis){printf("okay\n");}
-if (axis == NULL){printf("fuck\n");}
-    glVertexAttribPointer(gxPositionHandle, 1, GL_FLOAT, GL_FALSE, 0, axis);
-    checkGlError("glVertexAttribPointer_x");
-   
-    glEnableVertexAttribArray(gxPositionHandle);
-    checkGlError("gxPositionHandle");
-
-    glVertexAttribPointer(gyPositionHandle, 1, GL_FLOAT, GL_FALSE, 0, data);
-    checkGlError("glVertexAttribPointer_y");
-
-    glEnableVertexAttribArray(gyPositionHandle);
-    checkGlError("gyPositionHandle");
-
-    glUniform1f(glOffsetHandle, offset);
-    checkGlError("offset");
-    glUniform1f(glScaleHandle, scale);
-    checkGlError("scale");
-
-    glDrawArrays(GL_LINE_STRIP, 0, size);
-    checkGlError("draw");
-*/
-}
-
 void GLWiggle::initializeBuffers()
 {
     // Create and populate teh buffer objects
     glGenBuffers(1, &pImpl->mCoord2DVBO);
     glBindBuffer(GL_ARRAY_BUFFER, pImpl->mCoord2DVBO);
 
-    std::vector<point> graph(pImpl->mTimeSeries.size()); //std::array<point, 2000> graph;
-    for (auto i=0; i<pImpl->mTimeSeries.size(); ++i)
+    int len = pImpl->mTimeSeries.size();
+    std::vector<point> graph(len); //std::array<point, 2000> graph;
+    for (auto i=0; i<len; ++i)
     {
-        float x = (i - 1000.0)/100.0;
+        float x = 2.0f*static_cast<float> (i)/static_cast<float> (len-1) - 1.0f; //100.0;
         graph[i].x = x;
-        graph[i].y = pImpl->mTimeSeries[i];///pImpl->mMaxAbs;//100.0;
+        graph[i].y = 0.95*pImpl->mTimeSeries[i];
     }
-/*
-    for (auto i=0; i<2000; ++i)
-    {
-        float x = (i - 1000.0)/100.0;
-        graph[i].x = x;
-        graph[i].y = sin(x*10.0)/(1.0 + x*x);
-printf("%f %f\n", graph[i].x, graph[i].y);
-    }
-*/
     
     //glBufferData(GL_ARRAY_BUFFER, sizeof graph, graph, GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, 2000*sizeof(point), graph.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, len*sizeof(point), graph.data(), GL_STATIC_DRAW);
     checkGlError("glBufferData");
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     checkGlError("glBufferClose");
@@ -308,60 +236,126 @@ void GLWiggle::initializeRenderer()
     }
 }
 
+void GLWiggle::drawLinePlot(const float xOffset,
+                            const float xScale,
+                            const float color[4])
+{
+    // Use the program
+    pImpl->mShader.useProgram();
+    checkGlError("glUseProgram");
+
+    auto offsetHandle = pImpl->mShader("offset_x");
+    auto scaleXHandle = pImpl->mShader("scale_x");
+    auto colorHandle = pImpl->mShader("color");
+
+    // Bind the uniform parameters of the shader
+    glUniform1f(offsetHandle, xOffset); //0.0f);
+    checkGlError("offset_x");
+    glUniform1f(scaleXHandle,  xScale); //1.0f);//1.0f);
+    checkGlError("scale_x");
+    glUniform4f(colorHandle, color[0], color[1], color[2], color[3]); //0.0f, 1.0f, 0.0f, 1.0f);
+    checkGlError("color");
+    // Bind the appropriate buffer object
+    glBindBuffer(GL_ARRAY_BUFFER, pImpl->mCoord2DVBO);
+    checkGlError("bindVBO");
+    // Draw the coord2d data on this VBO
+    glEnableVertexAttribArray(pImpl->mShader["coord2d"]);
+    checkGlError("enableCoord2d");
+    glVertexAttribPointer(pImpl->mShader["coord2d"], 2,
+                          GL_FLOAT, GL_FALSE, 0, nullptr);
+    checkGlError("attribPointer");
+    // Do the drawing 
+    int len = pImpl->mTimeSeries.size();
+    glDrawArrays(GL_LINE_STRIP, 0, len);
+    checkGlError("drawArrays");
+
+    glDisableVertexAttribArray(0);
+    checkGlError("disable");
+    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    checkGlError("close array");
+
+    // Unuse the program
+    pImpl->mShader.releaseProgram();
+    checkGlError("glUnuseProgram"); 
+}
+
+/*
+void GLWiggle::on_resize(const int width, const int height)
+{
+    make_current();
+    glViewport(0, 0, width, height);
+    checkGlError("glViewportResize");
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    checkGlError("glClearColor");
+}
+*/
+
 /// signal_render: Does the rendering
 bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
 {
+    make_current();
     auto allocation = get_allocation();
     auto height = allocation.get_height();
     auto width  = allocation.get_width();
-    //float ratio = static_cast<float> (width)/static_cast<float> (height);
-    glViewport(0, 0, width, height); // Shifts triangle
-checkGlError("viewport");
+    float ratio = static_cast<float> (height)/static_cast<float> (width);
+    ratio = static_cast<float> (width)/static_cast<float> (height);
+    if (width > height)
+    {
+        ratio = static_cast<float> (height)/static_cast<float> (width);
+    }
+    //glViewport(0, 0, width, height);
+    //checkGlError("glViewport");
+    //glClear(GL_COLOR_BUFFER_BIT);
+    //checkGlError("glClear");
     try
     {
         throw_if_error();
         glClearColor(0.0, 0.0, 0.0, 1.0);
         checkGlError("clear color");
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);// | GL_DEPTH_BUFFER_BIT);
         checkGlError("clear");
 
-        //draw(); //_triangle();
+        // Prevent wrap-around
+/*
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+*/
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        checkGlError("pameteri");
 
-        glLineWidth(0.2f);
-        checkGlError("lineWidth");
-        //glLineColor(0.5, 0.5, 0.5, 1.0);
 
-        pImpl->mShader.useProgram();
-        checkGlError("glUseProgram");
-
+        float xScale = 1; //ratio;
+        float xOffset = 0;
+        float color[4] = {0, 1, 0, 1}; //ratio, ratio, ratio, 1.0};
+        drawLinePlot(xOffset, xScale, color);
+/*
+        // Bind the uniform parameters of the shader
         glUniform1f(pImpl->mShader("offset_x"), 0.0f);
         checkGlError("offset_x");
-        glUniform1f(pImpl->mShader("scale_x"),  0.1f);
+        glUniform1f(pImpl->mShader("scale_x"),  1.0f);//1.0f);
         checkGlError("scale_x");
-        glUniform4f(pImpl->mShader("color"), 1.0f, 0.0f, 0.0f, 1.0f);
+        glUniform4f(pImpl->mShader("color"), 0.0f, 1.0f, 0.0f, 1.0f);
         checkGlError("color");
-
+        // Bind the appropriate buffer object
         glBindBuffer(GL_ARRAY_BUFFER, pImpl->mCoord2DVBO);
         checkGlError("bindVBO");
-
+        // Draw the coord2d data on this VBO
         glEnableVertexAttribArray(pImpl->mShader["coord2d"]);
         checkGlError("enableCoord2d");
-        glVertexAttribPointer(pImpl->mShader["coord2d"], 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(pImpl->mShader["coord2d"], 2,
+                              GL_FLOAT, GL_FALSE, 0, nullptr);
         checkGlError("attribPointer");
-        
-        //glEnableVertexAttribArray(0);
-        //checkGlError("disableVAA");
-        //glVertexAttribPointer(0, 2000, GL_FLOAT, GL_FALSE, 0, nullptr);
-        //checkGlError("glVertexAttriPointerNULL");
-        //glDrawArrays(GL_LINE_STRIP, 0, 2000);
-glDrawArrays(GL_LINE_STRIP, 0, 2000);
-checkGlError("drawArrays");
+        // Do the drawing 
+        int len = pImpl->mTimeSeries.size();
+        glDrawArrays(GL_LINE_STRIP, 0, len);
+        checkGlError("drawArrays");
 
         glDisableVertexAttribArray(0);
         checkGlError("disable");
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         checkGlError("close array");
-        //drawLinePlot();
+*/
 /*
         glBindVertexArray(pImpl->mVAOHandle); 
         checkGlError("bindVAO");
@@ -374,8 +368,8 @@ checkGlError("drawArrays");
         //checkGlError("drawArrays");
         //glBindVertexArray(mVAOHandle);
         //glDrawArrays(GL_LINE_STRIP, 0, 3 );
-        pImpl->mShader.releaseProgram();
-        checkGlError("glUnuseProgram");
+//        pImpl->mShader.releaseProgram();
+        //checkGlError("glUnuseProgram");
 
         glFlush();
      }
