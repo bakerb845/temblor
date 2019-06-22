@@ -116,7 +116,7 @@ set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 #target_link_libraries(helloworld Qt5::Widgets)
 target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS} ${GL_INCLUDE_DIR})
 #target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${EPOXY_LIBRARY} ${GL_LIBRARY})
-target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${GLEW_LIBRARY})
+target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY})
 
 ##########################################################################################
 #                                 Copy Shader Files                                      #
