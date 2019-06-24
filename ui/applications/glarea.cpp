@@ -108,7 +108,7 @@ public:
     TestArea()
     {
         set_title("GL Area"),
-        set_default_size(800, 600);
+        set_default_size(1200, 800);
         // Add a container for the GLArea
         add(mVBox);
         // Add the GLArea to the vertical box container 
@@ -123,6 +123,7 @@ public:
         sncl.setStation("YWB");
         sncl.setChannel("HHZ");
         sncl.setLocationCode("01");
+        set_resizable(false); // OpenGL has some weird thing about resizing and aliasing
         try
         {
             mTrace.read("data/WY.YWB.EHZ.01.mseed", sncl);
@@ -141,11 +142,27 @@ public:
         mPopupMenu.accelerate(*this);
         // Set the masks for mouse events
         add_events(Gdk::BUTTON_PRESS_MASK);
+        add_events(Gdk::KEY_PRESS_MASK);
+
+    signal_key_press_event().connect(
+          sigc::mem_fun(*this, &TestArea::onKeyPress), false);
+
         // Finally display all the widgets
         show_all();
     }
     ~TestArea() = default;
 protected:
+    bool onKeyPress(GdkEventKey *event)
+    {
+printf("here\n");
+        if (event->keyval == GDK_KEY_z)
+        {
+printf("now\n");
+            mGLWiggle.zoom();
+            return true;
+        }
+        return false;
+    }
     /// Test event
     bool on_button_press_event(GdkEventButton *event)
     {

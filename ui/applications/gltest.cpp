@@ -144,8 +144,14 @@ void TestApplication::onHideWindow(Gtk::Window *window)
 }
 
 //----------------------------------------------------------------------------//
+#if defined(__APPLE__)
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/glew.h>
 #include <GL/gl.h>
+#endif
 //#include <glm/glm.h>
 //#include <epoxy/gl.h>
 //#include <GLFW/glfw3.h>

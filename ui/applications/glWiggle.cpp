@@ -43,6 +43,7 @@ class GLWiggle::GLWiggleImpl
 {
 public:
     class GLSLShader mShader;
+float mScaleX = 1;
     //GLuint mVBO[2] = {0, 0};
     GLuint mVAOHandle = 0;
     GLuint mCoord2DVBO = 0;
@@ -69,6 +70,8 @@ GLWiggle::GLWiggle() :
     // This does the actual drawing
     signal_render().connect(sigc::mem_fun(*this,
                             &GLWiggle::render));
+
+
 }
 
 GLWiggle::~GLWiggle() = default;
@@ -104,6 +107,13 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
     pImpl->mMaxAbs = std::max(std::abs(*minMax.first),
                               std::abs(*minMax.second));
 */
+}
+
+void GLWiggle::zoom() //onKeyPress(GdkEventKey *event)
+{
+printf("zoom\n");
+    pImpl->mScaleX = pImpl->mScaleX*1.5;
+    queue_render();
 }
 
 //GLWiggle::setShaders(const std::string &
@@ -293,6 +303,7 @@ void GLWiggle::on_resize(const int width, const int height)
 /// signal_render: Does the rendering
 bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
 {
+printf("render\n");
     make_current();
     auto allocation = get_allocation();
     auto height = allocation.get_height();
@@ -325,7 +336,7 @@ bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
         checkGlError("pameteri");
 
 
-        float xScale = 1; //ratio;
+        float xScale = pImpl->mScaleX; //ratio;
         float xOffset = 0;
         float color[4] = {0, 1, 0, 1}; //ratio, ratio, ratio, 1.0};
         drawLinePlot(xOffset, xScale, color);
