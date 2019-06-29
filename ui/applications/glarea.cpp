@@ -84,6 +84,7 @@ private:
 
 #include <gtkmm/menu.h>
 #include <gtkmm/menuitem.h>
+#include "temblor/userInterface/widgets/firDesignerWindow.hpp"
 
 class PopupMenu : public Gtk::Menu
 {
@@ -94,12 +95,39 @@ public:
     {
         append(mIIRMenuItem);
         append(mFIRMenuItem);
+        mIIRMenuItem.signal_activate().connect(sigc::mem_fun(*this, &PopupMenu::onIIRMenuItem));
+        mFIRMenuItem.signal_activate().connect(sigc::mem_fun(*this, &PopupMenu::onFIRMenuItem));
+
         show_all();
     }
     virtual ~PopupMenu() = default;
+
 private:
+    void onIIRMenuItem()
+    {
+printf("iir\n");
+/*
+         if (mIIRDesignerWindow != nullptr)
+         {
+             delete mIIRDesignerWindow;
+         } 
+         mIIRDesignerWindow = new Temblor::UserInterface::Widgets::IIRDesignerWindow();
+         mIIRDesignerWindow->set_modal(true);
+         mIIRDesignerWindow->show();
+*/
+    }
+    void onFIRMenuItem()
+    {
+        if (mFIRDesignerWindow){mFIRDesignerWindow.reset();}
+        mFIRDesignerWindow = std::make_unique<Temblor::UserInterface::Widgets::FIRDesignerWindow> ();
+        mFIRDesignerWindow->set_modal(true);
+        mFIRDesignerWindow->show();
+    }
+
     Gtk::MenuItem mIIRMenuItem;
     Gtk::MenuItem mFIRMenuItem;
+    std::unique_ptr<Temblor::UserInterface::Widgets::FIRDesignerWindow> mFIRDesignerWindow; //= nullptr;
+    //class Temblor::UserInterface::Widgets::IIRDesignerWindow *mIIRDesignerWindow = nullptr;
 };
 
 class TestArea : public Gtk::Window
@@ -143,22 +171,45 @@ public:
         // Set the masks for mouse events
         add_events(Gdk::BUTTON_PRESS_MASK);
         add_events(Gdk::KEY_PRESS_MASK);
+        add_events(Gdk::SCROLL_MASK);
 
-    signal_key_press_event().connect(
-          sigc::mem_fun(*this, &TestArea::onKeyPress), false);
+        signal_key_press_event().connect(
+             sigc::mem_fun(*this, &TestArea::onKeyPress), false);
+        signal_scroll_event().connect(
+             sigc::mem_fun(*this, &TestArea::onScrollEvent), false);
 
         // Finally display all the widgets
         show_all();
     }
     ~TestArea() = default;
 protected:
+    bool onScrollEvent(GdkEventScroll *event)
+    {
+        if (event->direction == GDK_SCROLL_DOWN)
+        {
+            printf("scroll down\n");
+            return true;
+        }
+        else if (event->direction == GDK_SCROLL_UP)
+        {
+            printf("scroll up\n");
+            return true;
+        }
+        return false;
+    }
+
     bool onKeyPress(GdkEventKey *event)
     {
-printf("here\n");
         if (event->keyval == GDK_KEY_z)
         {
-printf("now\n");
+printf("zoom\n");
             mGLWiggle.zoom();
+            return true;
+        }
+        else if (event->keyval == GDK_KEY_Z)
+        {
+printf("unzoom\n");
+            mGLWiggle.unZoom();
             return true;
         }
         return false;
@@ -192,6 +243,7 @@ printf("now\n");
     std::vector<double> mData;
     class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false};
     class PopupMenu mPopupMenu;
+
 };
 
 //==============================================================================//

@@ -70,8 +70,6 @@ GLWiggle::GLWiggle() :
     // This does the actual drawing
     signal_render().connect(sigc::mem_fun(*this,
                             &GLWiggle::render));
-
-
 }
 
 GLWiggle::~GLWiggle() = default;
@@ -111,8 +109,13 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
 
 void GLWiggle::zoom() //onKeyPress(GdkEventKey *event)
 {
-printf("zoom\n");
     pImpl->mScaleX = pImpl->mScaleX*1.5;
+    queue_render();
+}
+
+void GLWiggle::unZoom()
+{
+    pImpl->mScaleX = pImpl->mScaleX/1.5;
     queue_render();
 }
 

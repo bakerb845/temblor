@@ -103,7 +103,9 @@ add_executable(gltest
                ui/applications/glslShader.cpp
                ui/applications/gltest.cpp
                ui/applications/glarea.cpp
-               ui/widgets/firDesigner.cpp
+               ui/widgets/firDesignerWindow.cpp
+               ui/widgets/firDesignerModel.cpp
+               ui/widgets/waveformPlotOptionsModel.cpp
                )
 set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
