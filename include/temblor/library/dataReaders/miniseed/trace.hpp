@@ -166,6 +166,21 @@ public:
      * @{
      */
     /*!
+     * @brief Gets the time series data.
+     * @param[in] length    The length of the output array.  This must
+     *                      be at least \c getNumberOfSamples().
+     * @param[out] x        The time series data.  This is an array of
+     *                      dimension [length] however only the first
+     *                      \c getNumberOfSamples() are valid. 
+     * @throws std::invalid_argument if length is invalid or x is NULL.
+     * @throws std::runtime_error if the time series data was never set
+     *         or read from disk.
+     * @sa \c getNumberOfSamples()
+     */ 
+    void getData(const int length, double *x[]) const;
+    void getData(const int length, float *x[]) const;
+    void getData(const int length, int *x[]) const;
+    /*!
      * @brief Sets the time series data.
      * @param[in] nSamples  The number of samples in the signal.
      *                      This cannot exceed INT_MAX for the time being.
@@ -175,6 +190,8 @@ public:
      *         positive and x is NULL.
      */
     void setData(const size_t nSamples, const double x[]);
+    void setData(const size_t nSamples, const float x[]);
+    void setData(const size_t nSamples, const int x[]);
     /*!
      * @brief Gets a pointer to the double precision time series.
      * @result A pointer to the time series data.

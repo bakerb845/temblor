@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <climits>
+#include <cstring>
 #include <array>
 #include <vector>
 #include <string>
@@ -13,9 +14,38 @@
 using namespace Temblor::Library;
 using namespace Temblor::Library::DataReaders::MiniSEED;
 
+namespace
+{
+
+template<typename T>
+void copySeismogram(const int n, const T x[], T y[])
+{
+    std::memcpy(y, x, static_cast<size_t> (n)*sizeof(T));
+}
+
+template<typename T, typename S>
+void convertSeismogram(const int n, const T x[], S y[])
+{
+    #pragma omp simd
+    for (int i=0; i<n; ++i)
+    {
+        y[i] = static_cast<S> (x[i]);
+    }
+}
+
+}
+
 class Trace::TraceImpl
 {
 public:
+    void clearTimeSeries() noexcept
+    {
+        mData64f.clear();
+        mData32f.clear();
+        mData32i.clear();
+        mPrecision = Precision::UNKNOWN;
+        mNumberOfSamples = 0;
+    }
     class Utilities::Time mStartTime;
     class SNCL mSNCL;
     std::vector<double> mData64f;
@@ -60,14 +90,15 @@ Trace::~Trace() = default;
 
 void Trace::clear() noexcept
 {
+    pImpl->clearTimeSeries();
     pImpl->mStartTime.clear();
     pImpl->mSNCL.clear();
-    pImpl->mData64f.clear();
-    pImpl->mData32f.clear();
-    pImpl->mData32i.clear();
     pImpl->mSamplingRate = 0;
-    pImpl->mNumberOfSamples = 0;
-    pImpl->mPrecision = Precision::UNKNOWN;
+    //pImpl->mData64f.clear();
+    //pImpl->mData32f.clear();
+    //pImpl->mData32i.clear();
+    //pImpl->mNumberOfSamples = 0;
+    //pImpl->mPrecision = Precision::UNKNOWN;
 }
 
 /// FileIO
@@ -260,22 +291,6 @@ double Trace::getSamplingRate() const
     return pImpl->mSamplingRate;
 }
 
-/// Sets the trace data
-void Trace::setData(const size_t nSamples, const double x[])
-{
-    if (nSamples > INT_MAX)
-    {
-        throw std::runtime_error("Number of samples = "
-                               + std::to_string(nSamples)
-                               + " must be positive\n");
-    }
-    if (nSamples > 0 && x == nullptr)
-    {
-        throw std::invalid_argument("x cannot be NULL\n");
-    }
-    return;
-}
-
 /// Number of samples
 int Trace::getNumberOfSamples() const noexcept
 {
@@ -298,6 +313,169 @@ SNCL Trace::getSNCL() const
 }
 
 /// Data
+/// Sets the trace data
+void Trace::setData(const size_t nSamples, const double x[])
+{
+    // Null out old data
+    pImpl->clearTimeSeries();
+    // Check the inputs
+    if (nSamples > INT_MAX)
+    {
+        throw std::runtime_error("Number of samples = "
+                               + std::to_string(nSamples)
+                               + " must be positive\n");
+    }
+    if (nSamples > 0 && x == nullptr)
+    {
+        throw std::invalid_argument("x cannot be NULL\n");
+    }
+    // Copy
+    pImpl->mNumberOfSamples = static_cast<int> (nSamples);
+    pImpl->mPrecision = Precision::FLOAT64; 
+    pImpl->mData64f.resize(nSamples);
+    copySeismogram(pImpl->mNumberOfSamples, x, pImpl->mData64f.data());
+}
+
+void Trace::setData(const size_t nSamples, const float x[])
+{
+    // Null out old data
+    pImpl->clearTimeSeries();
+    // Check the inputs
+    if (nSamples > INT_MAX)
+    {
+        throw std::runtime_error("Number of samples = "
+                               + std::to_string(nSamples)
+                               + " must be positive\n");
+    }
+    if (nSamples > 0 && x == nullptr)
+    {
+        throw std::invalid_argument("x cannot be NULL\n");
+    }
+    // Copy
+    pImpl->mNumberOfSamples = static_cast<int> (nSamples);
+    pImpl->mPrecision = Precision::FLOAT32;
+    pImpl->mData32f.resize(nSamples);
+    copySeismogram(pImpl->mNumberOfSamples, x, pImpl->mData32f.data());
+}
+
+void Trace::setData(const size_t nSamples, const int x[])
+{
+    // Null out old data
+    pImpl->clearTimeSeries();
+    // Check the inputs
+    if (nSamples > INT_MAX)
+    {
+        throw std::runtime_error("Number of samples = "
+                               + std::to_string(nSamples)
+                               + " must be positive\n");
+    }
+    if (nSamples > 0 && x == nullptr)
+    {
+        throw std::invalid_argument("x cannot be NULL\n");
+    }
+    // Copy
+    pImpl->mNumberOfSamples = static_cast<int> (nSamples);
+    pImpl->mPrecision = Precision::INT32;
+    pImpl->mData32i.resize(nSamples);
+    copySeismogram(pImpl->mNumberOfSamples, x, pImpl->mData32i.data());
+}
+
+/// Data getters
+void Trace::getData(const int length, double *xIn[]) const
+{
+    if (pImpl->mPrecision == Precision::UNKNOWN)
+    {
+        throw std::runtime_error("Data was never set\n");
+    }
+    auto npts = getNumberOfSamples();
+    if (length < npts)
+    {
+        throw std::invalid_argument("length = "
+                                  + std::to_string(npts)
+                                  + " must be at least = "
+                                  + std::to_string(npts) + "\n");
+    }
+    if (npts < 1){return;}
+    auto x = *xIn;
+    if (x == nullptr){ throw std::invalid_argument("x is NULL\n");}
+    // Copy the data
+    if (pImpl->mPrecision == Precision::FLOAT64)
+    {
+        copySeismogram(npts, pImpl->mData64f.data(), x);
+    }
+    else if (pImpl->mPrecision == Precision::FLOAT32)
+    {
+        convertSeismogram(npts, pImpl->mData32f.data(), x);
+    }
+    else //if (pImpl->mPrecision == Precision::INT32)
+    {
+        convertSeismogram(npts, pImpl->mData32i.data(), x);
+    }
+}
+
+void Trace::getData(const int length, float *xIn[]) const
+{
+    if (pImpl->mPrecision == Precision::UNKNOWN)
+    {
+        throw std::runtime_error("Data was never set\n");
+    }
+    auto npts = getNumberOfSamples();
+    if (length < npts)
+    {
+        throw std::invalid_argument("length = "
+                                  + std::to_string(npts)
+                                  + " must be at least = "
+                                  + std::to_string(npts) + "\n");
+    }
+    if (npts < 1){return;}
+    auto x = *xIn;
+    if (x == nullptr){ throw std::invalid_argument("x is NULL\n");}
+    // Copy the data
+    if (pImpl->mPrecision == Precision::FLOAT32)
+    {
+        copySeismogram(npts, pImpl->mData32f.data(), x);
+    }
+    else if (pImpl->mPrecision == Precision::FLOAT64)
+    {
+        convertSeismogram(npts, pImpl->mData64f.data(), x);
+    }
+    else //if (pImpl->mPrecision == Precision::INT32)
+    {
+        convertSeismogram(npts, pImpl->mData32i.data(), x);
+    }
+}
+
+void Trace::getData(const int length, int *xIn[]) const
+{
+    if (pImpl->mPrecision == Precision::UNKNOWN)
+    {
+        throw std::runtime_error("Data was never set\n");
+    }
+    auto npts = getNumberOfSamples();
+    if (length < npts)
+    {
+        throw std::invalid_argument("length = "
+                                  + std::to_string(npts)
+                                  + " must be at least = "
+                                  + std::to_string(npts) + "\n");
+    }
+    if (npts < 1){return;}
+    auto x = *xIn;
+    if (x == nullptr){ throw std::invalid_argument("x is NULL\n");}
+    // Copy the data
+    if (pImpl->mPrecision == Precision::INT32)
+    {
+        copySeismogram(npts, pImpl->mData32i.data(), x);
+    }
+    else if (pImpl->mPrecision == Precision::FLOAT64)
+    {
+        convertSeismogram(npts, pImpl->mData64f.data(), x);
+    }
+    else //if (pImpl->mPrecision == Precision::FLOAT32)
+    {
+        convertSeismogram(npts, pImpl->mData32f.data(), x);
+    }
+}
 
 const int *Trace::getDataPointer32i() const
 {
