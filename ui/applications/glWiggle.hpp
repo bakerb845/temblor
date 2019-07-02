@@ -38,7 +38,7 @@ public:
 
     void zoom();//bool onKeyPress(GdkEventKey *keyEvent);
     void unZoom();
-    void drawLinePlot(const float xOffset, const float xScale, const float color[4]);
+    void drawLinePlot(const int waveform, const float xOffset, const float xScale, const float color[4]);
     void initializeBuffers();
     void freeBuffers();
     /*! @name Gtk Signals

@@ -45,6 +45,19 @@ public:
      *                  sncl's behavior is undefined.
      */
     SNCL& operator=(SNCL &&sncl) noexcept;
+    /*!
+     * @brief Equality operator.
+     * @result True indicates that the given SNCL 
+     *         equals the SNCL represented by this class.
+     */
+    bool operator==(const SNCL &sncl) noexcept;
+    /*!
+     * @brief Inequality operator.
+     * @param[in] time  Class to test for inequality.
+     * @result True indicates that the given  SNCL
+     *         does not equal the SNCL represented by this class.
+     */
+    bool operator!=(const SNCL &sncl) noexcept;
     /*! @} */
 
     /*! @name Destructors

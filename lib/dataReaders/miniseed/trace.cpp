@@ -77,13 +77,13 @@ void Trace::read(const std::string &fileName, const SNCL &sncl)
 #if TEMBLOR_USE_FILESYSTEM == 1
     if (!fs::exists(fileName))
     {
-        std::string errmsg = "SAC file = " + fileName + " does not exist";
+        std::string errmsg = "SAC file = " + fileName + " does not exist\n";
         throw std::invalid_argument(errmsg);
     }
 #endif
     if (sncl.isEmpty())
     {
-        throw std::invalid_argument("SNCL cannot be empty");
+        throw std::invalid_argument("SNCL cannot be empty\n");
     }
     pImpl->mSNCL = sncl;
     // Create a SNCL selection
@@ -109,7 +109,7 @@ void Trace::read(const std::string &fileName, const SNCL &sncl)
     if (retcode < 0)
     {
         clear();
-        throw std::runtime_error("Failed to create target SNCL");
+        throw std::runtime_error("Failed to create target SNCL\n");
     }
     // Load the trace list
     MS3TraceList *traceList = NULL;
@@ -123,7 +123,7 @@ void Trace::read(const std::string &fileName, const SNCL &sncl)
     {
         clear();
         mstl3_free(&traceList, 0);
-        throw std::runtime_error("Failed to read trace list");
+        throw std::runtime_error("Failed to read trace list\n");
     }
     bool lfound = false;
     bool lfail = false;
@@ -212,13 +212,13 @@ EXIT:;
     if (lfail)
     {
         clear();
-        throw std::runtime_error("Algorithmic failure calling miniSEED");
+        throw std::runtime_error("Algorithmic failure calling miniSEED\n");
     }
     if (!lfound)
     {
         clear();
         throw std::invalid_argument("Could not find %s"
-                                  + std::string(sid.data()));
+                                  + std::string(sid.data()) + "\n");
     }
 }
 
@@ -227,7 +227,7 @@ Precision Trace::getPrecision() const
 {
     if (pImpl->mPrecision == Precision::UNKNOWN)
     {
-        throw std::runtime_error("Data was never set");
+        throw std::runtime_error("Data was never set\n");
     }
     return pImpl->mPrecision;
 }
@@ -246,7 +246,7 @@ void Trace::setSamplingRate(const double samplingRate)
     {
         throw std::invalid_argument("Sampling rate "
                                   + std::to_string(samplingRate)
-                                  + " must be positive");
+                                  + " must be positive\n");
     }
     pImpl->mSamplingRate = samplingRate;
 }
@@ -255,7 +255,7 @@ double Trace::getSamplingRate() const
 {
     if (pImpl->mSamplingRate <= 0)
     {
-        throw std::runtime_error("Sampling rate not set");
+        throw std::runtime_error("Sampling rate not set\n");
     }
     return pImpl->mSamplingRate;
 }
@@ -267,11 +267,11 @@ void Trace::setData(const size_t nSamples, const double x[])
     {
         throw std::runtime_error("Number of samples = "
                                + std::to_string(nSamples)
-                               + " must be positive");
+                               + " must be positive\n");
     }
     if (nSamples > 0 && x == nullptr)
     {
-        throw std::invalid_argument("x cannot be NULL");
+        throw std::invalid_argument("x cannot be NULL\n");
     }
     return;
 }
@@ -287,7 +287,7 @@ void Trace::setSNCL(const SNCL &sncl)
 {
     if (sncl.isEmpty())
     {
-        throw std::invalid_argument("Can't set a blank SNCL");
+        throw std::invalid_argument("Can't set a blank SNCL\n");
     }
     pImpl->mSNCL = sncl;
 }
@@ -303,11 +303,11 @@ const int *Trace::getDataPointer32i() const
 {
     if (pImpl->mPrecision == Precision::UNKNOWN)
     {
-        throw std::runtime_error("Data never set");
+        throw std::runtime_error("Data never set\n");
     }
     if (pImpl->mPrecision != Precision::INT32)
     {
-        throw std::runtime_error("Precision is not 32 bit integer");
+        throw std::runtime_error("Precision is not 32 bit integer\n");
     }
     return pImpl->mData32i.data();
 }
@@ -316,11 +316,11 @@ const float *Trace::getDataPointer32f() const
 {
     if (pImpl->mPrecision == Precision::UNKNOWN)
     {
-        throw std::runtime_error("Data never set");
+        throw std::runtime_error("Data never set\n");
     }
     if (pImpl->mPrecision != Precision::FLOAT32)
     {
-        throw std::runtime_error("Precision is not 32 bit float");
+        throw std::runtime_error("Precision is not 32 bit float\n");
     }
     return pImpl->mData32f.data();
 }
@@ -329,11 +329,11 @@ const double *Trace::getDataPointer64f() const
 {
     if (pImpl->mPrecision == Precision::UNKNOWN)
     {
-        throw std::runtime_error("Data never set");
+        throw std::runtime_error("Data never set\n");
     }
     if (pImpl->mPrecision != Precision::FLOAT64)
     {
-        throw std::runtime_error("Precision is not 64 bit float");
+        throw std::runtime_error("Precision is not 64 bit float\n");
     }
     return pImpl->mData64f.data();
 }

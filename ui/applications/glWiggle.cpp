@@ -37,6 +37,104 @@ struct point
     GLfloat y = 0;
 };
 
+struct TimeSeries
+{
+    /// Destructor
+    ~TimeSeries()
+    {
+        clear();
+    }
+    /// Clears the buffer
+    void clear() noexcept
+    {
+        freeBuffers();
+        mTimeSeries.clear();
+    }
+    /// Sets the seismogram
+    void setSeismogram(const int npts, const double x[])
+    {
+        // Release the old OpenGL buffers
+        clear();
+        // Set space
+        mTimeSeries.resize(npts);
+        GLfloat *dataPtr = mTimeSeries.data();
+        float maxAbs = 0;
+        #pragma omp simd reduction(max:maxAbs)
+        for (auto i=0; i<npts; ++i)
+        {
+            dataPtr[i] = static_cast<GLfloat> (x[i]);
+            maxAbs = std::max(maxAbs, std::abs(dataPtr[i]));
+        }
+        // Normalize and flip
+        if (maxAbs > 0)
+        {
+            #pragma omp simd
+            for (auto i=0; i<npts; ++i)
+            {
+                dataPtr[i] =-dataPtr[i]/maxAbs;
+            }
+        }
+    }
+    /// Binds the seismogram to the OpenGL buffers
+    void bindSeismogramToGLBuffers(const int waveformIndex,
+                                   const int nWaveforms)
+    {
+        // Figure out the y shift.  There are going to be nWaveforms cells
+        // so the waveformIndex'th waveform should be offset by dy + dy/2.
+        auto dy = 2.0f/static_cast<float> (nWaveforms); 
+        auto dy2 = dy/2.0f; // Only plot half
+        auto y0 = -1.0f + static_cast<float> (waveformIndex)*dy + dy/2;
+ 
+        freeBuffers();
+        // Create and populate the buffer objects
+        glGenBuffers(1, &mCoord2DVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, mCoord2DVBO);
+        // Copy time series to GPU memory
+        int len = static_cast<int> (mTimeSeries.size());
+        //std::vector<point> graph(len); //std::array<point, 2000> graph;
+        //for (auto i=0; i<len; ++i)
+        //{
+        //    float x = 2.0f*static_cast<float> (i)/static_cast<float> (len-1) - 1.0f; //100.0;
+        //    graph[i].x = x;
+        //    graph[i].y = 0.95*mTimeSeries[i];
+        //}
+        //glBufferData(GL_ARRAY_BUFFER, len*sizeof(point), graph.data(), GL_STATIC_DRAW);
+        //checkGlError("glBufferData");
+        //glBindBuffer(GL_ARRAY_BUFFER, 0);
+        //checkGlError("glBufferClose")
+        // Map to GPU memory
+        glBufferData(GL_ARRAY_BUFFER, len*sizeof(point), NULL, GL_STATIC_DRAW);
+        auto graphPtr = reinterpret_cast<point *> (glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        for (auto i=0; i<len; ++i)
+        {
+            float x = 2.0f*static_cast<float> (i)/static_cast<float> (len-1) - 1.0f;
+            graphPtr[i].x = x;
+            graphPtr[i].y = y0 + dy2*mTimeSeries[i];
+        }
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+        checkGlError("glUnmapBuffer");
+        // Create and setup the vertex array object
+        glGenVertexArrays(1, &mVAOHandle);
+        glBindVertexArray(mVAOHandle);
+        mMadeBuffers = true;
+    }
+    /// Frees the OpenGL buffers
+    void freeBuffers()
+    {
+        if (mMadeBuffers)
+        {
+            glDeleteBuffers(1, &mCoord2DVBO);
+            checkGlError("Delete mCoord2dVBO");
+            glDeleteBuffers(1, &mVAOHandle);
+            checkGlError("Delete mVAOHandle");
+        }
+    }
+    std::vector<GLfloat> mTimeSeries;
+    GLuint mVAOHandle = 0;
+    GLuint mCoord2DVBO = 0;
+    bool mMadeBuffers = false;
+};
+
 }
 
 class GLWiggle::GLWiggleImpl
@@ -51,6 +149,7 @@ float mScaleX = 1;
     std::string mFragmentShaderFile;
     std::vector<GLfloat> mAxis;
     std::vector<GLfloat> mTimeSeries;
+std::vector<TimeSeries> mTS;
     GLfloat mMaxAbs;
 };
 
@@ -77,6 +176,11 @@ GLWiggle::~GLWiggle() = default;
 /// Sets the seismogram for plotting
 void GLWiggle::setSeismogram(const int npts, const double x[])
 {
+pImpl->mTS.resize(2);
+pImpl->mTS[0].setSeismogram(npts, x);
+pImpl->mTS[1].setSeismogram(npts, x);
+    return;
+
     pImpl->mTimeSeries.resize(npts);
     pImpl->mAxis.resize(npts);
     GLfloat *dataPtr = pImpl->mTimeSeries.data();
@@ -93,29 +197,35 @@ void GLWiggle::setSeismogram(const int npts, const double x[])
     {
         dataPtr[i] =-dataPtr[i]/pImpl->mMaxAbs;
     }
-/*
-#ifdef USE_PSTL
-    auto minMax = std::minmax(std::execution::unseq,
-                              pImpl->mTimeSeries.begin(),
-                              pImpl->mTimeSeries.end());
-#else
-    auto minMax = std::minmax(pImpl->mTimeSeries.begin(),
-                              pImpl->mTimeSeries.end());
-#endif
-    pImpl->mMaxAbs = std::max(std::abs(*minMax.first),
-                              std::abs(*minMax.second));
-*/
+//#ifdef USE_PSTL
+//     auto minMax = std::minmax(std::execution::unseq,
+//                              pImpl->mTimeSeries.begin(),
+//                              pImpl->mTimeSeries.end());
+//#else
+//    auto minMax = std::minmax(pImpl->mTimeSeries.begin(),
+//                              pImpl->mTimeSeries.end());
+//#endif
+//    pImpl->mMaxAbs = std::max(std::abs(*minMax.first),
+//                              std::abs(*minMax.second));
 }
 
+/// Zoom in
 void GLWiggle::zoom() //onKeyPress(GdkEventKey *event)
 {
     pImpl->mScaleX = pImpl->mScaleX*1.5;
     queue_render();
 }
 
+/// Zoom out
 void GLWiggle::unZoom()
 {
-    pImpl->mScaleX = pImpl->mScaleX/1.5;
+    // Can't zoom out anymore
+    if (pImpl->mScaleX <= 1.0)
+    {
+       return;
+    }
+    // Clip on max zoom
+    pImpl->mScaleX = std::max(1.0, pImpl->mScaleX/1.5);
     queue_render();
 }
 
@@ -194,7 +304,9 @@ void GLWiggle::initializeRenderer()
         pImpl->mShader.createVertexShaderFromFile(pImpl->mVertexShaderFile);
         pImpl->mShader.createFragmentShaderFromFile(pImpl->mFragmentShaderFile);
         pImpl->mShader.makeShaderProgram();
-        initializeBuffers();
+        //initializeBuffers();
+pImpl->mTS[0].bindSeismogramToGLBuffers(0, 2);
+pImpl->mTS[1].bindSeismogramToGLBuffers(1, 2);
 /*
         glGenBuffers(2, pImpl->mVBO); //mVBOHandles);
         glGenVertexArrays(1, &pImpl->mVAO);
@@ -249,7 +361,8 @@ void GLWiggle::initializeRenderer()
     }
 }
 
-void GLWiggle::drawLinePlot(const float xOffset,
+void GLWiggle::drawLinePlot(const int waveform,
+                            const float xOffset,
                             const float xScale,
                             const float color[4])
 {
@@ -269,7 +382,8 @@ void GLWiggle::drawLinePlot(const float xOffset,
     glUniform4f(colorHandle, color[0], color[1], color[2], color[3]); //0.0f, 1.0f, 0.0f, 1.0f);
     checkGlError("color");
     // Bind the appropriate buffer object
-    glBindBuffer(GL_ARRAY_BUFFER, pImpl->mCoord2DVBO);
+    //glBindBuffer(GL_ARRAY_BUFFER, pImpl->mCoord2DVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, pImpl->mTS[waveform].mCoord2DVBO);
     checkGlError("bindVBO");
     // Draw the coord2d data on this VBO
     glEnableVertexAttribArray(pImpl->mShader["coord2d"]);
@@ -278,7 +392,8 @@ void GLWiggle::drawLinePlot(const float xOffset,
                           GL_FLOAT, GL_FALSE, 0, nullptr);
     checkGlError("attribPointer");
     // Do the drawing 
-    int len = pImpl->mTimeSeries.size();
+    //int len = pImpl->mTimeSeries.size();
+    int len = pImpl->mTS[waveform].mTimeSeries.size();
     glDrawArrays(GL_LINE_STRIP, 0, len);
     checkGlError("drawArrays");
 
@@ -336,13 +451,14 @@ printf("render\n");
 */
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        checkGlError("pameteri");
-
+        checkGlError("Parameteri");
 
         float xScale = pImpl->mScaleX; //ratio;
         float xOffset = 0;
         float color[4] = {0, 1, 0, 1}; //ratio, ratio, ratio, 1.0};
-        drawLinePlot(xOffset, xScale, color);
+        drawLinePlot(0, xOffset, xScale, color);
+        float red[4] = {1, 0, 0, 1};
+        drawLinePlot(1, xOffset, xScale, red);//color);
 /*
         // Bind the uniform parameters of the shader
         glUniform1f(pImpl->mShader("offset_x"), 0.0f);

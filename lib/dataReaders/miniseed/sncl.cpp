@@ -73,6 +73,20 @@ SNCL& SNCL::operator=(SNCL &&sncl) noexcept
     return *this;
 }
 
+bool SNCL::operator==(const SNCL &sncl) noexcept
+{
+    if (getNetwork() != sncl.getNetwork()){return false;}
+    if (getStation() != sncl.getStation()){return false;}
+    if (getChannel() != sncl.getChannel()){return false;}
+    if (getLocationCode() != sncl.getLocationCode()){return false;}
+    return true;
+}
+
+bool SNCL::operator!=(const SNCL &sncl) noexcept
+{
+    return !(*this == sncl);
+}
+
 /// Destructors
 SNCL::~SNCL() = default;
 

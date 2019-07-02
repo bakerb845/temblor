@@ -42,6 +42,7 @@ TEST(LibraryDataReadersMiniSEED, SNCL)
     EXPECT_FALSE(sncl.isEmpty());
     // Test copy constructor
     MiniSEED::SNCL snclCopy(sncl);
+    ASSERT_TRUE(snclCopy == sncl);
     ASSERT_STREQ(snclCopy.getNetwork().c_str(), network.c_str()); 
     ASSERT_STREQ(snclCopy.getStation().c_str(), station.c_str());
     ASSERT_STREQ(snclCopy.getChannel().c_str(), channel.c_str());
@@ -51,10 +52,12 @@ TEST(LibraryDataReadersMiniSEED, SNCL)
     std::string stationTooBig  = "12345678910DUG";
     std::string channelTooBig  = "12345678910HHZ";
     std::string locationTooBig = "12345678910--";
+    ASSERT_TRUE(sncl == snclCopy);
     sncl.setNetwork(networkTooBig);
     sncl.setStation(stationTooBig);
     sncl.setChannel(channelTooBig);
     sncl.setLocationCode(locationTooBig);
+    ASSERT_FALSE(sncl == snclCopy);
     ASSERT_STREQ(sncl.getNetwork().c_str(), "1234567891");
     ASSERT_STREQ(sncl.getStation().c_str(), "1234567891");
     ASSERT_STREQ(sncl.getChannel().c_str(), "1234567891");
