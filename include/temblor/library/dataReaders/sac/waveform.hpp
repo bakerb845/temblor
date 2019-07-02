@@ -5,6 +5,12 @@
 #include <vector>
 #include "temblor/library/dataReaders/sac/enums.hpp"
 
+// Forward declarations
+namespace Temblor::Library::Utilities
+{
+class Time;
+}
+
 namespace Temblor::Library::DataReaders::SAC
 {
 
@@ -97,8 +103,8 @@ public:
       *                      with this function.
       * @param value         The value of the variable.
       * @throws std::invalid_argument if attempting to set Integer::NPTS
-      *         to a negative number or if any of the time variables are
-      *         out of range.
+      *         to a negative number, if any of the time variables are
+      *         out of range, or if the user attemps to modify Integer::IFTYPE.
       */
     void setHeader(const Integer variableName, const int value);
     /*! @} */
@@ -162,6 +168,12 @@ public:
      * @sa isValid()
      */
     int getNumberOfSamples() const noexcept;
+    /*!
+     * @brief Convenience function to set the start time.
+     * @param[in] startTime   The start time of the trace.
+     * @note This will set set Double::B to 0.
+     */
+    void setStartTime(const Utilities::Time &startTime) noexcept;
 
     /*!
      * @brief Sets the data.

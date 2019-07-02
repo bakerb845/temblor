@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <fstream>
 #include "temblor/library/private/filesystem.hpp"
+#include "temblor/library/utilities/time.hpp"
 #include "temblor/library/dataReaders/sac/waveform.hpp"
 #include "temblor/library/dataReaders/sac/header.hpp"
 
@@ -17,7 +18,25 @@ class Waveform::WaveformImpl
 {
 public:
     /// Constructor
-    WaveformImpl() = default;
+    WaveformImpl()
+    {
+        // Must give header version
+        mHeader.setHeader(Integer::NVHDR, 6);
+        // Must be an evenly spaced time series file
+        mHeader.setHeader(Integer::IFTYPE, 1);
+        mHeader.setHeader(Logical::LEVEN, true); // Default if not set
+        // Force the start time to be the epoch
+        /*
+        mHeader.setHeader(Integer::NZYEAR, 1970); /// = default;
+        mHeader.setHeader(Integer::NZJDAY, 1);
+        mHeader.setHeader(Integer::NZHOUR, 0);
+        mHeader.setHeader(Integer::NZMIN,  0);
+        mHeader.setHeader(Integer::NZSEC,  0);
+        mHeader.setHeader(Integer::NZMSEC, 0);
+        */
+        // Turns out b =-12345 is okay but looks screwy when plotted
+        mHeader.setHeader(Double::B, 0);
+    }
     WaveformImpl(const WaveformImpl &waveform)
     {
         *this = waveform;
@@ -43,11 +62,16 @@ public:
     {
         clear();
     }
-    void clear()
+    void freeData()
     {
         if (mData){free(mData);}
-        mHeader.clear();
+        mHeader.setHeader(Integer::NPTS, 0);
         mData = nullptr;
+    }
+    void clear()
+    {
+        freeData();
+        mHeader.clear();
     }
 
 //private:
@@ -201,7 +225,7 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
 #endif
     // Pack the header
     int npts = getNumberOfSamples();
-    size_t nbytes = 632 + 4*static_cast<size_t> (npts);
+    size_t nbytes = 632 + sizeof(float)*static_cast<size_t> (npts);
     std::vector<char> cdata(nbytes);
     pImpl->mHeader.getBinaryHeader(cdata.data(), lswap);
     // Pack the data
@@ -238,6 +262,18 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
     outfile.close();
 }
 
+void Waveform::setStartTime(const Utilities::Time &startTime) noexcept
+{
+     pImpl->mHeader.setHeader(SAC::Integer::NZYEAR, startTime.getYear()); 
+     pImpl->mHeader.setHeader(SAC::Integer::NZJDAY, startTime.getJulianDay());
+     pImpl->mHeader.setHeader(SAC::Integer::NZHOUR, startTime.getHour());
+     pImpl->mHeader.setHeader(SAC::Integer::NZMIN,  startTime.getMinute());
+     pImpl->mHeader.setHeader(SAC::Integer::NZSEC,  startTime.getSecond());
+     auto millisec = static_cast<int> (startTime.getMicroSecond()*1.e-3 + 0.5);
+     pImpl->mHeader.setHeader(SAC::Integer::NZMSEC, millisec);
+     pImpl->mHeader.setHeader(SAC::Double::B, 0.0);    
+}
+
 void Waveform::setHeader(const Double variableName, const double value)
 {
     pImpl->mHeader.setHeader(variableName, value);
@@ -253,6 +289,10 @@ void Waveform::setHeader(const Integer variableName, const int value)
     if (variableName == Integer::NPTS)
     {
         throw std::invalid_argument("NPTS cannot be set with this function");
+    }
+    if (variableName == Integer::IFTYPE)
+    {
+        throw std::invalid_argument("IFTYPE cannot be set with this function");
     }
     pImpl->mHeader.setHeader(variableName, value);
 }
@@ -321,6 +361,23 @@ std::vector<double> Waveform::getData() const noexcept
         std::vector<double> data(0);
         return data;
     }
+}
+
+void Waveform::setData(const int npts, const double x[])
+{
+    pImpl->freeData();
+    if (npts <= 0)
+    {
+        throw std::invalid_argument("npts = " + std::to_string(npts)
+                                  + " must be positive\n");
+    }
+    if (x == nullptr)
+    {
+        throw std::invalid_argument("x is NULL");
+    }
+    pImpl->mHeader.setHeader(Integer::NPTS, npts);
+    pImpl->mData = alignedAllocDouble(npts);
+    std::memcpy(pImpl->mData, x, static_cast<size_t> (npts)*sizeof(double));
 }
 //============================================================================//
 

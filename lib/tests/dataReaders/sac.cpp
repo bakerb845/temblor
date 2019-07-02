@@ -322,6 +322,8 @@ TEST(LibraryDataReadersSAC, waveform)
 {
     const std::string sacFile = "data/debug.sac";
     SAC::Waveform waveform; 
+    ASSERT_EQ(waveform.getHeader(SAC::Integer::NVHDR), 6);
+    ASSERT_EQ(waveform.getHeader(SAC::Integer::IFTYPE), 1);
     waveform.read(sacFile);
     ASSERT_EQ(waveform.getNumberOfSamples(), 100);    
     ASSERT_NEAR(waveform.getSamplingPeriod(), 0.005, 1.e-7);
@@ -353,7 +355,7 @@ TEST(LibraryDataReadersSAC, waveform)
     std::string scratchFile = std::string(scratchFilePath.c_str())
                             + "/temp.sac";
 #else
-    std::string scratchFile = "temp.txt";
+    std::string scratchFile = "temp.sac";
 #endif
     waveform.write(scratchFile);
     SAC::Waveform waveformRead;
