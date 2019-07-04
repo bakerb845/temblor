@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <cstdlib>
 
 #include "temblor/userInterface/models/rgba.hpp"
 
@@ -40,6 +42,20 @@ public:
      */
     RGBA& operator=(RGBA &&rgba) noexcept;
     /*! @} */
+
+    /*! @name Destructors
+     * @{
+     */
+    /*!
+     * @brief Destructor
+     */
+    ~RGBA();
+    /*!
+     * @brief Clears the class and resets to the default.
+     */
+    void clear() noexcept;
+    /*! @} */
+
 private:
     class RGBAImpl;
     std::unique_ptr<RGBAImpl> pImpl;
