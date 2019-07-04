@@ -4,7 +4,11 @@
 #include <array>
 #include <cmath>
 //#include <giomm/resource.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <epoxy/gl.h> //GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 //#include <GL/glew.h>
 #if __has_include(<pstl/algorithm>)
 #include <pstl/execution>
@@ -36,6 +40,16 @@ struct point
     GLfloat x = 0;
     GLfloat y = 0;
 };
+
+struct Character
+{
+    GLuint     TextureID;  // ID handle of the glyph texture
+    glm::ivec2 Size;       // Size of glyph
+    glm::ivec2 Bearing;    // Offset from baseline to left/top of glyph
+    GLuint     Advance;    // Offset to advance to next glyph
+};
+
+//std::map<GLchar, Character> Characters;
 
 struct TimeSeries
 {
@@ -141,12 +155,15 @@ class GLWiggle::GLWiggleImpl
 {
 public:
     class GLSLShader mShader;
+    class GLSLShader mTextShader;
 float mScaleX = 1;
     //GLuint mVBO[2] = {0, 0};
     GLuint mVAOHandle = 0;
     GLuint mCoord2DVBO = 0;
     std::string mVertexShaderFile;
     std::string mFragmentShaderFile;
+    std::string mTextVertexShaderFile;
+    std::string mTextFragmentShaderFile;
     std::vector<GLfloat> mAxis;
     std::vector<GLfloat> mTimeSeries;
 std::vector<TimeSeries> mTS;
@@ -159,6 +176,16 @@ GLWiggle::GLWiggle() :
     // Load the shader programs
     setVertexShaderFileName("shaders/array.vs");
     setFragmentShaderFileName("shaders/array.fs");
+
+    setTextShaderFileNames("shaders/text.vs",
+                           "shaders/text.fs");
+FT_Library ft;
+if (FT_Init_FreeType(&ft))
+    printf("error\n"); //std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+
+FT_Face face;
+if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
+    printf("error2\n"); //std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl; 
     // Hook up the signals for GLArea
     signal_realize().connect(sigc::mem_fun(*this,
                              &GLWiggle::initializeRenderer));
@@ -231,6 +258,25 @@ void GLWiggle::unZoom()
 
 //GLWiggle::setShaders(const std::string &
 
+void GLWiggle::setTextShaderFileNames(const std::string &textVertexShaderFile,
+                                      const std::string &textFragmentShaderFile)
+{
+#ifdef TEMBLOR_USE_FILESYSTEM
+    if (!fs::exists(textVertexShaderFile))
+    {
+        throw std::invalid_argument("Vertex shader = " + textVertexShaderFile
+                                  + " does not exist");
+    }
+    if (!fs::exists(textFragmentShaderFile))
+    {
+        throw std::invalid_argument("Vertex shader = " + textFragmentShaderFile
+                                  + " does not exist");
+    }
+#endif
+    pImpl->mTextVertexShaderFile = textVertexShaderFile;
+    pImpl->mTextFragmentShaderFile = textFragmentShaderFile;
+}
+
 void GLWiggle::setVertexShaderFileName(const std::string &fileName)
 {
     pImpl->mVertexShaderFile.clear();
@@ -301,9 +347,15 @@ void GLWiggle::initializeRenderer()
     try 
     {
         throw_if_error();
+        // Fire up the seismogram shaders
         pImpl->mShader.createVertexShaderFromFile(pImpl->mVertexShaderFile);
         pImpl->mShader.createFragmentShaderFromFile(pImpl->mFragmentShaderFile);
         pImpl->mShader.makeShaderProgram();
+        // And the text shaders
+        pImpl->mTextShader.createVertexShaderFromFile(pImpl->mTextVertexShaderFile);
+        pImpl->mTextShader.createFragmentShaderFromFile(pImpl->mTextFragmentShaderFile); 
+        pImpl->mTextShader.makeShaderProgram();
+        //pImpl->mTextShader.createVertexShaderFromFile( );
         //initializeBuffers();
 pImpl->mTS[0].bindSeismogramToGLBuffers(0, 2);
 pImpl->mTS[1].bindSeismogramToGLBuffers(1, 2);
@@ -330,29 +382,30 @@ pImpl->mTS[1].bindSeismogramToGLBuffers(1, 2);
     // Add the attributes and uniforms
     try
     {
+        // Waveform vertex shader
         pImpl->mShader.useProgram();
- 
-        pImpl->mShader.addAttribute("coord2d");
-        checkGlError("coord2d");
-        pImpl->mShader.addUniform("offset_x");
-        checkGlError("offset_x");
-        pImpl->mShader.addUniform("scale_x");
-        checkGlError("scale_x");
-        pImpl->mShader.addUniform("color");
-        checkGlError("color");
-        /*
-        pImpl->mShader.addAttribute("xPosition\0");
-        checkGlError("xpos");
-        pImpl->mShader.addAttribute("yPosition\0");
-        checkGlError("yPos");
-        pImpl->mShader.addUniform("offset\0");
-        checkGlError("offset");
-        pImpl->mShader.addUniform("scale\0");
-        checkGlError("scale");
-        pImpl->mShader.addUniform("color\0");
-        checkGlError("color");
-        */
+            pImpl->mShader.addAttribute("coord2d");
+            checkGlError("coord2d");
+            pImpl->mShader.addUniform("offset_x");
+            checkGlError("offset_x");
+            pImpl->mShader.addUniform("scale_x");
+            checkGlError("scale_x");
+            pImpl->mShader.addUniform("color");
+            checkGlError("color");
         pImpl->mShader.releaseProgram();
+        // Text shader
+        pImpl->mTextShader.useProgram();
+            pImpl->mTextShader.addAttribute("vertex"); 
+            checkGlError("vertex");
+            pImpl->mTextShader.addAttribute("TexCoords");
+            checkGlError("TexCoords");
+            pImpl->mTextShader.addUniform("projection");
+            checkGlError("projection");
+            pImpl->mTextShader.addUniform("text");
+            checkGlError("text");
+            pImpl->mTextShader.addUniform("textColor");
+            checkGlError("textColor");
+        pImpl->mTextShader.releaseProgram(); 
     }
     catch (const std::exception &e) 
     {
@@ -529,6 +582,7 @@ void GLWiggle::destroyRenderer()
     {
         throw_if_error();
         pImpl->mShader.deleteShaderProgram();
+        pImpl->mTextShader.deleteShaderProgram();
         freeBuffers();
     }
     catch (const Gdk::GLError &gle)

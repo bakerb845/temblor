@@ -36,6 +36,17 @@ public:
 
     void setSeismogram(const int npts, const double x[]);
 
+    /*!
+     * @brief Sets the vertex and fragment shader programs.
+     * @param[in] textVertexShaderFile    The name of the text rendering
+     *                                    vertex shader file.
+     * @param[in] textFragmentShaderFile  The name of the text rendering
+     *                                    fragment shader file.
+     * @throws std::invalid_argument if either file does not exist.
+     */ 
+    void setTextShaderFileNames(const std::string &textVertexShaderFile,
+                                const std::string &textFragmentShaderFile);
+
     void zoom();//bool onKeyPress(GdkEventKey *keyEvent);
     void unZoom();
     void drawLinePlot(const int waveform, const float xOffset, const float xScale, const float color[4]);

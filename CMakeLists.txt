@@ -48,6 +48,7 @@ find_package(GTest REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
 find_package(OpenGL REQUIRED)
+find_package(Freetype REQUIRED)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -117,10 +118,10 @@ target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} ${MSEED_LIBRARY
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 add_library(temblorUI SHARED ${UILIB_SRC})
-target_link_libraries(temblorUI PRIVATE ${temblor} ${GTKMM_LIBRARIES} ${GL_LIBRAY} ${EPOXY_LIBRARY})
+target_link_libraries(temblorUI PRIVATE ${temblor} ${GTKMM_LIBRARIES} ${GL_LIBRAY} ${EPOXY_LIBRARY} ${FREETYPE_LIBRARIES})
 
 target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS} ${GL_INCLUDE_DIR})
-target_link_libraries(gltest temblorUI temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY})
+target_link_libraries(gltest temblorUI temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY} ${FREETYPE_LIBRARIES})
 
 ##########################################################################################
 #                                 Copy Shader Files                                      #
@@ -133,6 +134,7 @@ target_link_libraries(gltest temblorUI temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} 
                   #COMMENT "Copying files for target ")
 #add_dependencies(gltest copy_shader_files)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ui/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ui/fonts   DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 ##########################################################################################
 #                                      Unit Tests                                        #
 ##########################################################################################
