@@ -108,7 +108,8 @@ void Trace::read(const std::string &fileName, const SNCL &sncl)
 #if TEMBLOR_USE_FILESYSTEM == 1
     if (!fs::exists(fileName))
     {
-        std::string errmsg = "SAC file = " + fileName + " does not exist\n";
+        std::string errmsg = "miniSEED file = " + fileName
+                          + " does not exist\n";
         throw std::invalid_argument(errmsg);
     }
 #endif

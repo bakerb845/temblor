@@ -421,7 +421,7 @@ void GLWiggle::on_resize(const int width, const int height)
 /// signal_render: Does the rendering
 bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
 {
-printf("render\n");
+    //printf("render\n");
     make_current();
     auto allocation = get_allocation();
     auto height = allocation.get_height();
@@ -439,7 +439,7 @@ printf("render\n");
     try
     {
         throw_if_error();
-        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClearColor(0.98, 0.98, 0.98, 1.0);
         checkGlError("clear color");
         glClear(GL_COLOR_BUFFER_BIT);// | GL_DEPTH_BUFFER_BIT);
         checkGlError("clear");
@@ -455,7 +455,7 @@ printf("render\n");
 
         float xScale = pImpl->mScaleX; //ratio;
         float xOffset = 0;
-        float color[4] = {0, 1, 0, 1}; //ratio, ratio, ratio, 1.0};
+        float color[4] = {0, 0, 0, 1}; //ratio, ratio, ratio, 1.0};
         drawLinePlot(0, xOffset, xScale, color);
         float red[4] = {1, 0, 0, 1};
         drawLinePlot(1, xOffset, xScale, red);//color);
