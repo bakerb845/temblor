@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <string>
 #include "temblor/userInterface/widgets/waveformPlotOptionsModel.hpp"
+#include "temblor/userInterface/models/rgba.hpp"
 
+namespace UIModels = Temblor::UserInterface::Models;
 using namespace Temblor::UserInterface::Widgets;
 
 class WaveformPlotOptionsModel::WaveformPlotOptionsModelImpl
