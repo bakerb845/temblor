@@ -1,68 +1,22 @@
 #include <cstdio>
 #include <cstdlib>
-
+#include <string>
+#include <cmath>
 #include "temblor/userInterface/models/rgba.hpp"
 
-namespace Temblor::UserInterface::Models
-{
-class RGBA
-{
-public:
-    /*! @name Constructors
-     * @{
-     */
-    /*!
-     * @brief Default constructor intiializes a black point.
-     */
-    RGBA();
-    /*!
-     * @brief Copy constructor.
-     */
-    RGBA(const RGBA &rgba);
-    /*!
-     * @brief Move constructor.
-     */
-    RGBA(RGBA &&rgba) noexcept;
-    /*! @} */
-
-    /*! @name Operators
-     * @{
-     */
-    /*!
-     * @brief Copy assignment operator.
-     * @param[in] rgba   RGBA class to copy.
-     * @result A deep copy of the RGBA class.
-     */
-    RGBA& operator=(const RGBA &rgba);
-    /*!
-     * @brief Move assignment operator.
-     * @param[in,out] rgba   The RGBA class to move to this.  On exit RGBA's
-     *                       behavior is undefined.
-     * @result The moved contents of RGBA.
-     */
-    RGBA& operator=(RGBA &&rgba) noexcept;
-    /*! @} */
-
-    /*! @name Destructors
-     * @{
-     */
-    /*!
-     * @brief Destructor
-     */
-    ~RGBA();
-    /*!
-     * @brief Clears the class and resets to the default.
-     */
-    void clear() noexcept;
-    /*! @} */
-
-private:
-    class RGBAImpl;
-    std::unique_ptr<RGBAImpl> pImpl;
-};
-}
-
 using namespace Temblor::UserInterface::Models;
+
+namespace
+{
+double integerToFraction(const int value)
+{
+    return static_cast<double> (value)/255.0;
+}
+int fractionToInteger(const double value)
+{
+    return std::min(static_cast<int> (value*255.0 + 0.5), 255);
+}         
+}
 
 class RGBA::RGBAImpl
 {
@@ -74,7 +28,7 @@ public:
 };
 
 /// Constructors
-RGBA::RGBA::() : 
+RGBA::RGBA() : 
     pImpl(std::make_unique<RGBAImpl> ())
 {
 }
@@ -108,8 +62,7 @@ void RGBA::setFractionalRed(const double value)
         throw std::invalid_argument("red = " + std::to_string(value)
                                   + " must be in range [0,1]");
     }
-    auto intColor = static_cast<int> (value*255.0);
-    pImpl->mRed = std::min(255, std::max(0, intColor));
+    pImpl->mRed = fractionToInteger(value);
 }
 
 int RGBA::getRed() const noexcept
@@ -119,6 +72,83 @@ int RGBA::getRed() const noexcept
 
 double RGBA::getFractionalRed() const noexcept
 {
-    return static_cast<double> (pImpl->mRed)/255.0;
+    return integerToFraction(pImpl->mRed);
 }
 
+// Green
+void RGBA::setGreen(const int value)
+{
+    if (value < 0 || value > 255)
+    {
+        throw std::invalid_argument("green = " + std::to_string(value)
+                                  + " must be in range [0,255]");
+    }
+    pImpl->mGreen = value;
+}
+
+void RGBA::setFractionalGreen(const double value)
+{
+    if (value < 0 || value > 1)
+    {
+        throw std::invalid_argument("green = " + std::to_string(value)
+                                  + " must be in range [0,1]");
+    }
+    pImpl->mGreen = fractionToInteger(value);
+}
+
+int RGBA::getGreen() const noexcept
+{
+    return pImpl->mGreen;
+}
+
+double RGBA::getFractionalGreen() const noexcept
+{
+    return integerToFraction(pImpl->mGreen);
+}
+
+// Blue
+void RGBA::setBlue(const int value)
+{
+    if (value < 0 || value > 255)
+    {
+        throw std::invalid_argument("blue = " + std::to_string(value)
+                                  + " must be in range [0,255]");
+    }
+    pImpl->mBlue = value;
+}
+
+void RGBA::setFractionalBlue(const double value)
+{
+    if (value < 0 || value > 1)
+    {
+        throw std::invalid_argument("blue = " + std::to_string(value)
+                                  + " must be in range [0,1]");
+    }
+    pImpl->mBlue = fractionToInteger(value);
+}
+
+int RGBA::getBlue() const noexcept
+{
+    return pImpl->mBlue;
+}
+
+double RGBA::getFractionalBlue() const noexcept
+{
+    return integerToFraction(pImpl->mBlue);
+}
+
+// Alpha
+void RGBA::setAlpha(const double alpha)
+{
+    if (alpha < 0 || alpha > 1)
+    {
+       throw std::invalid_argument("alpha = " + std::to_string(alpha)
+                                 + " must be in range [0,1]");
+    }
+    pImpl->mAlpha = alpha;
+}
+
+double RGBA::getAlpha() const noexcept
+{
+    return pImpl->mAlpha;
+}

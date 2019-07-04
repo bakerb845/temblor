@@ -98,6 +98,8 @@ set(LIBSRC
     lib/utilities/time.cpp)
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
+set(UILIB_SRC
+    ui/models/rgba.cpp)
 add_executable(gltest
                ui/applications/glWiggle.cpp
                ui/applications/glslShader.cpp
@@ -106,7 +108,6 @@ add_executable(gltest
                ui/widgets/firDesignerWindow.cpp
                ui/widgets/firDesignerModel.cpp
                ui/widgets/waveformPlotOptionsModel.cpp
-               ui/models/rgba.cpp
                )
 set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
@@ -115,11 +116,11 @@ target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
 target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} ${MSEED_LIBRARY})
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
-# Add the Qt5 Widgets for linking
-#target_link_libraries(helloworld Qt5::Widgets)
+add_library(temblorUI SHARED ${UILIB_SRC})
+target_link_libraries(temblorUI PRIVATE ${temblor} ${GTKMM_LIBRARIES} ${GL_LIBRAY} ${EPOXY_LIBRARY})
+
 target_include_directories(gltest PUBLIC ${GTKMM_INCLUDE_DIRS} ${GL_INCLUDE_DIR})
-#target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${EPOXY_LIBRARY} ${GL_LIBRARY})
-target_link_libraries(gltest temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY})
+target_link_libraries(gltest temblorUI temblor ${GTKMM_LIBRARIES} ${GL_LIBRARY} ${EPOXY_LIBRARY})
 
 ##########################################################################################
 #                                 Copy Shader Files                                      #
@@ -165,6 +166,15 @@ target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES}
 target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibrarySolvers
          COMMAND testLibrarySolvers)
+
+add_executable(testUserInterfaceModels
+               ui/tests/main.cpp
+               ui/tests/rgba.cpp
+              )
+target_link_libraries(testUserInterfaceModels PRIVATE temblor temblorUI ${GTEST_BOTH_LIBRARIES})
+target_include_directories(testUserInterfaceModels PRIVATE ${GTEST_INCLUDE_DIRS})
+add_test(NAME testUserInterfaceModels
+         COMMAND testUserInterfaceModels)
 
 # Also need to copy some test data
 file(COPY ${CMAKE_SOURCE_DIR}/lib/tests/data DESTINATION .)
