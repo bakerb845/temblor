@@ -33,6 +33,16 @@ RGBA::RGBA() :
 {
 }
 
+RGBA::RGBA(const RGBA &rgba)
+{
+    *this = rgba;
+}
+
+RGBA::RGBA(RGBA &&rgba) noexcept
+{
+    *this = std::move(rgba);
+}
+
 /// Destructors
 RGBA::~RGBA() = default;
 
@@ -41,6 +51,13 @@ RGBA& RGBA::operator=(const RGBA &rgba)
 {
     if (&rgba == this){return *this;}
     pImpl = std::make_unique<RGBAImpl> (*rgba.pImpl);
+    return *this;
+}
+
+RGBA& RGBA::operator=(RGBA &&rgba) noexcept
+{
+    if (&rgba == this){return *this;}
+    pImpl = std::move(rgba.pImpl);
     return *this;
 }
 
