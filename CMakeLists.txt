@@ -106,6 +106,7 @@ add_executable(gltest
                ui/widgets/firDesignerWindow.cpp
                ui/widgets/firDesignerModel.cpp
                ui/widgets/waveformPlotOptionsModel.cpp
+               ui/models/rgba.cpp
                )
 set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
