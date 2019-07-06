@@ -49,6 +49,203 @@ struct Character
     GLuint     Advance;    // Offset to advance to next glyph
 };
 
+class FreeType
+{
+public:
+    /// Constructor - loads the library
+    FreeType()
+    {
+        if (FT_Init_FreeType(&mFreeType))
+        {
+            fprintf(stderr, "Could initialize FreeType library\n");
+            return;
+        }
+        mLinit = true;
+    } 
+    /// Destructor releases the library
+    ~FreeType()
+    {
+        if (mLinit)
+        {
+            FT_Done_FreeType(mFreeType);
+            mLinit = false; 
+        }
+        mCharacters.clear();
+        mFontsFile.clear();
+    }
+    /// Sets the pixel width and height
+    /// If width is 0 then it will be automatically set from height
+    void setPixelWidthAndHeight(const int width, const int height)
+    {
+        if (!mLinit)
+        {
+            fprintf(stderr, "FreeType not initialized\n");
+            return;
+        }
+        if (!mHaveFace)
+        {
+            fprintf(stderr, "Facetype not yet set - call setFontFile");
+            return;
+        }
+        FT_Set_Pixel_Sizes(mFace, width, height);
+    } 
+    /// Sets the font file
+    void setFontFile(const std::string &fontsFile)
+    {
+        if (!mLinit)
+        {
+            fprintf(stderr, "FreeType not initialized\n");
+            return;
+        }
+#ifdef TEMBLOR_USE_FILESYSTEM
+        if (!fs::exists(fontsFile))
+        {
+            fprintf(stderr, "File %s does not exist\n", fontsFile.c_str());
+        }
+#endif 
+        mHaveFace = false;
+        mCharacters.clear();
+        mFontsFile = fontsFile;
+        if (FT_New_Face(mFreeType, mFontsFile.c_str(), 0, &mFace))
+        {
+            fprintf(stderr, "Failed to load font from %s\n", mFontsFile.c_str());
+            return;
+        }
+        mHaveFace = true;
+    }
+    /// Load the 128 characters
+    void loadCharacters()
+    {
+        if (!mLinit)
+        {
+            fprintf(stderr, "FreeType not initialized\n");
+            return;
+        }
+        if (!mHaveFace)
+        {
+            if (FT_New_Face(mFreeType, mFontsFile.c_str(), 0, &mFace))
+            {
+                fprintf(stderr, "Failed to load font from %s\n", mFontsFile.c_str());
+                return;
+            }
+            mHaveFace = true;
+        }
+        mCharacters.clear();
+        // Disable the byte-alignment restriction
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        for (GLubyte c = 0; c < 128; c++)
+        {
+            // Load character glyph
+            if (FT_Load_Char(mFace, c, FT_LOAD_RENDER))
+            {
+                fprintf(stderr, "Failed to load Glyph\n");
+                continue;
+            }
+            // Generate texture
+            GLuint texture;
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         GL_RED,
+                         mFace->glyph->bitmap.width,
+                         mFace->glyph->bitmap.rows,
+                         0,
+                         GL_RED,
+                         GL_UNSIGNED_BYTE,
+                         mFace->glyph->bitmap.buffer);
+            // Set texture options
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            // Now store character for later use
+            Character character = {texture,
+                                   glm::ivec2(mFace->glyph->bitmap.width, mFace->glyph->bitmap.rows),
+                                   glm::ivec2(mFace->glyph->bitmap_left, mFace->glyph->bitmap_top),
+                                   static_cast<GLuint> (mFace->glyph->advance.x)
+                                  };
+            mCharacters.insert(std::pair<GLchar, Character>(c, character));
+        }
+    }
+    std::map<GLchar, Character> getCharacters() const
+    {
+        if (mCharacters.size() == 0)
+        {
+            fprintf(stderr, "Characters not yet initialized\n");
+        }
+        return mCharacters;
+    }
+
+    FT_Library mFreeType;
+    FT_Face mFace;
+    std::map<GLchar, Character> mCharacters;
+    std::string mFontsFile = "fonts/arial.ttf";
+    bool mLinit = false;
+    bool mHaveFace = false;
+};
+
+void packCharacters(std::map<GLchar, Character> &characters,
+                    const int pixelWidth = 0,
+                    const int pixelHeight = 48,
+                    const std::string &fontsFile = "fonts/arial.ttf")
+{
+    // Initialize FreeType and load the fonts
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+    {
+        fprintf(stderr, "Could initialize FreeType library\n");
+        return;
+    }
+    FT_Face face;
+    if (FT_New_Face(ft, fontsFile.c_str(), 0, &face))
+    {
+        fprintf(stderr, "Failed to load font from %s\n", fontsFile.c_str());
+        return;
+    }
+    // Set the pixel size based.  Note if the pixel width is 0 then it will be
+    // dynamically set based on the pixel height.
+    FT_Set_Pixel_Sizes(face, pixelWidth, pixelHeight); //0, 48);
+    // Disable the byte-alignment restriction
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    for (GLubyte c = 0; c < 128; c++)
+    {
+        // Load character glyph 
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            fprintf(stderr, "Failed to load Glyph\n");
+            continue;
+        }
+        // Generate texture
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RED,
+                     face->glyph->bitmap.width,
+                     face->glyph->bitmap.rows,
+                     0,
+                     GL_RED,
+                     GL_UNSIGNED_BYTE,
+                     face->glyph->bitmap.buffer);
+        // Set texture options
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // Now store character for later use
+        Character character = {texture, 
+                               glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                               glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                               static_cast<GLuint> (face->glyph->advance.x)
+                              };
+        characters.insert(std::pair<GLchar, Character>(c, character));
+    }
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+}
+
 //std::map<GLchar, Character> Characters;
 
 struct TimeSeries
@@ -156,7 +353,10 @@ class GLWiggle::GLWiggleImpl
 public:
     class GLSLShader mShader;
     class GLSLShader mTextShader;
-float mScaleX = 1;
+    std::map<GLchar, Character> mCharacters;
+    float mScaleX = 1;
+    float mShiftX = 0;
+    float mCenterX = 0;
     //GLuint mVBO[2] = {0, 0};
     GLuint mVAOHandle = 0;
     GLuint mCoord2DVBO = 0;
@@ -179,6 +379,7 @@ GLWiggle::GLWiggle() :
 
     setTextShaderFileNames("shaders/text.vs",
                            "shaders/text.fs");
+/*
 FT_Library ft;
 if (FT_Init_FreeType(&ft))
     printf("error\n"); //std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -186,6 +387,7 @@ if (FT_Init_FreeType(&ft))
 FT_Face face;
 if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
     printf("error2\n"); //std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl; 
+*/
     // Hook up the signals for GLArea
     signal_realize().connect(sigc::mem_fun(*this,
                              &GLWiggle::initializeRenderer));
@@ -236,21 +438,47 @@ pImpl->mTS[1].setSeismogram(npts, x);
 //                              std::abs(*minMax.second));
 }
 
-/// Zoom in
-void GLWiggle::zoom() //onKeyPress(GdkEventKey *event)
+void GLWiggle::panLeft()
 {
+    double shiftX = pImpl->mShiftX + 2*0.05;
+    if (std::abs(shiftX) >= 1.9){return;}
+    pImpl->mShiftX = shiftX;
+    queue_render();         
+}
+
+void GLWiggle::panRight()
+{
+    double shiftX = pImpl->mShiftX - 2*0.05;
+    if (std::abs(shiftX) >= 1.9){return;}
+    pImpl->mShiftX = shiftX;
+    queue_render();
+}
+/// Zoom in
+void GLWiggle::zoom(const double xPosition) //onKeyPress(GdkEventKey *event)
+{
+    if (xPosition >= 0)
+    {
+        auto allocation = get_allocation();
+        auto width  = allocation.get_width();
+        // Put the x position into relative coordinates
+        double xCenter =-1.0 + 2.0*xPosition/static_cast<double> (width);
+        printf("xCenter: %lf %d %lf\n", xPosition, width, xCenter);
+    }
     pImpl->mScaleX = pImpl->mScaleX*1.5;
     queue_render();
 }
 
 /// Zoom out
-void GLWiggle::unZoom()
+void GLWiggle::unZoom(const double xPosition)
 {
     // Can't zoom out anymore
     if (pImpl->mScaleX <= 1.0)
     {
        return;
     }
+    auto allocation = get_allocation();
+    auto height = allocation.get_height();
+    auto width  = allocation.get_width();
     // Clip on max zoom
     pImpl->mScaleX = std::max(1.0, pImpl->mScaleX/1.5);
     queue_render();
@@ -507,7 +735,7 @@ bool GLWiggle::render(const Glib::RefPtr<Gdk::GLContext> &context)
         checkGlError("Parameteri");
 
         float xScale = pImpl->mScaleX; //ratio;
-        float xOffset = 0;
+        float xOffset = pImpl->mShiftX; //xOffset; //0;
         float color[4] = {0, 0, 0, 1}; //ratio, ratio, ratio, 1.0};
         drawLinePlot(0, xOffset, xScale, color);
         float red[4] = {1, 0, 0, 1};

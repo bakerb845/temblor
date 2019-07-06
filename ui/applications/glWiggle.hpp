@@ -47,8 +47,10 @@ public:
     void setTextShaderFileNames(const std::string &textVertexShaderFile,
                                 const std::string &textFragmentShaderFile);
 
-    void zoom();//bool onKeyPress(GdkEventKey *keyEvent);
-    void unZoom();
+    void panRight();
+    void panLeft();
+    void zoom(const double xPosition =-1);//bool onKeyPress(GdkEventKey *keyEvent);
+    void unZoom(const double xPosition =-1);
     void drawLinePlot(const int waveform, const float xOffset, const float xScale, const float color[4]);
     void initializeBuffers();
     void freeBuffers();

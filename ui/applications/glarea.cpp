@@ -170,9 +170,14 @@ public:
         mPopupMenu.accelerate(*this);
         // Set the masks for mouse events
         add_events(Gdk::BUTTON_PRESS_MASK);
+        add_events(Gdk::BUTTON_RELEASE_MASK);
         add_events(Gdk::KEY_PRESS_MASK);
         add_events(Gdk::SCROLL_MASK);
 
+        signal_button_press_event().connect(
+             sigc::mem_fun(*this, &TestArea::onButtonPress), false);
+        signal_button_release_event().connect(
+             sigc::mem_fun(*this, &TestArea::onButtonRelease), false);
         signal_key_press_event().connect(
              sigc::mem_fun(*this, &TestArea::onKeyPress), false);
         signal_scroll_event().connect(
@@ -183,35 +188,149 @@ public:
     }
     ~TestArea() = default;
 protected:
+    struct ClickedPosition
+    {
+        void set(const double x, const double y)
+        {
+            mX = x;
+            mY = y;
+            mBegin = true;
+        }
+        void reset()
+        {
+            mX =-1;
+            mY =-1;
+            mBegin = false;
+        }
+        double mX =-1;
+        double mY =-1;
+        bool mBegin = false;
+    };
+    ClickedPosition mButtonPosition;
+ 
+    /*!
+     * @brief Handles the scrolling events.  In general we can pan left/right,
+     *        zoom on a point, zoom/out on waveforms, zoom up down on waveforms.
+     * @retval True indicates that the event was handled.
+     * @retval False indicates that the event was not handled.
+     */
     bool onScrollEvent(GdkEventScroll *event)
     {
-        if (event->direction == GDK_SCROLL_DOWN)
+        if (event->state == GDK_CONTROL_MASK)
         {
-            printf("scroll down\n");
-            return true;
+            if (event->direction == GDK_SCROLL_UP)
+            {
+                printf("Scroll left\n");
+                mGLWiggle.panLeft();
+                return true;
+            }
+            else if (event->direction == GDK_SCROLL_DOWN)
+            {
+                printf("Scroll right\n");
+                mGLWiggle.panRight();
+                return true;
+            }
         }
-        else if (event->direction == GDK_SCROLL_UP)
+        else if (event->state == GDK_SHIFT_MASK)
         {
-            printf("scroll up\n");
-            return true;
+            double xPosition = event->x;
+            if (event->direction == GDK_SCROLL_LEFT)
+            {
+                printf("Zoom in on %lf %lf\n", event->x_root, event->y_root);
+                mGLWiggle.zoom(xPosition);
+                return true;
+            }
+            else if (event->direction == GDK_SCROLL_RIGHT)
+            {
+                printf("Zoom out on %lf %lf\n", event->x_root, event->y_root);
+                mGLWiggle.unZoom(xPosition);
+                return true;
+            }
+        }
+        else if (event->state == GDK_MOD1_MASK)
+        {
+            if (event->direction == GDK_SCROLL_UP)
+            {
+                printf("subtract waveforms\n");
+                return true;
+            }
+            else if (event->direction == GDK_SCROLL_DOWN)
+            {
+                printf("add waveforms\n");
+                return true;
+            } 
+        }
+        else
+        {
+            if (event->direction == GDK_SCROLL_DOWN)
+            {
+                printf("Scroll down\n");
+                return true;
+            }
+            else if (event->direction == GDK_SCROLL_UP)
+            {
+                printf("Scroll up\n");
+                return true;
+            }
         }
         return false;
     }
-
+    bool onButtonRelease(GdkEventButton *event)
+    {
+        if (!mButtonPosition.mBegin){return false;}
+        double xAvg = (mButtonPosition.mX + event->x_root)/2;
+        printf("Reposition to %lf\n", xAvg); 
+        mButtonPosition.reset();
+        return true;
+    }
+    bool onButtonPress(GdkEventButton *event)
+    {
+        mButtonPosition.reset();
+        if (event->state == GDK_SHIFT_MASK)
+        {
+            if (event->type == GDK_BUTTON_PRESS)
+            {
+                printf("Begin button hold\n");
+                mButtonPosition.set(event->x_root, event->y_root);
+                return true;
+            }
+        }
+         
+        return false;
+    }
     bool onKeyPress(GdkEventKey *event)
     {
-        if (event->keyval == GDK_KEY_z)
+        if (event->keyval == GDK_KEY_Escape)
+        {
+            printf("Cancelling event\n");
+            return true;
+        }
+        else if (event->keyval == GDK_KEY_r)
+        {
+            printf("Reset to center\n");
+            return true;
+        }
+        else if (event->keyval == GDK_KEY_m)
+        {
+            printf("Make manual pick\n");
+            return true;
+        }
+        else if (event->keyval == GDK_KEY_z)
         {
 printf("zoom\n");
-            mGLWiggle.zoom();
+            mGLWiggle.zoom(-1);
             return true;
         }
         else if (event->keyval == GDK_KEY_Z)
         {
 printf("unzoom\n");
-            mGLWiggle.unZoom();
+            mGLWiggle.unZoom(-1);
             return true;
         }
+        else if (event->type == GDK_KEY_RELEASE)
+        {
+ printf("released\n");
+        } 
         return false;
     }
     /// Test event
