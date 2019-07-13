@@ -357,6 +357,8 @@ public:
     float mScaleX = 1;
     float mShiftX = 0;
     float mCenterX = 0;
+    std::pair<double, double> mGLScreenXLimits{-1.0, 1.0};
+    std::pair<double, double> mGLScreenYLimits{-1.0, 1.0};
     //GLuint mVBO[2] = {0, 0};
     GLuint mVAOHandle = 0;
     GLuint mCoord2DVBO = 0;
@@ -441,7 +443,7 @@ pImpl->mTS[1].setSeismogram(npts, x);
 void GLWiggle::panLeft()
 {
     double shiftX = pImpl->mShiftX + 2*0.05;
-    if (std::abs(shiftX) >= 1.9){return;}
+    if (std::abs(shiftX) >= 1.1){return;}
     pImpl->mShiftX = shiftX;
     queue_render();         
 }
@@ -449,7 +451,7 @@ void GLWiggle::panLeft()
 void GLWiggle::panRight()
 {
     double shiftX = pImpl->mShiftX - 2*0.05;
-    if (std::abs(shiftX) >= 1.9){return;}
+    if (std::abs(shiftX) >= 1.1){return;}
     pImpl->mShiftX = shiftX;
     queue_render();
 }
@@ -474,7 +476,7 @@ void GLWiggle::unZoom(const double xPosition)
     // Can't zoom out anymore
     if (pImpl->mScaleX <= 1.0)
     {
-       return;
+        return;
     }
     auto allocation = get_allocation();
     auto height = allocation.get_height();

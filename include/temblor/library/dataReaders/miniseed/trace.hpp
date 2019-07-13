@@ -166,6 +166,15 @@ public:
      * @{
      */
     /*!
+     * @brief Gets teh time series data.
+     * @param[out] x    A vector containing the time series data.
+     * @throws std::runtime_error if the time series data was never set
+     *         or read from disk.
+     */
+    std::vector<double> getData64f() const;
+    std::vector<float>  getData32f() const;
+    std::vector<int>    getData32i() const;
+    /*!
      * @brief Gets the time series data.
      * @param[in] length    The length of the output array.  This must
      *                      be at least \c getNumberOfSamples().

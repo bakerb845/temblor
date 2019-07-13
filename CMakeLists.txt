@@ -100,7 +100,8 @@ set(LIBSRC
 
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 set(UILIB_SRC
-    ui/models/rgba.cpp)
+    ui/models/rgba.cpp
+    ui/models/plotTransformations.cpp)
 add_executable(gltest
                ui/applications/glWiggle.cpp
                ui/applications/glslShader.cpp

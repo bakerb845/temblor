@@ -116,6 +116,11 @@ TEST(LibraryDataReadersMiniSEED, Trace)
     }
     EXPECT_EQ(idmax, 0);
     // Repeat for all the data types and test the copies
+    auto data64f = trace.getData64f();
+    auto data32f = trace.getData32f();
+    auto data32i = trace.getData32i();
+/*
+    // This test is superseded - getData(vector) will call this getData(npts, x) 
     std::vector<double> data64f(npts);
     std::vector<float> data32f(npts);
     std::vector<int> data32i(npts);
@@ -128,6 +133,7 @@ TEST(LibraryDataReadersMiniSEED, Trace)
 
     int *iPtr = data32i.data();
     trace.getData(npts, &iPtr);
+*/
 
     double ddmax = 0;
     float fdmax = 0;

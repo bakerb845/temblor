@@ -381,7 +381,38 @@ void Trace::setData(const size_t nSamples, const int x[])
     copySeismogram(pImpl->mNumberOfSamples, x, pImpl->mData32i.data());
 }
 
-/// Data getters
+/// Data getters - vectors
+std::vector<double> Trace::getData64f() const
+{
+    int npts = getNumberOfSamples();
+    std::vector<double> x(npts);
+    if (npts < 1){return x;}
+    double *xPtr = x.data();
+    getData(npts, &xPtr);
+    return x;
+}
+
+std::vector<float> Trace::getData32f() const
+{
+    int npts = getNumberOfSamples();
+    std::vector<float> x(npts);
+    if (npts < 1){return x;}
+    float *xPtr = x.data();
+    getData(npts, &xPtr);
+    return x;
+}
+
+std::vector<int> Trace::getData32i() const
+{
+    int npts = getNumberOfSamples();
+    std::vector<int> x(npts);
+    if (npts < 1){return x;}
+    int *xPtr = x.data();
+    getData(npts, &xPtr);
+    return x;
+}
+
+// Data getters - arrays
 void Trace::getData(const int length, double *xIn[]) const
 {
     if (pImpl->mPrecision == Precision::UNKNOWN)
