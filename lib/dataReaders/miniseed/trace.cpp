@@ -6,13 +6,13 @@
 #include <vector>
 #include <string>
 #include <libmseed.h>
-#include "temblor/library/private/filesystem.hpp"
-#include "temblor/library/dataReaders/miniseed/sncl.hpp"
-#include "temblor/library/dataReaders/miniseed/trace.hpp"
-#include "temblor/library/utilities/time.hpp"
+#include "temblor/private/filesystem.hpp"
+#include "temblor/dataReaders/miniseed/sncl.hpp"
+#include "temblor/dataReaders/miniseed/trace.hpp"
+#include "temblor/utilities/time.hpp"
 
-using namespace Temblor::Library;
-using namespace Temblor::Library::DataReaders::MiniSEED;
+using namespace Temblor;
+using namespace Temblor::DataReaders::MiniSEED;
 
 namespace
 {

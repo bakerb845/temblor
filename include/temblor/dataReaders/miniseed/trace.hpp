@@ -1,19 +1,20 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_MINISEED_TRACE_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_MINISEED_TRACE_HPP 1
+#ifndef TEMBLOR_DATAREADERS_MINISEED_TRACE_HPP
+#define TEMBLOR_DATAREADERS_MINISEED_TRACE_HPP 1
 #include <memory>
-#include "temblor/library/dataReaders/miniseed/enums.hpp"
+#include "temblor/dataReaders/miniseed/enums.hpp"
 
-namespace Temblor::Library
+namespace Temblor
 {
-
 namespace Utilities
 {
 class Time;
 }
-
 namespace DataReaders::MiniSEED
 {
 class SNCL;
+/*!
+ * @brief Defines a miniSEED trace.
+ */
 class Trace
 {
 public:
@@ -88,13 +89,13 @@ public:
      * @brief Sets the start time of the trace.
      * param[in] startTime  The trace start time.
      */
-    void setStartTime(Utilities::Time &startTime) noexcept;
+    void setStartTime(Temblor::Utilities::Time &startTime) noexcept;
     /*!
      * @brief Gets the start time of the trace.
      * @result The start time of the trace.
      * @note If this was not set then it will correspond to January 1, 1970.
      */
-    Utilities::Time getStartTime() const noexcept;
+    Temblor::Utilities::Time getStartTime() const noexcept;
     /*!
      * @brief Gets the end time of the trace.
      * @result The end time of the trace.
@@ -103,7 +104,7 @@ public:
      *       series data and sampling rate must have been set.
      * @sa \c setSamplingRate().
      */
-    Utilities::Time getEndTime() const;
+    Temblor::Utilities::Time getEndTime() const;
     /*! @} */
 
     /*! @name Sampling Rate
@@ -236,8 +237,6 @@ private:
     class TraceImpl;
     std::unique_ptr<TraceImpl> pImpl;
 };
-
 }
 }
-
 #endif

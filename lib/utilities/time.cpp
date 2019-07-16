@@ -6,9 +6,9 @@
 #include <mutex>
 #include <algorithm>
 #include <stdexcept>
-#include "temblor/library/utilities/time.hpp"
+#include "temblor/utilities/time.hpp"
 
-using namespace Temblor::Library::Utilities;
+using namespace Temblor::Utilities;
 
 #define CALENDAR_2_EPOCH 0
 #define EPOCH_2_CALENDAR 1
@@ -317,7 +317,7 @@ int Time::getMicroSecond() const noexcept
     return pImpl->musec;
 }
 
-void Temblor::Library::Utilities::swap(Time &lhs, Time &rhs)
+void Temblor::Utilities::swap(Time &lhs, Time &rhs)
 {
     std::swap(lhs.pImpl, rhs.pImpl);
 }

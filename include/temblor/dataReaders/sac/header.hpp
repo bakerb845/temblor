@@ -2,9 +2,9 @@
 #define TEMBLOR_LIBRARY_DATAREADERS_SAC_HEADER_HPP
 #include <memory>
 #include <string>
-#include "temblor/library/dataReaders/sac/enums.hpp"
+#include "temblor/dataReaders/sac/enums.hpp"
 
-namespace Temblor::Library::DataReaders::SAC
+namespace Temblor::DataReaders::SAC
 {
 
 class Header

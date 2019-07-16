@@ -3,9 +3,9 @@
 #include <cstring>
 #include <string>
 #include <algorithm>
-#include "temblor/library/dataReaders/miniseed/sncl.hpp"
+#include "temblor/dataReaders/miniseed/sncl.hpp"
 
-using namespace Temblor::Library::DataReaders::MiniSEED;
+using namespace Temblor::DataReaders::MiniSEED;
 
 #define NETWORK_LENGTH 10 
 #define STATION_LENGTH 10

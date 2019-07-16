@@ -5,12 +5,12 @@
 #include <array>
 #include <algorithm>
 #include <fstream>
-#include "temblor/library/private/filesystem.hpp"
-#include "temblor/library/dataReaders/segy/segy2.hpp"
-#include "temblor/library/dataReaders/segy/binaryFileHeader.hpp"
+#include "temblor/private/filesystem.hpp"
+#include "temblor/dataReaders/segy/segy2.hpp"
+#include "temblor/dataReaders/segy/binaryFileHeader.hpp"
 
 
-using namespace Temblor::Library::DataReaders::SEGY; 
+using namespace Temblor::DataReaders::SEGY; 
 
 /// ASCII to EBCDIC header
 static void convertToEBCDICHeader(const char asciiHeader[3200],

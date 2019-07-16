@@ -1,13 +1,13 @@
 #include <cstdio>
 #include <cstdlib>
-#include "temblor/library/utilities/geodetic/globalPosition.hpp"
-#include "temblor/library/utilities/geodetic/globalPositionPair.hpp"
+#include "temblor/utilities/geodetic/globalPosition.hpp"
+#include "temblor/utilities/geodetic/globalPositionPair.hpp"
 #include <gtest/gtest.h>
 
 namespace
 {
 
-using namespace Temblor::Library::Utilities::Geodetic;
+using namespace Temblor::Utilities::Geodetic;
 
 TEST(LibraryUtilitiesGeodetic, GlobalPosition)
 {

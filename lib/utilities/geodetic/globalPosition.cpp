@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include <GeographicLib/UTMUPS.hpp>
-#include "temblor/library/utilities/geodetic/globalPosition.hpp"
+#include "temblor/utilities/geodetic/globalPosition.hpp"
 
-using namespace Temblor::Library::Utilities::Geodetic;
+using namespace Temblor::Utilities::Geodetic;
 
 class GlobalPosition::GlobalPositionImpl
 {

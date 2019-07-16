@@ -1,7 +1,7 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_MINISEED_ENUMS_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_MINISEED_ENUMS_HPP 1
+#ifndef TEMBLOR_DATAREADERS_MINISEED_ENUMS_HPP
+#define TEMBLOR_DATAREADERS_MINISEED_ENUMS_HPP 1
 
-namespace Temblor::Library::DataReaders::MiniSEED
+namespace Temblor::DataReaders::MiniSEED
 {
 /*!
  * @brief Defines the precision of the data in the trace.

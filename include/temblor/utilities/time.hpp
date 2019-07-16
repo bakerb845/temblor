@@ -1,8 +1,8 @@
-#ifndef TEMBLOR_LIBRARY_UTILITIES_TIME_HPP
-#define TEMBLOR_LIBRARY_UTILITIES_TIME_HPP
+#ifndef TEMBLOR_UTILITIES_TIME_HPP
+#define TEMBLOR_UTILITIES_TIME_HPP
 #include <memory>
 
-namespace Temblor::Library::Utilities
+namespace Temblor::Utilities
 {
 
 /*!

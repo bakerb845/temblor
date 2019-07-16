@@ -1,7 +1,7 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_SAC_ENUMS_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_SAC_ENUMS_HPP
+#ifndef TEMBLOR_DATAREADERS_SAC_ENUMS_HPP
+#define TEMBLOR_DATAREADERS_SAC_ENUMS_HPP
 
-namespace Temblor::Library::DataReaders::SAC
+namespace Temblor::DataReaders::SAC
 {
 
 /*!

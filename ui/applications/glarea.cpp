@@ -16,14 +16,14 @@
 //#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "temblor/library/dataReaders/miniseed/trace.hpp"
-#include "temblor/library/dataReaders/miniseed/sncl.hpp"
+#include "temblor/dataReaders/miniseed/trace.hpp"
+#include "temblor/dataReaders/miniseed/sncl.hpp"
 #include "glWiggle.hpp"
 
 using std::cerr;
 using std::endl;
 using std::string;
-namespace MiniSEED = Temblor::Library::DataReaders::MiniSEED;
+namespace MiniSEED = Temblor::DataReaders::MiniSEED;
 
 enum {
   X_AXIS,

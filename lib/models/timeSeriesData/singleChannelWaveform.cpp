@@ -3,14 +3,14 @@
 #include <string>
 #include <algorithm>
 #include <vector>
-#include "temblor/library/models/timeSeriesData/singleChannelWaveform.hpp"
-#include "temblor/library/utilities/time.hpp"
-#include "temblor/library/utilities/geodetic/globalPosition.hpp"
-#include "temblor/library/dataReaders/sac/waveform.hpp"
+#include "temblor/models/timeSeriesData/singleChannelWaveform.hpp"
+#include "temblor/utilities/time.hpp"
+#include "temblor/utilities/geodetic/globalPosition.hpp"
+#include "temblor/dataReaders/sac/waveform.hpp"
 
-namespace DataReaders = Temblor::Library::DataReaders;
-using namespace Temblor::Library::Utilities;
-using namespace Temblor::Library::Models::TimeSeriesData;
+namespace DataReaders = Temblor::DataReaders;
+using namespace Temblor::Utilities;
+using namespace Temblor::Models::TimeSeriesData;
 
 class SingleChannelWaveform::SingleChannelWaveformImpl
 {

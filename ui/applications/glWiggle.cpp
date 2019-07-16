@@ -17,7 +17,7 @@
 #else
 #include <algorithm>
 #endif
-#include "temblor/library/private/filesystem.hpp"
+#include "temblor/private/filesystem.hpp"
 #include "glWiggle.hpp"
 #include "glslShader.hpp"
 

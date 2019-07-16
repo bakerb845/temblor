@@ -1,8 +1,8 @@
-#ifndef TEMBLOR_LIBRARY_MODELS_EVENT_ORIGIN_HPP
-#define TEMBLOR_LIBRARY_MODELS_EVENT_ORIGIN_HPP
+#ifndef TEMBLOR_MODELS_EVENT_ORIGIN_HPP
+#define TEMBLOR_MODELS_EVENT_ORIGIN_HPP
 #include <memory>
 
-namespace Temblor::Library::Utilities
+namespace Temblor::Utilities
 {
 class Time;
 namespace Geodetic
@@ -11,7 +11,7 @@ class GlobalPosition;
 }
 }
 
-namespace Temblor::Library::Models::Event
+namespace Temblor::Models::Event
 {
 
 /*!
@@ -94,13 +94,13 @@ public:
      * @brief Sets the origin time.
      * @param[in] originTime  The origin time.
      */ 
-    void setTime(const Temblor::Library::Utilities::Time &originTime);
+    void setTime(const Temblor::Utilities::Time &originTime);
     /*!
      * @brief Gets the origin time.
      * @result The origin time.
      * @throws std::runtime_error if the origin time was not set.
      */
-    Temblor::Library::Utilities::Time getTime() const;
+    Temblor::Utilities::Time getTime() const;
     /*! @} */
 
     /*! @name Hypocenter
@@ -112,7 +112,7 @@ public:
      * @throws std::invalid_argument if the hypocenter's latitude, longitude,
      *         or depth is not set.
      */
-    void setHypocenter(const Temblor::Library::Utilities::Geodetic::GlobalPosition &hypocenter);
+    void setHypocenter(const Temblor::Utilities::Geodetic::GlobalPosition &hypocenter);
     /*!
      * @brief Gets the origin's hypocentral location.
      */

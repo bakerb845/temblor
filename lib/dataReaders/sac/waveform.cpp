@@ -5,12 +5,12 @@
 #include <string>
 #include <algorithm>
 #include <fstream>
-#include "temblor/library/private/filesystem.hpp"
-#include "temblor/library/utilities/time.hpp"
-#include "temblor/library/dataReaders/sac/waveform.hpp"
-#include "temblor/library/dataReaders/sac/header.hpp"
+#include "temblor/private/filesystem.hpp"
+#include "temblor/utilities/time.hpp"
+#include "temblor/dataReaders/sac/waveform.hpp"
+#include "temblor/dataReaders/sac/header.hpp"
 
-using namespace Temblor::Library::DataReaders::SAC;
+using namespace Temblor::DataReaders::SAC;
 
 static double *alignedAllocDouble(const int npts);
 

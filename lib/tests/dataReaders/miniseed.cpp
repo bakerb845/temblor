@@ -5,10 +5,10 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "temblor/library/utilities/time.hpp"
-#include "temblor/library/dataReaders/miniseed/sncl.hpp"
-#include "temblor/library/dataReaders/miniseed/trace.hpp"
-#include "temblor/library/dataReaders/miniseed/enums.hpp"
+#include "temblor/utilities/time.hpp"
+#include "temblor/dataReaders/miniseed/sncl.hpp"
+#include "temblor/dataReaders/miniseed/trace.hpp"
+#include "temblor/dataReaders/miniseed/enums.hpp"
 #include <gtest/gtest.h>
 
 namespace
@@ -17,7 +17,7 @@ namespace
 std::vector<int>
 loadIntegerData(const std::string &textFileName, const int npts);
 
-using namespace Temblor::Library::DataReaders;
+using namespace Temblor::DataReaders;
 
 TEST(LibraryDataReadersMiniSEED, SNCL)
 {
@@ -91,7 +91,7 @@ TEST(LibraryDataReadersMiniSEED, Trace)
     EXPECT_NEAR(trace.getSamplingRate(), 100, 1.e-10);
     EXPECT_EQ(trace.getPrecision(), MiniSEED::Precision::INT32);
     EXPECT_EQ(trace.getNumberOfSamples(), 14609);
-    Temblor::Library::Utilities::Time startTime = trace.getStartTime();
+    Temblor::Utilities::Time startTime = trace.getStartTime();
     EXPECT_EQ(startTime.getYear(), 2016);
     EXPECT_EQ(startTime.getMonth(), 1);
     EXPECT_EQ(startTime.getDayOfMonth(), 14);

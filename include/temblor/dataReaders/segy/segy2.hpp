@@ -1,10 +1,10 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_SEGY_SEGY2_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_SEGY_SEGY2_HPP
+#ifndef TEMBLOR_DATAREADERS_SEGY_SEGY2_HPP
+#define TEMBLOR_DATAREADERS_SEGY_SEGY2_HPP
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace Temblor::Library::DataReaders::SEGY
+namespace Temblor::DataReaders::SEGY
 {
 
 /*!

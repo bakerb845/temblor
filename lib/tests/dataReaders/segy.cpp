@@ -1,14 +1,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <climits>
-#include "temblor/library/private/filesystem.hpp"
-#include "temblor/library/dataReaders/segy/segy2.hpp"
+#include "temblor/private/filesystem.hpp"
+#include "temblor/dataReaders/segy/segy2.hpp"
 #include <gtest/gtest.h>
 
 namespace
 {
 
-using namespace Temblor::Library::DataReaders;
+using namespace Temblor::DataReaders;
 
 TEST(LibraryDataReadersSEGY, segy2)
 {

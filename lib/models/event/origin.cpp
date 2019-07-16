@@ -1,17 +1,17 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include "temblor/library/models/event/origin.hpp"
-#include "temblor/library/utilities/geodetic/globalPosition.hpp"
-#include "temblor/library/utilities/time.hpp"
+#include "temblor/models/event/origin.hpp"
+#include "temblor/utilities/geodetic/globalPosition.hpp"
+#include "temblor/utilities/time.hpp"
 
-using namespace Temblor::Library::Models::Event;
+using namespace Temblor::Models::Event;
 
 class Origin::OriginImpl
 {
 public:
-    Temblor::Library::Utilities::Geodetic::GlobalPosition mHypocenter;
-    Temblor::Library::Utilities::Time mOriginTime;
+    Temblor::Utilities::Geodetic::GlobalPosition mHypocenter;
+    Temblor::Utilities::Time mOriginTime;
     std::string mOriginName;
     bool mHaveHypocenter = false;
     bool mHaveOriginTime = false;
@@ -74,14 +74,14 @@ std::string Origin::getName() const noexcept
 }
 
 /// Sets the origin origin time
-void Origin::setTime(const Temblor::Library::Utilities::Time &originTime)
+void Origin::setTime(const Temblor::Utilities::Time &originTime)
 {
     pImpl->mHaveOriginTime = true;
     pImpl->mOriginTime = originTime;
 }
 
 /// Gets the origin origin time
-Temblor::Library::Utilities::Time Origin::getTime() const
+Temblor::Utilities::Time Origin::getTime() const
 {
     if (!pImpl->mHaveOriginTime)
     {
@@ -92,7 +92,7 @@ Temblor::Library::Utilities::Time Origin::getTime() const
 
 /// Sets the origin hypocenter
 void Origin::setHypocenter(
-    const Temblor::Library::Utilities::Geodetic::GlobalPosition &hypocenter)
+    const Temblor::Utilities::Geodetic::GlobalPosition &hypocenter)
 {
     pImpl->mHaveHypocenter = false;
     if (!hypocenter.haveLongitude())
@@ -112,7 +112,7 @@ void Origin::setHypocenter(
 }
 
 /// Gets the origin hypocenter 
-Temblor::Library::Utilities::Geodetic::GlobalPosition Origin::getHypocenter() const
+Temblor::Utilities::Geodetic::GlobalPosition Origin::getHypocenter() const
 {
     if (!pImpl->mHaveHypocenter)
     {

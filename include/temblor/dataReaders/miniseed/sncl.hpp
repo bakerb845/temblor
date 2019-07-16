@@ -1,8 +1,8 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_MINISEED_SNCL_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_MINISEED_SNCL_HPP 1
+#ifndef TEMBLOR_DATAREADERS_MINISEED_SNCL_HPP
+#define TEMBLOR_DATAREADERS_MINISEED_SNCL_HPP 1
 #include <memory>
 
-namespace Temblor::Library::DataReaders::MiniSEED
+namespace Temblor::DataReaders::MiniSEED
 {
 /*!
  * @brief Defines a SEED station, network, channel, location name.

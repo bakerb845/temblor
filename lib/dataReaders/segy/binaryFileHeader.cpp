@@ -3,9 +3,9 @@
 #include <cstring>
 #include <string>
 #include <algorithm>
-#include "temblor/library/dataReaders/segy/binaryFileHeader.hpp"
+#include "temblor/dataReaders/segy/binaryFileHeader.hpp"
 
-using namespace Temblor::Library::DataReaders::SEGY;
+using namespace Temblor::DataReaders::SEGY;
 
 namespace
 {

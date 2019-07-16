@@ -3,15 +3,15 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "temblor/library/dataReaders/sac/enums.hpp"
+#include "temblor/dataReaders/sac/enums.hpp"
 
 // Forward declarations
-namespace Temblor::Library::Utilities
+namespace Temblor::Utilities
 {
 class Time;
 }
 
-namespace Temblor::Library::DataReaders::SAC
+namespace Temblor::DataReaders::SAC
 {
 
 /*!

@@ -5,13 +5,13 @@
 #include <string>
 #include <array>
 #include <stdexcept>
-#include "temblor/library/dataReaders/sac/header.hpp"
+#include "temblor/dataReaders/sac/header.hpp"
 
 #define NULL_DOUBLE -12345
 #define NULL_INT -12345
 #define NULL_STRING "-12345\0\0"
 
-using namespace Temblor::Library::DataReaders::SAC;
+using namespace Temblor::DataReaders::SAC;
 
 
 namespace {

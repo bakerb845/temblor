@@ -3,16 +3,16 @@
 #include <climits>
 #include <cmath>
 #include <algorithm>
-#include "temblor/library/private/filesystem.hpp"
-#include "temblor/library/dataReaders/sac/waveform.hpp"
-#include "temblor/library/dataReaders/sac/header.hpp"
-#include "temblor/library/dataReaders/sac/enums.hpp"
+#include "temblor/private/filesystem.hpp"
+#include "temblor/dataReaders/sac/waveform.hpp"
+#include "temblor/dataReaders/sac/header.hpp"
+#include "temblor/dataReaders/sac/enums.hpp"
 #include <gtest/gtest.h>
 
 namespace
 {
 
-using namespace Temblor::Library::DataReaders;
+using namespace Temblor::DataReaders;
 
 TEST(LibraryDataReadersSAC, header)
 {

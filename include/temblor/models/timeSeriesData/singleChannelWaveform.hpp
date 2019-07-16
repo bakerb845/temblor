@@ -1,7 +1,7 @@
-#ifndef TEMBLOR_LIBRARY_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
-#define TEMBLOR_LIBRARY_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
+#ifndef TEMBLOR_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
+#define TEMBLOR_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
 #include <memory>
-#include "temblor/library/dataReaders/fileFormats.hpp"
+#include "temblor/dataReaders/fileFormats.hpp"
 
 // Forward declarations
 namespace Temblor::Utilities
@@ -9,7 +9,7 @@ namespace Temblor::Utilities
 class Time;
 }
 
-namespace Temblor::Library::Models::TimeSeriesData
+namespace Temblor::Models::TimeSeriesData
 {
 /*!
  * @class SingleChannelWaveform singleChannelWaveform.hpp "temblor/library/models/timeSeriesData/singleChannelWaveform.hpp"
@@ -201,8 +201,8 @@ public:
      *         no data to write.
      */
     void write(const std::string fileName,
-               const Temblor::Library::DataReaders::FileFormatTypes format =
-                     Temblor::Library::DataReaders::FileFormatTypes::SAC) const;
+               const Temblor::DataReaders::FileFormatTypes format =
+                     Temblor::DataReaders::FileFormatTypes::SAC) const;
     /*! @} */
 
 
