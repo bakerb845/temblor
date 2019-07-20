@@ -55,6 +55,10 @@ include_directories(
   ${MSEED_INCLUDE_DIR}
   ${GTKMM_INCLUDE_DIRS}
 )
+if (${USE_SQLITE3})
+   #include_directories(${SQLite3_INCLUDE_DIRS})
+   link_libraries(${SQLite3_LIBRARIES})
+endif()
 
 include(CheckIncludeFileCXX)
 check_include_file_cxx(filesystem TEMBLOR_HAVE_STD_FS)
@@ -92,15 +96,23 @@ set(LIBSRC
     lib/dataReaders/miniseed/trace.cpp
     lib/models/event/origin.cpp
     lib/models/timeSeriesData/singleChannelWaveform.cpp
+    lib/models/timeSeriesData/waveformIdentifier.cpp
     lib/solvers/rayTrace1D/isotropicLayer.cpp
     lib/solvers/rayTrace1D/layerCakeModel.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)
 
+#set(DBSRC
+#    database/tables/event.cpp
+#    database/tables/eventType.cpp
+#    database/tables/eventTypeTuple.cpp
+#    )
+
 #add_executable(helloworld main.cpp dialog.cpp) # mainwindow.cpp mainwindow.ui resources.qrc)
 set(UILIB_SRC
     ui/models/rgba.cpp
+    ui/models/waveformGather.cpp
     ui/models/plotTransformations.cpp)
 add_executable(gltest
                ui/applications/glWiggle.cpp
@@ -113,9 +125,12 @@ add_executable(gltest
                )
 set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
-add_library(temblor SHARED ${LIBSRC})
+add_library(temblor SHARED ${LIBSRC}) # ${DBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
 target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} ${MSEED_LIBRARY})
+if (${USE_SQLITE3})
+   target_include_directories(temblor PRIVATE ${SQLITE_ORM_INCLUDE_DIR})
+endif()
 set_property(TARGET temblor PROPERTY CXX_STANDARD 17)
 
 add_library(temblorUI SHARED ${UILIB_SRC})
@@ -139,6 +154,11 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ui/fonts   DESTINATION ${CMAKE_CURRENT_BIN
 ##########################################################################################
 #                                      Unit Tests                                        #
 ##########################################################################################
+#add_executable(testDatabase
+#               database/testing/main.cpp
+#               database/testing/eventType.cpp)
+#target_link_libraries(testDatabase PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+
 add_executable(testLibraryUtilities
                lib/tests/utilities/main.cpp 
                lib/tests/utilities/time.cpp
