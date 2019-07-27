@@ -73,6 +73,10 @@ public:
      */
     void destroyRenderer();
     /*! @} */
+protected:
+    bool onScrollEvent(GdkEventScroll *event);
+    bool onButtonPress(GdkEventButton *event);
+    bool on_button_press_event(GdkEventButton *event) override;
 private:
     class GLWiggleImpl;
     std::unique_ptr<GLWiggleImpl> pImpl;

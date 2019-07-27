@@ -381,6 +381,20 @@ GLWiggle::GLWiggle() :
 
     setTextShaderFileNames("shaders/text.vs",
                            "shaders/text.fs");
+
+    // Connect signals
+    add_events(Gdk::BUTTON_PRESS_MASK);
+    add_events(Gdk::BUTTON_RELEASE_MASK);
+    add_events(Gdk::KEY_PRESS_MASK);
+    add_events(Gdk::SCROLL_MASK);
+    //signal_button_press_event().connect(
+    //    sigc::mem_fun(*this, &GLWiggle::onButtonPress), false);
+    //signal_button_release_event().connect(
+    //    sigc::mem_fun(*this, &GLWiggle::onButtonRelease), false);
+    //signal_key_press_event().connect(
+    //    sigc::mem_fun(*this, &GLWiggle::onKeyPress), false);
+    signal_scroll_event().connect(
+        sigc::mem_fun(*this, &GLWiggle::onScrollEvent), false);
 /*
 FT_Library ft;
 if (FT_Init_FreeType(&ft))
@@ -403,6 +417,116 @@ if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
 }
 
 GLWiggle::~GLWiggle() = default;
+
+/// Signals
+bool GLWiggle::onScrollEvent(GdkEventScroll *event)
+{
+    if (event->state == GDK_CONTROL_MASK)
+    {
+        if (event->direction == GDK_SCROLL_UP)
+        {
+            printf("Scroll left\n");
+            panLeft();
+            return true;
+        }
+        else if (event->direction == GDK_SCROLL_DOWN)
+        {
+            printf("Scroll right\n");
+            panRight();
+            return true;
+        }
+    }
+    else if (event->state == GDK_SHIFT_MASK)
+    {
+        double xPosition = event->x;
+        if (event->direction == GDK_SCROLL_LEFT)
+        {
+            printf("Zoom in on %lf %lf\n", event->x_root, event->y_root);
+            zoom(xPosition);
+            return true;
+        }
+        else if (event->direction == GDK_SCROLL_RIGHT)
+        {
+            printf("Zoom out on %lf %lf\n", event->x_root, event->y_root);
+            unZoom(xPosition);
+            return true;
+        }
+    }
+    else if (event->state == GDK_MOD1_MASK)
+    {
+        if (event->direction == GDK_SCROLL_UP)
+        {
+            printf("subtract waveforms\n");
+            return true;
+        }
+        else if (event->direction == GDK_SCROLL_DOWN)
+        {
+            printf("add waveforms\n");
+            return true;
+        }
+    }
+    else
+    {
+        if (event->direction == GDK_SCROLL_DOWN)
+        {
+            printf("Scroll down\n");
+            return true;
+        }
+        else if (event->direction == GDK_SCROLL_UP)
+        {
+            printf("Scroll up\n");
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+bool GLWiggle::onKeyPress(GdkEventKey *event)
+{
+printf("key press\n");
+    if (event->keyval == GDK_KEY_Escape)
+    {
+        printf("Cancelling event\n");
+        return true;
+    }
+    else if (event->keyval == GDK_KEY_r)
+    {
+        printf("Reset to center\n");
+        return true;
+    }
+    else if (event->keyval == GDK_KEY_m)
+    {
+        printf("Make manual pick\n");
+        return true;
+    }
+    return false;
+}
+*/
+
+bool GLWiggle::on_button_press_event(GdkEventButton *event)
+{
+    if (event->type == GDK_BUTTON_PRESS)
+    {
+        if (event->button == 1)
+        {
+            printf("left clicked %lf, %lf\n", event->x, event->y);
+            return true;
+        }
+        else if (event->button == 2)
+        {
+            printf("zoom\n");
+            return true;
+        }
+        else if (event->button == 3)
+        {
+            printf("right clicked\n");
+            //mPopupMenu.popup(event->button, event->time);
+            return true;
+        }
+    }
+    return false;
+}
 
 /// Sets the seismogram for plotting
 void GLWiggle::setSeismogram(const int npts, const double x[])

@@ -135,10 +135,20 @@ class TestArea : public Gtk::Window
 public:
     TestArea()
     {
-        set_title("GL Area"),
+        set_title("Temblor Waveform Viewer"),
         set_default_size(1200, 800);
         // Add a container for the GLArea
+        mGrid.attach(mInfoFrame, 0, 1, 2, 12); //(left, to, width, height)
+        mGrid.attach_next_to(mVBox, mInfoFrame, Gtk::POS_RIGHT, 5, 11);//    1, 2, 6, 5);
+        mGrid.attach_next_to(mStatusBar, mVBox, Gtk::POS_BOTTOM, 5, 1); // (mStatusBar, 7, 2, 6, 1);
+        add(mGrid);
+
+        mInfoFrame.set_label("Information");
+        mInfoFrame.set_hexpand(true);
+        mInfoFrame.set_vexpand(true);
+/*
         add(mVBox);
+*/
         // Add the GLArea to the vertical box container 
         mGLWiggle.set_hexpand(true);
         mGLWiggle.set_vexpand(true);
@@ -168,12 +178,17 @@ public:
         mGLWiggle.setSeismogram(mData.size(), mData.data());//mData.size(), mData.data());
 
         mPopupMenu.accelerate(*this);
-        // Set the masks for mouse events
+        // Set the masks for the keyboard 
+        add_events(Gdk::KEY_PRESS_MASK);
+        signal_key_press_event().connect(
+             sigc::mem_fun(*this, &TestArea::onKeyPress), false); 
+/*
         add_events(Gdk::BUTTON_PRESS_MASK);
         add_events(Gdk::BUTTON_RELEASE_MASK);
         add_events(Gdk::KEY_PRESS_MASK);
         add_events(Gdk::SCROLL_MASK);
-
+*/
+/*
         signal_button_press_event().connect(
              sigc::mem_fun(*this, &TestArea::onButtonPress), false);
         signal_button_release_event().connect(
@@ -182,7 +197,7 @@ public:
              sigc::mem_fun(*this, &TestArea::onKeyPress), false);
         signal_scroll_event().connect(
              sigc::mem_fun(*this, &TestArea::onScrollEvent), false);
-
+*/
         // Finally display all the widgets
         show_all();
     }
@@ -214,6 +229,7 @@ protected:
      * @retval True indicates that the event was handled.
      * @retval False indicates that the event was not handled.
      */
+/*
     bool onScrollEvent(GdkEventScroll *event)
     {
         if (event->state == GDK_CONTROL_MASK)
@@ -298,6 +314,7 @@ protected:
          
         return false;
     }
+*/
     bool onKeyPress(GdkEventKey *event)
     {
         if (event->keyval == GDK_KEY_Escape)
@@ -333,6 +350,7 @@ printf("unzoom\n");
         } 
         return false;
     }
+/*
     /// Test event
     bool on_button_press_event(GdkEventButton *event)
     {
@@ -357,10 +375,14 @@ printf("unzoom\n");
         }
         return false;
     }
+*/
     class GLWiggle mGLWiggle;
     class MiniSEED::Trace mTrace;
     std::vector<double> mData;
-    class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false};
+    class Gtk::Grid mGrid;
+    class Gtk::Frame mInfoFrame; 
+    class Gtk::Statusbar mStatusBar;
+    class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false}; // TODO remove
     class PopupMenu mPopupMenu;
 
 };
