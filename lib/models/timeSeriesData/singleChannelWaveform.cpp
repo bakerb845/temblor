@@ -3,10 +3,12 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include "temblor/models/timeSeriesData/waveformIdentifier.hpp"
 #include "temblor/models/timeSeriesData/singleChannelWaveform.hpp"
 #include "temblor/utilities/time.hpp"
 #include "temblor/utilities/geodetic/globalPosition.hpp"
 #include "temblor/dataReaders/sac/waveform.hpp"
+#include "temblor/dataReaders/miniseed/trace.hpp"
 
 namespace DataReaders = Temblor::DataReaders;
 using namespace Temblor::Utilities;
@@ -15,11 +17,8 @@ using namespace Temblor::Models::TimeSeriesData;
 class SingleChannelWaveform::SingleChannelWaveformImpl
 {
 public:
-    /// Constructor
-    SingleChannelWaveformImpl() = default;
-    /// Destructor
-    ~SingleChannelWaveformImpl() = default;
-
+    WaveformIdentifier mWaveID;
+/*
     /// The network to which the station belongs
     std::string mNetworkName{"", 64};
     /// The name of the station
@@ -28,6 +27,7 @@ public:
     std::string mChannelName{"", 64};
     /// The location code
     std::string mLocationCode{"", 64};
+*/
     /// The station's location
     Geodetic::GlobalPosition mLocation;
     /// The channel start time
@@ -55,10 +55,7 @@ int SingleChannelWaveform::getNumberOfSamples() const noexcept
 
 void SingleChannelWaveform::clear() noexcept
 {
-    pImpl->mNetworkName.clear();
-    pImpl->mStationName.clear();
-    pImpl->mChannelName.clear();
-    pImpl->mLocationCode.clear();
+    pImpl->mWaveID.clear();
     pImpl->mStartTime.clear();
     pImpl->mLocation.clear();
     pImpl->mData.clear();
@@ -67,64 +64,75 @@ void SingleChannelWaveform::clear() noexcept
     pImpl->mNumberOfSamples = 0;
 }
 
-/*
-double SingleChannelWaveform::getStartTime() const noexcept
+double SingleChannelWaveform::getEpochalStartTime() const noexcept
 {
-    return pImpl->startTime.getEpochalTime();
+    return pImpl->mStartTime.getEpochalTime();
 }
 
-double SingleChannelWaveform::getEndtime() const noexcept
+double SingleChannelWaveform::getEpochalEndTime() const noexcept
 {
     auto npts = getNumberOfSamples();
-    auto startTime = getStartTime();
+    auto startTime = getEpochalStartTime();
+    double dt = 0;
+    try
+    {
+        dt = getSamplingPeriod();
+    }
+    catch (const std::exception &e)
+    {
+       dt = 0;
+    }
     auto endTime = startTime + static_cast<double> (std::max(0, npts - 1))*dt;
     return endTime;
 }
-*/
 
 /// Network name
 void SingleChannelWaveform::setNetworkName(const std::string &str) noexcept
 {
-    auto len = std::min(pImpl->mNetworkName.capacity(), str.size());
-    pImpl->mNetworkName.assign(str, len);
+    pImpl->mWaveID.setNetworkName(str);
+    //auto len = std::min(pImpl->mNetworkName.capacity(), str.size());
+    //pImpl->mNetworkName.assign(str, len);
 }
 
 std::string SingleChannelWaveform::getNetworkName() const noexcept
 {
-    return pImpl->mNetworkName;
+    return pImpl->mWaveID.getNetworkName(); //pImpl->mNetworkName;
 }
 /// Station name
 void SingleChannelWaveform::setStationName(const std::string &str) noexcept
 {
-    auto len = std::min(pImpl->mStationName.capacity(), str.size());
-    pImpl->mStationName.assign(str, len);
+    pImpl->mWaveID.setStationName(str);
+    //auto len = std::min(pImpl->mStationName.capacity(), str.size());
+    //pImpl->mStationName.assign(str, len);
 }
 
 std::string SingleChannelWaveform::getStationName() const noexcept
 {
-    return pImpl->mStationName;
+    return pImpl->mWaveID.getStationName(); //pImpl->mStationName;
 }
 /// Channel name
 void SingleChannelWaveform::setChannelName(const std::string &str) noexcept
 {
-    auto len = std::min(pImpl->mChannelName.capacity(), str.size());
-    pImpl->mChannelName.assign(str, len);
+    pImpl->mWaveID.setChannelName(str);
+    //auto len = std::min(pImpl->mChannelName.capacity(), str.size());
+    //pImpl->mChannelName.assign(str, len);
 }
 
 std::string SingleChannelWaveform::getChannelName() const noexcept
 {
-    return pImpl->mChannelName;
+    return pImpl->mWaveID.getChannelName(); //pImpl->mChannelName;
 }
 /// Location code
 void SingleChannelWaveform::setLocationCode(const std::string &str) noexcept
 {
-    auto len = std::min(pImpl->mLocationCode.capacity(), str.size());
-    pImpl->mLocationCode.assign(str, len);
+    pImpl->mWaveID.setLocationCode(str);
+    //auto len = std::min(pImpl->mLocationCode.capacity(), str.size());
+    //pImpl->mLocationCode.assign(str, len);
 }
 
 std::string SingleChannelWaveform::getLocationCode() const noexcept
 {
-    return pImpl->mLocationCode;
+    return pImpl->mWaveID.getLocationCode(); //pImpl->mLocationCode;
 }
 
 /// Sampling rate
@@ -174,6 +182,21 @@ void SingleChannelWaveform::readSAC(const std::string &fileName)
 {
     clear();
     DataReaders::SAC::Waveform sac; 
-    sac.read(fileName);
-    // 
+    sac.read(fileName); // Will throw
+    // Now figure out the basics
+    pImpl->mStartTime = sac.getStartTime(); // Will throw
+    double dt = sac.getSamplingPeriod();
+    if (dt <= 0)
+    {
+        throw std::runtime_error("Sampling period in header is invalid\n"); 
+    }
+    setSamplingRate(1./dt);
+    pImpl->mData = sac.getData();
 }
+
+/*
+void SingleChannelWaveform::readMiniSEED(const std::string &fileName)
+{
+
+}
+*/

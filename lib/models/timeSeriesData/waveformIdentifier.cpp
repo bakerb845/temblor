@@ -20,6 +20,7 @@ public:
     bool mHaveHash = false;
 };
 
+/// Constructors
 WaveformIdentifier::WaveformIdentifier() :
     pImpl(std::make_unique<WaveformIdentifierImpl> ())
 {
@@ -28,12 +29,12 @@ WaveformIdentifier::WaveformIdentifier() :
 WaveformIdentifier::WaveformIdentifier(
     const std::string &network,
     const std::string &station,
-    const std::string &channel) :
+    const std::string &channel) noexcept :
     pImpl(std::make_unique<WaveformIdentifierImpl> ())
 {
-    setNetwork(network);
-    setStation(station);
-    setChannel(channel);
+    setNetworkName(network);
+    setStationName(station);
+    setChannelName(channel);
     setLocationCode("--");
 }
 
@@ -41,12 +42,12 @@ WaveformIdentifier::WaveformIdentifier(
     const std::string &network,
     const std::string &station,
     const std::string &channel,
-    const std::string &locationCode) :
+    const std::string &locationCode) noexcept :
     pImpl(std::make_unique<WaveformIdentifierImpl> ())
 {
-    setNetwork(network);
-    setStation(station);
-    setChannel(channel);
+    setNetworkName(network);
+    setStationName(station);
+    setChannelName(channel);
     setLocationCode(locationCode);
 }
 
@@ -55,12 +56,12 @@ WaveformIdentifier::WaveformIdentifier(
     const std::string &station,
     const std::string &channel,
     const std::string &locationCode,
-    const std::string &comment) :
+    const std::string &comment) noexcept :
     pImpl(std::make_unique<WaveformIdentifierImpl> ())
 {
-    setNetwork(network);
-    setStation(station);
-    setChannel(channel);
+    setNetworkName(network);
+    setStationName(station);
+    setChannelName(channel);
     setLocationCode(locationCode);
     setComment(comment);
 }
@@ -92,6 +93,23 @@ WaveformIdentifier::operator=(WaveformIdentifier &&id) noexcept
     return *this;
 }
 
+bool WaveformIdentifier::operator==(const WaveformIdentifier &waveID)
+{
+    return getIdentifier() == waveID.getIdentifier();
+/*
+    if (pImpl->mNetwork != waveID.getNetwork()){return false;}
+    if (pImpl->mStation != waveID.getStation()){return false;}
+    if (pImpl->mChannel != waveID.getChannel()){return false;}
+    if (pImpl->mLocationCode != waveID.getLocationCode()){return false;}
+    return pImpl->mComment == waveID.getComment();
+*/
+}
+
+bool WaveformIdentifier::operator!=(const WaveformIdentifier &waveID)
+{
+    return !(*this == waveID);
+}
+
 /// Destructors
 WaveformIdentifier::~WaveformIdentifier() = default;
 
@@ -107,7 +125,7 @@ void WaveformIdentifier::clear() noexcept
 }
 
 /// Network
-void WaveformIdentifier::setNetwork(const std::string &network) noexcept
+void WaveformIdentifier::setNetworkName(const std::string &network) noexcept
 {
     pImpl->mHaveHash = false;
     pImpl->mNetwork.resize(network.size());
@@ -115,13 +133,13 @@ void WaveformIdentifier::setNetwork(const std::string &network) noexcept
                    pImpl->mNetwork.begin(), std::toupper);
 }
 
-std::string WaveformIdentifier::getNetwork() const noexcept
+std::string WaveformIdentifier::getNetworkName() const noexcept
 {
     return pImpl->mNetwork;
 }
 
 /// Station
-void WaveformIdentifier::setStation(const std::string &station) noexcept
+void WaveformIdentifier::setStationName(const std::string &station) noexcept
 {
     pImpl->mHaveHash = false;
     pImpl->mStation.resize(station.size());
@@ -129,13 +147,13 @@ void WaveformIdentifier::setStation(const std::string &station) noexcept
                    pImpl->mStation.begin(), std::toupper);
 }
 
-std::string WaveformIdentifier::getStation() const noexcept
+std::string WaveformIdentifier::getStationName() const noexcept
 {
     return pImpl->mStation;
 }
 
 /// Channel
-void WaveformIdentifier::setChannel(const std::string &channel) noexcept
+void WaveformIdentifier::setChannelName(const std::string &channel) noexcept
 {
     pImpl->mHaveHash = false;
     pImpl->mChannel.resize(channel.size());
@@ -143,7 +161,7 @@ void WaveformIdentifier::setChannel(const std::string &channel) noexcept
                    pImpl->mChannel.begin(), std::toupper);
 }
 
-std::string WaveformIdentifier::getChannel() const noexcept
+std::string WaveformIdentifier::getChannelName() const noexcept
 {
     return pImpl->mChannel;
 }

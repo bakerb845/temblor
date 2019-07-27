@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "temblor/utilities/time.hpp"
 #include "temblor/dataReaders/sac/enums.hpp"
 
 // Forward declarations
@@ -174,6 +175,14 @@ public:
      * @note This will set set Double::B to 0.
      */
     void setStartTime(const Utilities::Time &startTime) noexcept;
+    /*!
+     * @brief Convenience function to get the start time.
+     * @result The start time.
+     * @throws std::runtime_error if the header variables compmrising the
+     *         start time (NZYEAR, NZJDAY, NZHOUR, NZMIN, NZMSEC, B) were not
+     *         set.
+     */
+    Temblor::Utilities::Time getStartTime() const;
 
     /*!
      * @brief Sets the data.

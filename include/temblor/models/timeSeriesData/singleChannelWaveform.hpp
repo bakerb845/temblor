@@ -138,6 +138,21 @@ public:
     double getSamplingPeriod() const;
     /*! @} */
 
+    /*! @name Time
+     * @{
+     */
+    /*!
+     * @brief Gets the trace start time.
+     * @result The trace epochal start time in seconds (UTC) from the epoch.
+     */
+    double getEpochalStartTime() const noexcept;
+    /*!
+     * @brief Gets the trace end time.
+     * @result The trace epochal end time in seconds (UTC) from the epoch.
+     */
+    double getEpochalEndTime() const noexcept;
+    /*! @} */
+
     /*! @Name Network, Station, Channel, Location Code Naming
      * @{
      */ 
@@ -181,6 +196,23 @@ public:
      * @result The location code.
      */
     std::string getLocationCode() const noexcept;
+    /*!
+     * @brief Sets the waveform comment, e.g., 'filtered'.
+     * @param[in] comment  The waveform comment.
+     * @note This can be useful when appending to a waveform gather where
+     *       unique waveform identifiers are required.
+     */
+    void setComment(const std::string &comment) noexcept;
+    /*!
+     * @brief Gets the waveform comment.
+     * @result The waveform comment.
+     */
+    std::string getComment() const noexcept; 
+    /*!
+     * @brief Gets the waveform identifier.
+     * @result The waveform identifier encapsulating the SNCL and comment.
+     */
+    size_t getWaveformIdentifier() const noexcept;
     /*! @} */
  
     /*! @name File Input/Output
@@ -194,6 +226,12 @@ public:
      */
     void readSAC(const std::string &sacFileName);
     /*!
+     * @brief Reads a single channel waveform from a miniSEED file.
+     * @param[in] mseedFileName  The name of the miniSEED file.
+     * @param[in] waveID         The waveform identifier to query. 
+     */
+    
+    /*!
      * @brief Writes a single channel waveform.
      * @param[in] fileName   The name of the file to write.
      * @param[in] format     The file format to write.
@@ -204,7 +242,6 @@ public:
                const Temblor::DataReaders::FileFormatTypes format =
                      Temblor::DataReaders::FileFormatTypes::SAC) const;
     /*! @} */
-
 
     /*! @name Custom Header Information
      * @{ 

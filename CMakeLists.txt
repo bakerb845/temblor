@@ -181,14 +181,21 @@ target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryDataReaders
          COMMAND testLibraryDataReaders)
 
-add_executable(testLibrarySolvers
-               lib/tests/solvers/main.cpp
-               lib/tests/solvers/rayTrace1D.cpp)
-set_property(TARGET testLibrarySolvers PROPERTY CXX_STANDARD 17)
-target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
-target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
-add_test(NAME testLibrarySolvers
-         COMMAND testLibrarySolvers)
+add_executable(testLibraryModels
+               lib/tests/models/main.cpp
+               lib/tests/models/timeSeriesData.cpp)
+target_link_libraries(testLibraryModels PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
+add_test(NAME testLibraryModels
+         COMMAND testLibraryModels)
+#add_executable(testLibrarySolvers
+#               lib/tests/solvers/main.cpp
+#               lib/tests/solvers/rayTrace1D.cpp)
+#set_property(TARGET testLibrarySolvers PROPERTY CXX_STANDARD 17)
+#target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+#target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
+#add_test(NAME testLibrarySolvers
+#         COMMAND testLibrarySolvers)
 
 add_executable(testUserInterfaceModels
                ui/tests/main.cpp

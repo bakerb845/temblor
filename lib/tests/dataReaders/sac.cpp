@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 #include "temblor/private/filesystem.hpp"
+#include "temblor/utilities/time.hpp"
 #include "temblor/dataReaders/sac/waveform.hpp"
 #include "temblor/dataReaders/sac/header.hpp"
 #include "temblor/dataReaders/sac/enums.hpp"
@@ -384,6 +385,17 @@ TEST(LibraryDataReadersSAC, waveform)
         resmax = std::max(std::abs(res), resmax);
     }
     ASSERT_NEAR(resmax, 0.0, 1.e-7);
+    
+    Temblor::Utilities::Time startTime;
+    EXPECT_NO_THROW(startTime = waveform.getStartTime());
+    EXPECT_EQ(startTime.getYear(), 2005);
+    EXPECT_EQ(startTime.getMonth(), 10);
+    EXPECT_EQ(startTime.getDayOfMonth(), 6);
+    EXPECT_EQ(startTime.getJulianDay(), 279);
+    EXPECT_EQ(startTime.getHour(), 7); 
+    EXPECT_EQ(startTime.getMinute(), 21);
+    EXPECT_EQ(startTime.getSecond(), 59);
+    EXPECT_EQ(startTime.getMicroSecond(), 850000);
 }
 
 }

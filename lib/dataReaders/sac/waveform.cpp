@@ -262,6 +262,36 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
     outfile.close();
 }
 
+Temblor::Utilities::Time Waveform::getStartTime() const
+{
+    int year   = pImpl->mHeader.getHeader(SAC::Integer::NZYEAR);
+    int jday   = pImpl->mHeader.getHeader(SAC::Integer::NZJDAY);
+    int hour   = pImpl->mHeader.getHeader(SAC::Integer::NZHOUR);
+    int minute = pImpl->mHeader.getHeader(SAC::Integer::NZMIN);
+    int isec   = pImpl->mHeader.getHeader(SAC::Integer::NZSEC);
+    int musec  = pImpl->mHeader.getHeader(SAC::Integer::NZMSEC)*1000;
+    double b = pImpl->mHeader.getHeader(SAC::Double::B); 
+    if (year   ==-12345 || jday ==-12345 || hour  ==-12345 || 
+        minute ==-12345 || isec ==-12345 || musec ==-12345 ||
+        b ==-12345.0)
+    {
+        throw std::runtime_error("Header start time is not yet set\n");
+    }
+    // Create the time
+    Utilities::Time startTime;
+    startTime.setYear(year);
+    startTime.setJulianDay(jday);
+    startTime.setHour(hour);
+    startTime.setMinute(minute);
+    startTime.setSecond(isec);
+    startTime.setMicroSecond(musec);
+    // May have to deal with b
+    if (b == 0){return startTime;}
+    double epochalTime = startTime.getEpochalTime() + b;
+    startTime.setEpochalTime(epochalTime);
+    return startTime;
+}
+
 void Waveform::setStartTime(const Utilities::Time &startTime) noexcept
 {
      pImpl->mHeader.setHeader(SAC::Integer::NZYEAR, startTime.getYear()); 
@@ -379,6 +409,7 @@ void Waveform::setData(const int npts, const double x[])
     pImpl->mData = alignedAllocDouble(npts);
     std::memcpy(pImpl->mData, x, static_cast<size_t> (npts)*sizeof(double));
 }
+
 //============================================================================//
 
 static double *alignedAllocDouble(const int npts)

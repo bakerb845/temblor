@@ -11,6 +11,7 @@ namespace Temblor::Models::TimeSeriesData
  */ 
 class WaveformIdentifier
 {
+public:
     /*! @name Constructors
      * @{
      */
@@ -27,7 +28,7 @@ class WaveformIdentifier
      */
     WaveformIdentifier(const std::string &network,
                        const std::string &station,
-                       const std::string &channel);
+                       const std::string &channel) noexcept;
     /*!
      * @brief Constructor.
      * @param[in] network       The network name.
@@ -39,7 +40,7 @@ class WaveformIdentifier
     WaveformIdentifier(const std::string &network,
                        const std::string &station,
                        const std::string &channel,
-                       const std::string &locationCode);
+                       const std::string &locationCode) noexcept;
     /*!
      * @brief Constructor.
      * @param[in] network       The network name.
@@ -52,7 +53,7 @@ class WaveformIdentifier
                        const std::string &station,
                        const std::string &channel,
                        const std::string &locationCode,
-                       const std::string &comment);
+                       const std::string &comment) noexcept;
     /*!
      * @brief Copy constructor.
      * @param[in] id   The waveform identifier.
@@ -81,6 +82,18 @@ class WaveformIdentifier
      * @result The moved contents of id.
      */
     WaveformIdentifier& operator=(WaveformIdentifier &&id) noexcept;
+    /*!
+     * @brief Determines if the given waveform identifier equals this.
+     * @param[in] rhs  The waveform identifier to compare to this.
+     * @result True indicates that rhs equals this.
+     */
+    bool operator==(const WaveformIdentifier &rhs);
+    /*!
+     * @brief Determines if the given waveform identifier does not equal this.
+     * @param[in] rhs  The waveform identifier to compare to this.
+     * @result True indicates that rhs does not equal this.
+     */
+    bool operator!=(const WaveformIdentifier &rhs);
     /*! @} */
 
     /*! @name Destructors
@@ -100,15 +113,16 @@ class WaveformIdentifier
      * @{
      */
     /*!
-     * @brief Sets the network code.
+     * @brief Sets the network name.
      * @param[in] network  The name of the network.
+     * @note This will be capitalized.
      */
-    void setNetwork(const std::string &network) noexcept;
+    void setNetworkName(const std::string &network) noexcept;
     /*!
      * @brief Gets the network code.
      * @result The network code.
      */
-    std::string getNetwork() const noexcept;
+    std::string getNetworkName() const noexcept;
     /*! @} */
 
     /*! @name Station
@@ -117,13 +131,14 @@ class WaveformIdentifier
     /*!
      * @brief Sets the station name.
      * @param[in] station  The name of the station.
+     * @note This will be capitalized.
      */
-    void setStation(const std::string &station) noexcept;
+    void setStationName(const std::string &station) noexcept;
     /*!
      * @brief Gets the station name. 
      * @result The station name.
      */
-    std::string getStation() const noexcept;
+    std::string getStationName() const noexcept;
     /*! @} */
 
     /*! @name Channel
@@ -132,13 +147,14 @@ class WaveformIdentifier
     /*!
      * @brief Sets the channel name.
      * @param[in] channel  The name of the channel.
+     * @note This will be capitalized.
      */
-    void setChannel(const std::string &station) noexcept;
+    void setChannelName(const std::string &station) noexcept;
     /*!
      * @brief Gets the channel name.
      * @result The channel name.
      */
-    std::string getChannel() const noexcept;
+    std::string getChannelName() const noexcept;
     /*! @} */
 
     /*! @name Location code
@@ -183,10 +199,10 @@ class WaveformIdentifier
      * @result The string that will be hashed.
      */
     std::string getHashString() const noexcept;
+
 private:
     class WaveformIdentifierImpl;
     std::unique_ptr<WaveformIdentifierImpl> pImpl;
 };
-
 }
 #endif
