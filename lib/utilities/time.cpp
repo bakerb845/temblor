@@ -216,6 +216,11 @@ void Time::setJulianDay(const int jday)
 
 int Time::getJulianDay() const noexcept
 {
+    // The julian day wasn't set but this will compute it
+    if (!pImpl->luseJday && !pImpl->lhaveEpoch)
+    {
+        getEpochalTime();
+    }
     return pImpl->jday;
 }
 
@@ -233,6 +238,11 @@ void Time::setMonth(const int month)
 
 int Time::getMonth() const noexcept
 {
+    // The month wasn't set but this will compute it
+    if (pImpl->luseJday && !pImpl->lhaveEpoch)
+    {
+        getEpochalTime();
+    }
     return pImpl->month;
 }
 
@@ -250,6 +260,11 @@ void Time::setDayOfMonth(const int dom)
 
 int Time::getDayOfMonth() const noexcept
 {
+    // The day of the month wasn't set but this will compute it
+    if (pImpl->luseJday && !pImpl->lhaveEpoch)
+    {
+        getEpochalTime();
+    } 
     return pImpl->dom;
 }
 
@@ -363,8 +378,17 @@ void calendar2epoch(
         // Copy result
         yearOut   = year;
         jdayOut   = t.tm_yday + 2;
-        monthOut  = month;
-        domOut    = dom;
+        // This fixes weird wrap around on clear to 1970
+        if (t.tm_mon + 1 == 12 && t.tm_mday + 1 == 32)
+        {
+            monthOut  = 1;
+            domOut    = 1;
+        }
+        else
+        {
+            monthOut  = t.tm_mon + 1; //month;
+            domOut    = t.tm_mday + 1; // dom + 1;
+        }
         hourOut   = hour;
         minuteOut = minute;
         secondOut = isec;
