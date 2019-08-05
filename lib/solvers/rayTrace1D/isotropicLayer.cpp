@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include "temblor/library/solvers/rayTrace1D/isotropicLayer.hpp"
+#include "temblor/solvers/rayTrace1D/isotropicLayer.hpp"
 
-using namespace Temblor::Library::Solvers::RayTrace1D;
+using namespace Temblor::Solvers::RayTrace1D;
 
 class IsotropicLayer::IsotropicLayerImpl
 {

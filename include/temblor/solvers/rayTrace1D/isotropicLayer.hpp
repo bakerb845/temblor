@@ -1,8 +1,8 @@
-#ifndef TEMBLOR_LIBRARY_SOLVERS_RAYTRACE1D_ISOTROPICLAYER_HPP
-#define TEMBLOR_LIBRARY_SOLVERS_RAYTRACE1D_ISOTROPICLAYER_HPP
+#ifndef TEMBLOR_SOLVERS_RAYTRACE1D_ISOTROPICLAYER_HPP
+#define TEMBLOR_SOLVERS_RAYTRACE1D_ISOTROPICLAYER_HPP
 #include <memory>
 
-namespace Temblor::Library::Solvers::RayTrace1D
+namespace Temblor::Solvers::RayTrace1D
 {
 /*!
  * @brief Defines an isotropic layer in the layer-cake velocity model.
