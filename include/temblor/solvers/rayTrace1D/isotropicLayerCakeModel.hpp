@@ -132,6 +132,11 @@ public:
      * @sa \c getNumberOfLayers()
      */
     IsotropicLayer getLayer(const int layerIndex);
+    /*!
+     * @brief Determines if the model and all its layers in the model are valid.
+     * @retval True the model is valid and can be used for ray tracing.
+     */
+    bool isValid() const noexcept;
 private:
     class IsotropicLayerCakeModelImpl;
     std::unique_ptr<IsotropicLayerCakeModelImpl> pImpl;

@@ -98,7 +98,8 @@ set(LIBSRC
     lib/models/timeSeriesData/singleChannelWaveform.cpp
     lib/models/timeSeriesData/waveformIdentifier.cpp
     lib/solvers/rayTrace1D/isotropicLayer.cpp
-    lib/solvers/rayTrace1D/layerCakeModel.cpp
+    lib/solvers/rayTrace1D/isotropicLayerCakeModel.cpp
+    lib/solvers/rayTrace1D/layer.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)
@@ -188,14 +189,15 @@ target_link_libraries(testLibraryModels PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
 target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryModels
          COMMAND testLibraryModels)
-#add_executable(testLibrarySolvers
-#               lib/tests/solvers/main.cpp
-#               lib/tests/solvers/rayTrace1D.cpp)
+
+add_executable(testLibrarySolvers
+               lib/tests/solvers/main.cpp
+               lib/tests/solvers/rayTrace1D.cpp)
 #set_property(TARGET testLibrarySolvers PROPERTY CXX_STANDARD 17)
-#target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
-#target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
-#add_test(NAME testLibrarySolvers
-#         COMMAND testLibrarySolvers)
+target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
+add_test(NAME testLibrarySolvers
+         COMMAND testLibrarySolvers)
 
 add_executable(testUserInterfaceModels
                ui/tests/main.cpp

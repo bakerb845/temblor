@@ -62,6 +62,7 @@ TEST(LibrarySolversRayTrace1D, isotropicLayerCakeModel)
     int nLayers = vsBWF.size() - 1; 
     // Create the layer cake model
     IsotropicLayerCakeModel model;
+    EXPECT_FALSE(model.isValid());
     for (auto ilayer=0; ilayer<nLayers; ilayer++)
     {
         IsotropicLayer layer;
@@ -82,6 +83,7 @@ TEST(LibrarySolversRayTrace1D, isotropicLayerCakeModel)
         EXPECT_EQ(ilayer + 1, model.getNumberOfLayers());
         EXPECT_EQ(model.canAppendLayer(), !lastLayer);
     }
+    EXPECT_TRUE(model.isValid());
     // Test the copy constructor
     IsotropicLayerCakeModel modelCopy(model);
     EXPECT_EQ(nLayers, modelCopy.getNumberOfLayers());
@@ -100,6 +102,10 @@ TEST(LibrarySolversRayTrace1D, isotropicLayerCakeModel)
         EXPECT_NEAR(layer.getThickness(), thickness, 1.e-10);
         EXPECT_TRUE(layer.isValid());
     }
+}
+
+TEST(LibrarySolversRayTrace1D, twoPointRayTrace)
+{
 
 }
 

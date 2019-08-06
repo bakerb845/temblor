@@ -138,3 +138,15 @@ bool IsotropicLayerCakeModel::canAppendLayer() const noexcept
 {
     return pImpl->mCanAppendLayer;
 }
+
+/// Determines if the model 
+bool IsotropicLayerCakeModel::isValid() const noexcept
+{
+    if (getNumberOfLayers() < 1){return false;} // No layers
+    for (auto i=0; i<getNumberOfLayers(); ++i)
+    {
+        if (!pImpl->mModel[i].isValid()){return false;}
+    }
+    //if (canAppendLayer()){return false;} // Model is not closed
+    return true;
+}
