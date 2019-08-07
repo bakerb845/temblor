@@ -138,14 +138,17 @@ public:
         set_title("Temblor Waveform Viewer"),
         set_default_size(1200, 800);
         // Add a container for the GLArea
-        mGrid.attach(mInfoFrame, 0, 1, 2, 12); //(left, to, width, height)
-        mGrid.attach_next_to(mVBox, mInfoFrame, Gtk::POS_RIGHT, 5, 11);//    1, 2, 6, 5);
+        mGrid.attach(mInfoFrame, 0, 1, 2, 20); //(left, to, width, height)
+        mGrid.attach_next_to(mVBox, mInfoFrame, Gtk::POS_RIGHT, 5, 19);//    1, 2, 6, 5);
         mGrid.attach_next_to(mStatusBar, mVBox, Gtk::POS_BOTTOM, 5, 1); // (mStatusBar, 7, 2, 6, 1);
+
         add(mGrid);
 
         mInfoFrame.set_label("Information");
         mInfoFrame.set_hexpand(true);
         mInfoFrame.set_vexpand(true);
+
+        setStatusBarMessage("Welcome");
 /*
         add(mVBox);
 */
@@ -202,6 +205,15 @@ public:
         show_all();
     }
     ~TestArea() = default;
+
+    void setStatusBarMessage(const std::string &message)
+    {
+        Gdk::RGBA color;
+        color.set_rgba(1.0, 1.0, 1.0, 1.0); // Set as fraction
+        mStatusBar.override_background_color(color, Gtk::STATE_FLAG_NORMAL);
+        mStatusBar.pop();
+        mStatusBar.push(message);
+    }
 protected:
     struct ClickedPosition
     {
@@ -325,6 +337,7 @@ protected:
         else if (event->keyval == GDK_KEY_r)
         {
             printf("Reset to center\n");
+            mGLWiggle.resetToCenter();
             return true;
         }
         else if (event->keyval == GDK_KEY_m)
@@ -382,6 +395,7 @@ printf("unzoom\n");
     class Gtk::Grid mGrid;
     class Gtk::Frame mInfoFrame; 
     class Gtk::Statusbar mStatusBar;
+    int mStatusBarContextID = 0;
     class Gtk::Box mVBox{Gtk::ORIENTATION_VERTICAL, false}; // TODO remove
     class PopupMenu mPopupMenu;
 

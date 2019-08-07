@@ -52,6 +52,7 @@ find_package(Freetype REQUIRED)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${MKL_INCLUDE_DIR}
   ${MSEED_INCLUDE_DIR}
   ${GTKMM_INCLUDE_DIRS}
 )
@@ -99,7 +100,9 @@ set(LIBSRC
     lib/models/timeSeriesData/waveformIdentifier.cpp
     lib/solvers/rayTrace1D/isotropicLayer.cpp
     lib/solvers/rayTrace1D/isotropicLayerCakeModel.cpp
-    lib/solvers/rayTrace1D/layer.cpp
+    lib/solvers/rayTrace1D/elasticLayer.cpp
+    lib/solvers/rayTrace1D/raySegment.cpp
+    lib/solvers/rayTrace1D/twoPointSolver.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)
@@ -128,7 +131,7 @@ set_property(TARGET gltest PROPERTY CXX_STANDARD 17)
 
 add_library(temblor SHARED ${LIBSRC}) # ${DBSRC})
 target_include_directories(temblor PRIVATE ${GeographicLib_INCLUDE_DIRS})
-target_link_libraries(temblor PRIVATE ${GeographicLib_LIBRARIES} ${MSEED_LIBRARY})
+target_link_libraries(temblor PRIVATE ${MKL_LIBRARY} ${GeographicLib_LIBRARIES} ${MSEED_LIBRARY})
 if (${USE_SQLITE3})
    target_include_directories(temblor PRIVATE ${SQLITE_ORM_INCLUDE_DIR})
 endif()

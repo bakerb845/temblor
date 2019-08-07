@@ -111,6 +111,12 @@ public:
      */
     void apendReflectingLayer(const IsotropicLayer &layer,
                               const bool lLastLayer = false);
+    /*!
+     * @brief This function closes the model construction and is equivalent to 
+     *        calling an append layer routine with lLastLayer = true. 
+     * @throws std::runtime_error if the top layer was not set.
+     */
+    void closeModelConstruction();
    
     /*!
      * @brief Gets the number of layers in the model.
@@ -122,6 +128,17 @@ public:
      * @result True indicates that \c appendLayer() can be called.
      */
     bool canAppendLayer() const noexcept;
+
+    /*!
+     * @brief Gets the layer index that contains the given depth.
+     * @param[in] depth   The depth in meters.
+     * @throws std::invalid_argument if depth is negative or exceeds
+     *         the maximum model depth.  The latter can happen if the model 
+     *         is still open for construction.
+     * @throws std::runtime_error if there are no layers in the model.
+     * @sa \c canAppendLayer()
+     */
+    int getLayerIndexFromDepth(const double depth) const; 
     /*!
      * @brief Extracts the layerIndex'th layer.
      * @param[in] layerIndex  The index of the layer to extract.
@@ -131,7 +148,7 @@ public:
      * @throws std::runtime_error if there are no layers in the model.
      * @sa \c getNumberOfLayers()
      */
-    IsotropicLayer getLayer(const int layerIndex);
+    IsotropicLayer getLayer(const int layerIndex) const;
     /*!
      * @brief Determines if the model and all its layers in the model are valid.
      * @retval True the model is valid and can be used for ray tracing.

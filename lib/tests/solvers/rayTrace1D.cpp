@@ -4,6 +4,7 @@
 #include <vector>
 #include "temblor/solvers/rayTrace1D/isotropicLayer.hpp"
 #include "temblor/solvers/rayTrace1D/isotropicLayerCakeModel.hpp"
+#include "temblor/solvers/rayTrace1D/raySegment.hpp"
 #include <gtest/gtest.h>
 
 namespace
@@ -70,6 +71,7 @@ TEST(LibrarySolversRayTrace1D, isotropicLayerCakeModel)
         layer.setShearVelocity(vpBWF[ilayer]*1.e3/vpvs);
         layer.setDensity(rhBWF[ilayer]*1.e3);
         layer.setThickness( (hBWF[ilayer+1] - hBWF[ilayer])*1.e3 );
+        //printf("setting thickness: %lf\n", layer.getThickness());
         bool lastLayer = false;
         if (ilayer == nLayers - 1){lastLayer = true;}
         if (ilayer == 0)
@@ -82,8 +84,40 @@ TEST(LibrarySolversRayTrace1D, isotropicLayerCakeModel)
         }
         EXPECT_EQ(ilayer + 1, model.getNumberOfLayers());
         EXPECT_EQ(model.canAppendLayer(), !lastLayer);
+        if (ilayer == 0)
+        {
+            EXPECT_EQ(model.getLayerIndexFromDepth(0), 0);
+            EXPECT_EQ(model.getLayerIndexFromDepth(1), 0);
+            EXPECT_EQ(model.getLayerIndexFromDepth(3539), 0);
+        }
+        else if (ilayer == 1)
+        {
+            EXPECT_EQ(model.getLayerIndexFromDepth(3540), 1);
+            EXPECT_EQ(model.getLayerIndexFromDepth(3541), 1);
+            EXPECT_EQ(model.getLayerIndexFromDepth(19099), 1);
+        }
     }
     EXPECT_TRUE(model.isValid());
+    // Test map from depth to layer index
+    EXPECT_EQ(model.getLayerIndexFromDepth(0), 0);
+    EXPECT_EQ(model.getLayerIndexFromDepth(1), 0);
+    EXPECT_EQ(model.getLayerIndexFromDepth(3539), 0);
+
+    EXPECT_EQ(model.getLayerIndexFromDepth(3540), 1);
+    EXPECT_EQ(model.getLayerIndexFromDepth(3541), 1);
+    EXPECT_EQ(model.getLayerIndexFromDepth(19099), 1); 
+
+    EXPECT_EQ(model.getLayerIndexFromDepth(19100), 2);
+    EXPECT_EQ(model.getLayerIndexFromDepth(19101), 2);
+    EXPECT_EQ(model.getLayerIndexFromDepth(29999), 2);
+
+    EXPECT_EQ(model.getLayerIndexFromDepth(30000), 3);
+    EXPECT_EQ(model.getLayerIndexFromDepth(30001), 3);
+    EXPECT_EQ(model.getLayerIndexFromDepth(43999), 3);
+
+    EXPECT_EQ(model.getLayerIndexFromDepth(44000), 4);
+    EXPECT_EQ(model.getLayerIndexFromDepth(44001), 4);
+    EXPECT_EQ(model.getLayerIndexFromDepth(6400.e3), 4);
     // Test the copy constructor
     IsotropicLayerCakeModel modelCopy(model);
     EXPECT_EQ(nLayers, modelCopy.getNumberOfLayers());
@@ -102,6 +136,23 @@ TEST(LibrarySolversRayTrace1D, isotropicLayerCakeModel)
         EXPECT_NEAR(layer.getThickness(), thickness, 1.e-10);
         EXPECT_TRUE(layer.isValid());
     }
+}
+
+TEST(LibrarySolversRayTrace1D, raySegment)
+{
+    /// Just knock it out - constructor calls methods 
+    std::pair<double, double> startPoint(1000, 2000);
+    std::pair<double, double> endPoint(4000, 6000);
+    const double velocity = 5000;
+    RaySegment segment(startPoint, endPoint, velocity);
+    EXPECT_NEAR(segment.getDistance(), 5000, 1.e-10);
+    EXPECT_NEAR(segment.getVelocity(), 5000, 1.e-10);
+    EXPECT_NEAR(segment.getTravelTime(), 1, 1.e-10);
+    // Test copy
+    RaySegment segmentCopy(segment);
+    EXPECT_NEAR(segmentCopy.getDistance(), 5000, 1.e-10);
+    EXPECT_NEAR(segmentCopy.getVelocity(), 5000, 1.e-10);
+    EXPECT_NEAR(segmentCopy.getTravelTime(), 1, 1.e-10);
 }
 
 TEST(LibrarySolversRayTrace1D, twoPointRayTrace)

@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <cassert>
+#include <cfloat>
 #include <vector>
 #include "temblor/solvers/rayTrace1D/isotropicLayerCakeModel.hpp"
 #include "temblor/solvers/rayTrace1D/isotropicLayer.hpp"
@@ -11,6 +13,7 @@ class IsotropicLayerCakeModel::IsotropicLayerCakeModelImpl
 {
 public:
     std::vector<class IsotropicLayer> mModel;
+    std::vector<double> mInterfaces;
     bool mHaveTopLayer = false;
     bool mCanAppendLayer = false;
 };
@@ -57,6 +60,7 @@ IsotropicLayerCakeModel::~IsotropicLayerCakeModel() = default;
 void IsotropicLayerCakeModel::clear() noexcept
 {   
     pImpl->mModel.clear();
+    pImpl->mInterfaces.clear();
     pImpl->mHaveTopLayer = false;
     pImpl->mCanAppendLayer = false;
 }
@@ -71,8 +75,17 @@ void IsotropicLayerCakeModel::setTopLayer(const IsotropicLayer &layer,
         throw std::invalid_argument("Layer is invalid\n");
     }
     pImpl->mModel.push_back(layer);
+    pImpl->mInterfaces.push_back(0); // Start at 0
     pImpl->mHaveTopLayer = true;
-    pImpl->mCanAppendLayer = !lLastLayer;
+    pImpl->mCanAppendLayer = true;
+    if (!lLastLayer)
+    {
+        pImpl->mInterfaces.push_back(layer.getThickness());
+    }
+    else
+    {
+        closeModelConstruction();
+    }
 }
 
 /// Appends a layer to the model
@@ -92,25 +105,88 @@ void IsotropicLayerCakeModel::appendLayer(const IsotropicLayer &layer,
         throw std::invalid_argument("Layer is invalid\n");
     }
     pImpl->mModel.push_back(layer);
-    pImpl->mCanAppendLayer = !lLastLayer;
+    // Add current layer thickness to interface depths 
+    pImpl->mInterfaces.push_back(layer.getThickness()
+                               + pImpl->mInterfaces.back());
+    if (lLastLayer){closeModelConstruction();}
 }
 
 /// Appends a critically refracting layer
 /*
-void IsotropicLayerCakeModel::appendCriticallyRefractingLayer( )
+void IsotropicLayerCakeModel::appendCriticallyRefractingLayer(const IsotropicLayer &layer, const bool lLastLayer)
 {
-
+    appendLayer(layer, lLastLayer);
 }
 
 /// Appends a reflecting layer
 void IsotropicLayerCakeModel::appendReflectingLayer( )
 {
-
+    appendLayer(layer, lLastLayer);
 }
 */
 
+void IsotropicLayerCakeModel::closeModelConstruction()
+{
+    if (!pImpl->mHaveTopLayer)
+    {
+        throw std::runtime_error("Must set top layer of model\n");
+    }
+    pImpl->mInterfaces.push_back(DBL_MAX - 1);
+    pImpl->mCanAppendLayer = false;
+}
+
+/// Gets the layer index corresponding to the depth
+int IsotropicLayerCakeModel::getLayerIndexFromDepth(const double depth) const
+{
+    int nLayers = getNumberOfLayers();
+    if (nLayers < 1)
+    {
+        throw std::runtime_error("No layers in model\n");
+    }
+    if (depth < 0)
+    {
+        throw std::invalid_argument("depth = " + std::to_string(depth)
+                                  + " must be non-negative\n");
+    }
+    double depthMax = pImpl->mInterfaces.back();
+    if (depth > depthMax)
+    {
+        throw std::invalid_argument("depth = " + std::to_string(depth)
+                                  + " exceeds max depth = " 
+                                  + std::to_string(depthMax) + "\n");
+    }
+    // Edge case - frequently will happen when querying free surface
+    if (depth == 0){return 0;}
+    // Only one layer - it can't be anywhere else
+    if (nLayers == 1){return 0;}
+    // In last layer
+    //if (depth >= pImpl->mInterfaces[nLayers]){return nLayers - 1;}
+    // Hunt for it
+    auto layerPtr = std::upper_bound(pImpl->mInterfaces.begin(),
+                                     pImpl->mInterfaces.end(),
+                                     depth);
+    int layer = static_cast<int> (layerPtr - pImpl->mInterfaces.begin()) - 1;
+#ifdef DEBUG
+    assert(layer >= 0 && layer < nLayers);
+    assert(pImpl->mInterfaces[layer] <= depth &&
+           depth < pImpl->mInterfaces[layer+1]);
+#endif
+/*
+    for (int i=0; i<nLayers; ++i)
+    {
+        if (pImpl->mInterfaces[i] <= depth && depth < pImpl->mInterfaces[i+1])
+        {
+            return i;
+        }
+    }
+    assert(false, "Shouldn't be here");
+    return -1;
+*/
+    return layer;
+}
+
 /// Gets a layer
-IsotropicLayer IsotropicLayerCakeModel::getLayer(const int layerIndex)
+IsotropicLayer IsotropicLayerCakeModel::getLayer(const int layerIndex) const
 {
     int nLayers = getNumberOfLayers();
     if (nLayers < 1)
@@ -147,6 +223,6 @@ bool IsotropicLayerCakeModel::isValid() const noexcept
     {
         if (!pImpl->mModel[i].isValid()){return false;}
     }
-    //if (canAppendLayer()){return false;} // Model is not closed
+    if (canAppendLayer()){return false;} // Model is not closed
     return true;
 }

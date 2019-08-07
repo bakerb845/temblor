@@ -4,9 +4,9 @@ namespace Temblor::Solvers::RayTrace1D
 {
 
 /*!
- * @brief Defines the layer's symmetry.
+ * @brief Defines the symmetry of the elastic moduli.
  */
-enum class LayerSymmetry
+enum class ElasticLayerSymmetry
 {
     UNKNOWN,   /*!< Unknown symmetry. */
     ISOTROPIC  /*!< Isotropic symmetry. */
