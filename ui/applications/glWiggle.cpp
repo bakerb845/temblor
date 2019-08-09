@@ -494,7 +494,7 @@ bool GLWiggle::onScrollEvent(GdkEventScroll *event)
         }
         else if (event->direction == GDK_SCROLL_DOWN)
         {
-            printf("Zoom out on x=%lf\n", xPosition);
+            printf("Zoom out on (x,y)=(%lf,%lf)\n", xPosition, yPosition);
             unZoom(xPosition);
             return true;
         }
@@ -681,13 +681,14 @@ printf("c=%lf\n", c);
     //   {xCoordRight} = [ 1 -1/(ca+a)  1/(ca+a)] {  -1  } = { xCoord + 2c/(ca+a)}
     //   {glShiftX}    = [-1  1/(ca+a)  c/(ca+a)] {  +1  } = {-xCoord + (c-1)/(ca+a)}
     // 
-    double a = pImpl->mScaleX*pImpl->mZoomFactorInX;
+    double zoomFactor = pImpl->mScaleX*pImpl->mZoomFactorInX;
+    double a = zoomFactor;
     double xCoordLeft  = xCoord - 2*c/(c*a + a);
     double xCoordRight = xCoord + 2/(c*a + a);
-    double glShiftX =-xCoord + (c-1)/(c*a+a);
-    pImpl->mScaleX = pImpl->mScaleX*pImpl->mZoomFactorInX;
+    double glShiftX =-xCoord + (c - 1)/(c*a+a);
+    pImpl->mScaleX = zoomFactor;
     pImpl->mShiftX = glShiftX;
-printf("scale: %lf; target=%lf\n", pImpl->mScaleX, xCoord);
+printf("scale: %lf; shift: %lf; target=%lf\n", pImpl->mScaleX, pImpl->mShiftX, xCoord);
 /*
     // Put the x position in relative GL coordinates [-1,1]
     double xCenter =-1.0 + 2.0*xLoc;
@@ -713,15 +714,16 @@ void GLWiggle::unZoom(const double xPosition)
                                                       pImpl->mScaleX,
                                                       pImpl->mShiftX,
                                                       get_allocation());
-    double c= (glXPosition + 1)/(1 - glXPosition);
+    double c = (glXPosition + 1)/(1 - glXPosition);
     // Clip on max zoom
     double zoomFactor = std::max(1.0, pImpl->mScaleX/pImpl->mZoomFactorInX);
-    double a = pImpl->mScaleX*zoomFactor;
+    double a = zoomFactor; //pImpl->mScaleX*zoomFactor;
     double xCoordLeft  = xCoord - 2*c/(c*a + a);
     double xCoordRight = xCoord + 2/(c*a + a);
     double glShiftX =-xCoord + (c-1)/(c*a+a);
     pImpl->mScaleX = zoomFactor;
     pImpl->mShiftX = glShiftX;
+printf("unscale: %lf; shift: %lf; target=%lf\n", pImpl->mScaleX, pImpl->mShiftX, xCoord);
 /*
     auto allocation = get_allocation();
     auto height = allocation.get_height();
