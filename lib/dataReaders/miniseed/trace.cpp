@@ -164,7 +164,10 @@ void Trace::read(const std::string &fileName, const SNCL &sncl)
          traceID=traceID->next)
     {
         bool lmatch = false;
-        if (strcasecmp(traceID->sid, sid.data())){lmatch = true;}
+        if (strcasecmp(traceID->sid, sid.data()) == 0)
+        {
+            lmatch = true;
+        }
         if (!lmatch){continue;}
         lfound = true;
         for (auto segment = traceID->first; 
@@ -249,7 +252,7 @@ EXIT:;
     if (!lfound)
     {
         clear();
-        throw std::invalid_argument("Could not find %s"
+        throw std::invalid_argument("Could not find "
                                   + std::string(sid.data()) + "\n");
     }
 }
