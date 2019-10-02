@@ -138,6 +138,7 @@ void TraceGroup::read(const std::string &fileName)
     // Clean up
     if (mstl){mstl3_free(&mstl, 0);}
     // Load the data
+    pImpl->mTraces.resize(pImpl->mSNCLs.size());
     int i = 0;
     for (auto sncl : pImpl->mSNCLs)
     {

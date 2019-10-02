@@ -3,13 +3,12 @@
 #include <memory>
 #include "temblor/dataReaders/miniseed/enums.hpp"
 
-namespace Temblor
-{
-namespace Utilities
+namespace Temblor::Utilities
 {
 class Time;
 }
-namespace DataReaders::MiniSEED
+
+namespace Temblor::DataReaders::MiniSEED
 {
 class SNCL;
 /*!
@@ -237,6 +236,5 @@ private:
     class TraceImpl;
     std::unique_ptr<TraceImpl> pImpl;
 };
-}
 }
 #endif

@@ -46,7 +46,7 @@ public:
      * @param[in] traceGroup  The trace group class to copy.
      * @result A deep copy of the trace group class.
      */
-    TraceGroup& operator=(const MiniSEED &traceGroup);
+    TraceGroup& operator=(const TraceGroup &traceGroup);
     /*!
      * @brief Move assignment operator.
      * @param[in,out] traceGroup  The trace groupclass whose memory will be
@@ -111,8 +111,8 @@ public:
     Utilities::Time getLatestEndTime() const;
 
 private:
-    class MiniSEEDImpl;
-    std::unique_ptr<MiniSEEDImpl> pImpl;
+    class TraceGroupImpl;
+    std::unique_ptr<TraceGroupImpl> pImpl;
 };
 }
 #endif

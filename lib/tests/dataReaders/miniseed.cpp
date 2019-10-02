@@ -73,7 +73,7 @@ TEST(LibraryDataReadersMiniSEED, Trace)
     std::string wyFileName = "data/WY.YWB.EHZ.01.txt";
     sncl.setNetwork("WY");
     sncl.setStation("YWB");
-    sncl.setChannel("HHZ");
+    sncl.setChannel("EHZ");
     sncl.setLocationCode("01");
     // Load the reference data file
     std::vector<int> referenceSignal = loadIntegerData(wyFileName, 14609);
