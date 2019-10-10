@@ -162,7 +162,7 @@ public:
         class MiniSEED::SNCL sncl;
         sncl.setNetwork("WY");
         sncl.setStation("YWB");
-        sncl.setChannel("HHZ");
+        sncl.setChannel("EHZ");
         sncl.setLocationCode("01");
         set_resizable(false); // OpenGL has some weird thing about resizing and aliasing
         try

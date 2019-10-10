@@ -95,6 +95,7 @@ set(LIBSRC
     lib/dataReaders/segy/segy2.cpp
     lib/dataReaders/miniseed/sncl.cpp
     lib/dataReaders/miniseed/trace.cpp
+    lib/dataReaders/miniseed/traceGroup.cpp
     lib/models/event/origin.cpp
     lib/models/timeSeriesData/singleChannelWaveform.cpp
     lib/models/timeSeriesData/waveformIdentifier.cpp
@@ -103,6 +104,7 @@ set(LIBSRC
     lib/solvers/rayTrace1D/elasticLayer.cpp
     lib/solvers/rayTrace1D/raySegment.cpp
     lib/solvers/rayTrace1D/twoPointSolver.cpp
+    lib/solvers/eikonal/fastSweeping2D.cpp
     lib/utilities/geodetic/globalPosition.cpp
     lib/utilities/geodetic/globalPositionPair.cpp
     lib/utilities/time.cpp)

@@ -355,14 +355,20 @@ public:
     class GLSLShader mShader;
     class GLSLShader mTextShader;
     std::map<GLchar, Character> mCharacters;
+    /// This is the scale for OpenGL shader to zoom.  This is >= 1
     double mScaleX = 1;
-    double mLeftX  =-1;
-    double mRightX =+1; 
+    /// This is the shift the OpenGL shader to shift.
     double mShiftX = 0;
-    double mCenterX = 0;
+    /// This is the left-most X plotted on the screen.  This is in the range [-1,1].
+    double mTimeSeriesLeftX  =-1;
+    /// This is the right-most X plotted on the screen.  This is in the range [-1,1].
+    double mTimeSeriesRightX =+1;
+
+    /// This is a plot option that defines the zoom factor in x
     double mZoomFactorInX = 1.5;
-    std::pair<double, double> mGLScreenXLimits{-1.0, 1.0};
-    std::pair<double, double> mGLScreenYLimits{-1.0, 1.0};
+    /// This is a plot option that defines the pan rate
+    double mPanFactorInX = 0.01;
+
     //GLuint mVBO[2] = {0, 0};
     GLuint mVAOHandle = 0;
     GLuint mCoord2DVBO = 0;
@@ -427,13 +433,13 @@ bool GLWiggle::onScrollEvent(GdkEventScroll *event)
 {
     if (event->state == GDK_CONTROL_MASK)
     {
-        if (event->direction == GDK_SCROLL_UP)
+        if (event->direction == GDK_SCROLL_DOWN)
         {
             printf("Scroll left\n");
             panLeft();
             return true;
         }
-        else if (event->direction == GDK_SCROLL_DOWN)
+        else if (event->direction == GDK_SCROLL_UP)
         {
             printf("Scroll right\n");
             panRight();
@@ -601,7 +607,8 @@ pImpl->mTS[1].setSeismogram(npts, x);
 
 void GLWiggle::panLeft()
 {
-    double shiftX = pImpl->mShiftX + 2*0.05;
+    //double shiftX = pImpl->mShiftX + 2*0.05;
+    double shiftX = pImpl->mShiftX + 2*pImpl->mPanFactorInX;
     if (std::abs(shiftX) >= 1.1){return;}
     pImpl->mShiftX = shiftX;
     queue_render();         
@@ -609,7 +616,8 @@ void GLWiggle::panLeft()
 
 void GLWiggle::panRight()
 {
-    double shiftX = pImpl->mShiftX - 2*0.05;
+    //double shiftX = pImpl->mShiftX - 2*0.05;
+    double shiftX = pImpl->mShiftX - 2*pImpl->mPanFactorInX;
     if (std::abs(shiftX) >= 1.1){return;}
     pImpl->mShiftX = shiftX;
     queue_render();
@@ -618,10 +626,9 @@ void GLWiggle::panRight()
 void GLWiggle::resetToCenter( )
 {
     pImpl->mScaleX = 1;
-    pImpl->mLeftX  =-1;
-    pImpl->mRightX =+1;
+    pImpl->mTimeSeriesLeftX  =-1;
+    pImpl->mTimeSeriesRightX =+1;
     pImpl->mShiftX = 0;
-    pImpl-> mCenterX = 0;
     queue_render();
 }
 
@@ -654,11 +661,11 @@ void GLWiggle::zoom(const double xPosition) //onKeyPress(GdkEventKey *event)
                                                       pImpl->mScaleX,
                                                       pImpl->mShiftX,
                                                       get_allocation());
-    // Figure out the constant.  N.B. c = 0.5 forces zoom point to center.
-    // This is annoying because my target changes every time I zoom so I have
-    // to move my mouse and chase the target.
-    double c= (glXPosition + 1)/(1 - glXPosition);
-printf("c=%lf\n", c);
+    // Figure out the constant by inserting xCoordLeft =-1 and xCoordRight = +1.
+    // N.B. c = 0.5 forces zoom point to center.  This is annoying because my
+    // target changes every time I zoom so I have to move my mouse and chase
+    // the target.
+    double c = (glXPosition + 1)/(1 - glXPosition);
     // The goal is to zoom on the target x position and keep that position
     // under the mouse pointer.  This means that the new position has a
     // constant relative position:
@@ -667,8 +674,7 @@ printf("c=%lf\n", c);
     //   Constant*(xCoordRight - xCoord) = (xCoord - xCoordLeft) 
     //   (xCoord + Constant*xCoord) = Constant*xCoordRight + xCoordLeft
     //   xCoord = (xCoordLeft + Constant*xCoordRight)/(1 + Constant)
-    //
-    //   TODO: remove constraint: xCoord      = (xCoordLeft + xCoordRight)/2 
+    // Now forming a system of equations
     //   xCoord      = 1/(1+c)*xCoordLeft + c/(1+c)*xCoordRight
     //   glPlotLeft  = (xCoordLeft + glShiftX)*(glScaleX*glScaleFactor)
     //   glPlotRight = (xCoordRight + glShiftX)*(glScaleX*glScaleFactor)
@@ -688,14 +694,9 @@ printf("c=%lf\n", c);
     double glShiftX =-xCoord + (c - 1)/(c*a+a);
     pImpl->mScaleX = zoomFactor;
     pImpl->mShiftX = glShiftX;
-printf("scale: %lf; shift: %lf; target=%lf\n", pImpl->mScaleX, pImpl->mShiftX, xCoord);
-/*
-    // Put the x position in relative GL coordinates [-1,1]
-    double xCenter =-1.0 + 2.0*xLoc;
-    printf("xCenter: %lf %d %lf\n", xPosition, width, xCenter);
-    pImpl->mLeftX = pImpl->mLeftX*pImpl->mZoomFactorInX;
-    pImpl->mScaleX = pImpl->mScaleX*pImpl->mZoomFactorInX;
-*/
+    pImpl->mTimeSeriesLeftX  = xCoordLeft;
+    pImpl->mTimeSeriesRightX = xCoordRight;
+    //printf("scale: %lf; shift: %lf; target=%lf\n", pImpl->mScaleX, pImpl->mShiftX, xCoord);
     queue_render();
 }
 
@@ -715,22 +716,16 @@ void GLWiggle::unZoom(const double xPosition)
                                                       pImpl->mShiftX,
                                                       get_allocation());
     double c = (glXPosition + 1)/(1 - glXPosition);
-    // Clip on max zoom
+    // Clip on max zoom factor
     double zoomFactor = std::max(1.0, pImpl->mScaleX/pImpl->mZoomFactorInX);
-    double a = zoomFactor; //pImpl->mScaleX*zoomFactor;
+    double a = zoomFactor;
     double xCoordLeft  = xCoord - 2*c/(c*a + a);
     double xCoordRight = xCoord + 2/(c*a + a);
     double glShiftX =-xCoord + (c-1)/(c*a+a);
     pImpl->mScaleX = zoomFactor;
     pImpl->mShiftX = glShiftX;
-printf("unscale: %lf; shift: %lf; target=%lf\n", pImpl->mScaleX, pImpl->mShiftX, xCoord);
-/*
-    auto allocation = get_allocation();
-    auto height = allocation.get_height();
-    auto width  = allocation.get_width();
-    // Clip on max zoom
-    pImpl->mScaleX = std::max(1.0, pImpl->mScaleX/pImpl->mZoomFactorInX);
-*/
+    pImpl->mTimeSeriesLeftX  = xCoordLeft;
+    pImpl->mTimeSeriesRightX = xCoordRight;
     queue_render();
 }
 
