@@ -6,7 +6,7 @@ namespace Temblor::Utilities
 {
 
 /*!
- * @class Time time.hpp "temblor/library/utilities/time.hpp"
+ * @class Time time.hpp "temblor/utilities/time.hpp"
  * @brief A class for managing calendar and epochal time.
  * @author Ben Baker
  */

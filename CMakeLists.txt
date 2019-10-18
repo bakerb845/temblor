@@ -55,6 +55,7 @@ include_directories(
   ${MKL_INCLUDE_DIR}
   ${MSEED_INCLUDE_DIR}
   ${GTKMM_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR}
 )
 if (${USE_SQLITE3})
    #include_directories(${SQLite3_INCLUDE_DIRS})
@@ -83,12 +84,20 @@ else()
    endif()
 endif()
 link_directories(${GTKMM_LIBRARY_DIRS})
+
+# Deal with leapseconds
+file(DOWNLOAD
+     https://www.ietf.org/timezones/data/leap-seconds.list
+     ${CMAKE_CURRENT_SOURCE_DIR}/data/leap-seconds.txt) 
+execute_process(COMMAND python3 leapseconds.py
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)
 #link_libraries(stdc++fs stdc++) #${GeographicLib_LIBRARIES})
 #########################################################################################
 #                      Define the source, libraries, and executables                    #
 #########################################################################################
 
 set(LIBSRC
+    data/leapSeconds.cpp
     lib/dataReaders/sac/waveform.cpp
     lib/dataReaders/sac/header.cpp
     lib/dataReaders/segy/binaryFileHeader.cpp
@@ -170,7 +179,7 @@ add_executable(testLibraryUtilities
                lib/tests/utilities/time.cpp
                lib/tests/utilities/location.cpp)
 #set_property(TARGET testLibraryUtilities PROPERTY CXX_STANDARD 17)
-target_link_libraries(testLibraryUtilities PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(testLibraryUtilities PRIVATE temblor ${GTEST_BOTH_LIBRARIES} ${MSEED_LIBRARY})
 target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryUtilities
          COMMAND testLibraryUtilities)
@@ -182,7 +191,7 @@ add_executable(testLibraryDataReaders
                lib/tests/dataReaders/segy.cpp
                )
 set_property(TARGET testLibraryDataReaders PROPERTY CXX_STANDARD 17)
-target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(testLibraryDataReaders PRIVATE temblor ${GTEST_BOTH_LIBRARIES} ${MSEED_LIBRARY})
 target_include_directories(testLibraryDataReaders PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryDataReaders
          COMMAND testLibraryDataReaders)
@@ -190,7 +199,7 @@ add_test(NAME testLibraryDataReaders
 add_executable(testLibraryModels
                lib/tests/models/main.cpp
                lib/tests/models/timeSeriesData.cpp)
-target_link_libraries(testLibraryModels PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(testLibraryModels PRIVATE temblor ${GTEST_BOTH_LIBRARIES} ${MSEED_LIBRARY})
 target_include_directories(testLibraryUtilities PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibraryModels
          COMMAND testLibraryModels)
@@ -199,7 +208,7 @@ add_executable(testLibrarySolvers
                lib/tests/solvers/main.cpp
                lib/tests/solvers/rayTrace1D.cpp)
 #set_property(TARGET testLibrarySolvers PROPERTY CXX_STANDARD 17)
-target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(testLibrarySolvers PRIVATE temblor ${GTEST_BOTH_LIBRARIES} ${MSEED_LIBRARY})
 target_include_directories(testLibrarySolvers PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testLibrarySolvers
          COMMAND testLibrarySolvers)
@@ -208,7 +217,7 @@ add_executable(testUserInterfaceModels
                ui/tests/main.cpp
                ui/tests/rgba.cpp
               )
-target_link_libraries(testUserInterfaceModels PRIVATE temblor temblorUI ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(testUserInterfaceModels PRIVATE temblor temblorUI ${GTEST_BOTH_LIBRARIES} ${MSEED_LIBRARY})
 target_include_directories(testUserInterfaceModels PRIVATE ${GTEST_INCLUDE_DIRS})
 add_test(NAME testUserInterfaceModels
          COMMAND testUserInterfaceModels)
