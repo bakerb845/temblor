@@ -63,10 +63,13 @@ public:
 
     /*!
      * @brief Gets the number of leap seconds.
-     * @param[in] epoch   The epochal time in UTC seconds.
+     * @param[in] epoch        The epochal time in UTC seconds.
+     * @param[in] lSubtract10  Since an epochal time of 0 would return 10 leap 
+     *                         seconds this option provides the opportunity
+     *                         to remove these first 10 leap seconds.
      * @result The number of leap seconds.
      */
-    int getNumberOfLeapSeconds(double epoch) const;
+    int getNumberOfLeapSeconds(double epoch, bool lSubtract10 = false) const;
 private:
     class LeapSecondsImpl;
     std::unique_ptr<LeapSecondsImpl> pImpl;

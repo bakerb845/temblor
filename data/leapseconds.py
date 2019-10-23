@@ -92,18 +92,20 @@ cout = cout + "/// Constructor\n" \
      + "/// Destructor\n" \
      + "LeapSeconds::~LeapSeconds() = default;\n" \
      + "/// Get number of leapseconds\n" \
-     + "int LeapSeconds::getNumberOfLeapSeconds(const double epoch) const\n" \
+     + "int LeapSeconds::getNumberOfLeapSeconds(\n" \
+     + "    const double epoch, const bool lSubtract10) const\n" \
      + "{\n" \
      + "    auto t = static_cast<int64_t> (epoch);\n" \
+     + "    auto shift = (lSubtract10 ? pImpl->mLeapSeconds[0] : 0);\n" \
      + "    // More often than not we're working in the present\n" \
-     + "    if (t >= pImpl->mEpoch.back()){return pImpl->mLeapSeconds.back();}\n" \
+     + "    if (t >= pImpl->mEpoch.back()){return pImpl->mLeapSeconds.back() - shift;}\n" \
      + "    // Fix edge case\n" \
-     + "    if (t <= pImpl->mEpoch.front()){return pImpl->mLeapSeconds.front();}\n" \
+     + "    if (t <= pImpl->mEpoch.front()){return pImpl->mLeapSeconds.front() - shift;}\n" \
      + "    auto low = std::lower_bound(pImpl->mEpoch.begin(), pImpl->mEpoch.end(), t);\n" \
      + "    // lower_bound tells us where to insert - so back up 1\n" \
      + "    if (*low != t){low = low - 1;}\n" \
      + "    auto index = std::distance(pImpl->mEpoch.begin(), low);\n" \
-     + "    return pImpl->mLeapSeconds[index];\n" \
+     + "    return pImpl->mLeapSeconds[index] - shift;\n" \
      + "}\n"
 
 ofl = open('leapSeconds.cpp', 'w')
