@@ -107,12 +107,23 @@ TEST(LibraryUtilitiesTime, LeapSeconds)
     time.setSecond(0);
     time.setMicroSecond(0);
     int nls;
+    // Jan 1, 1972 starts the list at 10
     nls = ls.getNumberOfLeapSeconds(time.getEpochalTime());
     EXPECT_EQ(nls, 37);
     time.setYear(1969);
     nls = ls.getNumberOfLeapSeconds(time.getEpochalTime());
     EXPECT_EQ(nls, 10);
-    // Now try some edge cases
+
+    time.setYear(1972);
+    time.setMonth(7);
+    time.setDayOfMonth(1);
+    time.setHour(0);
+    time.setMinute(0);
+    time.setSecond(0);
+    time.setMicroSecond(0);
+    nls = ls.getNumberOfLeapSeconds(time.getEpochalTime());
+    EXPECT_EQ(nls, 11);
+    // Now try some edge cases - 36 starts at July 2015
     time.setYear(2015);
     time.setMonth(6);
     time.setDayOfMonth(30);
@@ -121,7 +132,7 @@ TEST(LibraryUtilitiesTime, LeapSeconds)
     time.setSecond(59);
     time.setMicroSecond(0);
     nls = ls.getNumberOfLeapSeconds(time.getEpochalTime());
-    EXPECT_EQ(nls, 36);
+    EXPECT_EQ(nls, 35);
 
     time.setYear(1996);
     time.setMonth(1);
@@ -132,6 +143,10 @@ TEST(LibraryUtilitiesTime, LeapSeconds)
     time.setMicroSecond(0);
     nls = ls.getNumberOfLeapSeconds(time.getEpochalTime());
     EXPECT_EQ(nls, 30);
+
+    // October 1, 2012
+    nls = ls.getNumberOfLeapSeconds(1349101514);
+    EXPECT_EQ(nls, 35); 
 }
 
 }

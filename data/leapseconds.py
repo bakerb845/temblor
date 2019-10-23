@@ -97,7 +97,11 @@ cout = cout + "/// Constructor\n" \
      + "    auto t = static_cast<int64_t> (epoch);\n" \
      + "    // More often than not we're working in the present\n" \
      + "    if (t >= pImpl->mEpoch.back()){return pImpl->mLeapSeconds.back();}\n" \
+     + "    // Fix edge case\n" \
+     + "    if (t <= pImpl->mEpoch.front()){return pImpl->mLeapSeconds.front();}\n" \
      + "    auto low = std::lower_bound(pImpl->mEpoch.begin(), pImpl->mEpoch.end(), t);\n" \
+     + "    // lower_bound tells us where to insert - so back up 1\n" \
+     + "    if (*low != t){low = low - 1;}\n" \
      + "    auto index = std::distance(pImpl->mEpoch.begin(), low);\n" \
      + "    return pImpl->mLeapSeconds[index];\n" \
      + "}\n"
