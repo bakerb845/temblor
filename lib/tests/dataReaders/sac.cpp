@@ -5,15 +5,15 @@
 #include <algorithm>
 #include "temblor/private/filesystem.hpp"
 #include "temblor/utilities/time.hpp"
-#include "temblor/dataReaders/sac/waveform.hpp"
-#include "temblor/dataReaders/sac/header.hpp"
-#include "temblor/dataReaders/sac/enums.hpp"
+#include "temblor/seismicDataIO/sac/waveform.hpp"
+#include "temblor/seismicDataIO/sac/header.hpp"
+#include "temblor/seismicDataIO/sac/enums.hpp"
 #include <gtest/gtest.h>
 
 namespace
 {
 
-using namespace Temblor::DataReaders;
+using namespace Temblor::SeismicDataIO;
 
 TEST(LibraryDataReadersSAC, header)
 {
@@ -317,6 +317,20 @@ TEST(LibraryDataReadersSAC, header)
                                        "kdatrd");
     ASSERT_STREQ(headerCheck.getHeader(SAC::Character::KINST).c_str(),
                                        "kinst");
+}
+
+TEST(LibraryDataReadersSAC, headerRead)
+{
+    const std::string sacFile = "data/debug.sac";
+    SAC::Header header;
+    header.read(sacFile);
+    ASSERT_EQ(header.getHeader(SAC::Integer::NPTS), 100);
+    ASSERT_NEAR(header.getHeader(SAC::Double::DELTA), 0.005, 1.e-7);
+    ASSERT_STREQ(header.getHeader(SAC::Character::KNETWK).c_str(), "FK");
+    ASSERT_STREQ(header.getHeader(SAC::Character::KSTNM).c_str(),  "NEW");
+    ASSERT_STREQ(header.getHeader(SAC::Character::KCMPNM).c_str(), "HHZ");
+    ASSERT_STREQ(header.getHeader(SAC::Character::KHOLE).c_str(),  "10");
+
 }
 
 TEST(LibraryDataReadersSAC, waveform)

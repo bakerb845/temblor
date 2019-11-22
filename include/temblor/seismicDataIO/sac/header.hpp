@@ -1,12 +1,15 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_SAC_HEADER_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_SAC_HEADER_HPP
+#ifndef TEMBLOR_SEISMICDATAIO_SAC_HEADER_HPP
+#define TEMBLOR_SEISMICDATAIO_SAC_HEADER_HPP
 #include <memory>
 #include <string>
-#include "temblor/dataReaders/sac/enums.hpp"
+#include "temblor/seismicDataIO/sac/enums.hpp"
 
-namespace Temblor::DataReaders::SAC
+namespace Temblor::SeismicDataIO::SAC
 {
-
+/*!
+ * @brief Defines the SAC header.
+ * @copyright Ben Baker (University of Utah) distributed under the MIT license.
+ */
 class Header
 {
 public:
@@ -72,6 +75,14 @@ public:
     void clear() noexcept;
     /*! @} */
 
+    /*!
+     * @brief Reads the header from a file.
+     * @param[in] fileName  The name of the SAC file.
+     * @throws std::invalid_argument if the file does not exists or the header
+     *         is malformed.
+     * @sa \c setFromBinaryHeader()
+     */
+    void read(const std::string &fileName);
     /*!
      * @brief Sets the header from a character string comprised of binary data.
      * @param[in] header   Character string with header variables.  This is an

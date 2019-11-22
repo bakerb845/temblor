@@ -2,16 +2,19 @@
 #include <cstdlib>
 #include <cassert>
 #include <cstring>
+#include <algorithm>
 #include <string>
+#include <fstream>
 #include <array>
 #include <stdexcept>
-#include "temblor/dataReaders/sac/header.hpp"
+#include "temblor/private/filesystem.hpp"
+#include "temblor/seismicDataIO/sac/header.hpp"
 
 #define NULL_DOUBLE -12345
 #define NULL_INT -12345
 #define NULL_STRING "-12345\0\0"
 
-using namespace Temblor::DataReaders::SAC;
+using namespace Temblor::SeismicDataIO::SAC;
 
 
 namespace {
@@ -316,22 +319,26 @@ Header::Header() :
 {
 }
 
+/// Creates a header from a character stream
 Header::Header(const char header[], const bool lswap) :
     pImpl(std::make_unique<HeaderImpl> ())
 {
     setFromBinaryHeader(header, lswap);
 }
 
+/// Copy constructor
 Header::Header(const Header &header)
 {
     *this = header;
 }
 
+/// Move constructor
 Header::Header(Header &&header) noexcept
 {
     *this = std::move(header);
 }
 
+/// Copy assignment
 Header& Header::operator=(const Header &header)
 {
     if (&header == this){return *this;}
@@ -340,6 +347,7 @@ Header& Header::operator=(const Header &header)
     return *this;
 }
 
+/// Move assignment
 Header& Header::operator=(Header &&header) noexcept
 {
     if (&header == this){return *this;}
@@ -348,14 +356,17 @@ Header& Header::operator=(Header &&header) noexcept
     return *this;
 }
 
+/// Destructor
 Header::~Header() = default;
 
+/// Clears the header
 void Header::clear() noexcept
 {
     Header header; // Create a default header
     *this = std::move(header); // Move it to this header to avoid copying
 }
 
+/// Gets a double header variable
 double Header::getHeader(const Double variableName) const noexcept
 {
     if (variableName == Double::DELTA)
@@ -1556,6 +1567,56 @@ std::string Header::getHeader(const Character variableName) const noexcept
 
 //============================================================================//
 
+void Header::read(const std::string &fileName)
+{
+    clear();
+#if TEMBLOR_USE_FILESYSTEM == 1
+    if (!fs::exists(fileName))
+    {   
+        std::string errmsg = "SAC file = " + fileName + " does not exist";
+        throw std::invalid_argument(errmsg);
+    }   
+#endif
+    // Read the binary file
+    std::ifstream sacfl(fileName, std::ios::in | std::ios::binary);
+    std::array<char, 632> cheader; 
+    sacfl.read(cheader.data(), 632);
+    if (!sacfl)
+    {
+        throw std::invalid_argument("SAC file " + fileName
+                                   + " does not appear to have 632 bytes\n");
+    }
+    // Get file size
+    auto begin = sacfl.tellg();
+    sacfl.seekg(0, std::ios::end);
+    auto end   = sacfl.tellg();     
+    size_t nbytes = end - begin + 632;
+    // Figure out the byte order
+    const char *cdat = cheader.data();
+    union
+    {
+        char c4[4];
+        int npts;
+    };
+    std::memcpy(c4, &cdat[316], 4*sizeof(char));
+    size_t nbytesEst = static_cast<size_t> (npts)*sizeof(float) + 632;
+    bool lswap = false;
+    if (nbytesEst != nbytes)
+    {
+        std::reverse(c4, c4+4);
+        nbytesEst = static_cast<size_t> (npts)*sizeof(float) + 632;
+        if (nbytesEst != nbytes)
+        {
+            std::string errmsg = "Cannot determine endianness of file";
+            throw std::invalid_argument(errmsg);
+        }
+        lswap = true;
+    }
+    // Finally set the header
+    setFromBinaryHeader(cdat, lswap);
+}
+
+/// Sets the header from a character string
 void Header::setFromBinaryHeader(const char header[632], const bool lswap)
 {
     // Floats (convert to double)

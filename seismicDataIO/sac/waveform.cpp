@@ -7,10 +7,10 @@
 #include <fstream>
 #include "temblor/private/filesystem.hpp"
 #include "temblor/utilities/time.hpp"
-#include "temblor/dataReaders/sac/waveform.hpp"
-#include "temblor/dataReaders/sac/header.hpp"
+#include "temblor/seismicDataIO/sac/waveform.hpp"
+#include "temblor/seismicDataIO/sac/header.hpp"
 
-using namespace Temblor::DataReaders::SAC;
+using namespace Temblor::SeismicDataIO::SAC;
 
 static double *alignedAllocDouble(const int npts);
 
@@ -79,21 +79,25 @@ public:
     double *mData = nullptr;
 };
 
+/// Constructor
 Waveform::Waveform() :
     pImpl(std::make_unique<WaveformImpl> ())
 {
 }
 
+/// Copy constructor
 Waveform::Waveform(const Waveform &waveform)
 {
     *this = waveform;
 }
 
+/// Move constructor
 Waveform::Waveform(Waveform &&waveform) noexcept
 {
     *this = std::move(waveform);
 }
 
+/// Copy assignment operator
 Waveform& Waveform::operator=(const Waveform &waveform)
 {
     if (&waveform == this){return *this;}
@@ -102,6 +106,7 @@ Waveform& Waveform::operator=(const Waveform &waveform)
     return *this;
 }
 
+/// Move assignment operator
 Waveform& Waveform::operator=(Waveform &&waveform) noexcept
 {
     if (&waveform == this){return *this;}
@@ -110,8 +115,10 @@ Waveform& Waveform::operator=(Waveform &&waveform) noexcept
     return *this;
 }
 
+/// Destructor
 Waveform::~Waveform() = default;
 
+/// Resets class
 void Waveform::clear() noexcept
 {
     pImpl->mHeader.clear();
@@ -119,6 +126,7 @@ void Waveform::clear() noexcept
     pImpl->mData = nullptr;
 }
 
+/// Loads a waveform
 void Waveform::read(const std::string &fileName)
 {
     clear();
@@ -130,7 +138,7 @@ void Waveform::read(const std::string &fileName)
     }
 #endif
     // Read the binary file
-    std::ifstream sacfl(fileName, std::ios::binary);
+    std::ifstream sacfl(fileName, std::ios::in | std::ios::binary);
     std::vector<char> buffer(std::istreambuf_iterator<char> (sacfl), {});
     sacfl.close();
     size_t nbytes = buffer.size();
@@ -203,6 +211,7 @@ void Waveform::read(const std::string &fileName)
     }
 }
 
+/// Writes a waveform
 void Waveform::write(const std::string &fileName, const bool lswap) const
 {
     if (!isValid())
@@ -262,6 +271,7 @@ void Waveform::write(const std::string &fileName, const bool lswap) const
     outfile.close();
 }
 
+/// Gets the trace start time
 Temblor::Utilities::Time Waveform::getStartTime() const
 {
     int year   = pImpl->mHeader.getHeader(SAC::Integer::NZYEAR);
@@ -292,6 +302,7 @@ Temblor::Utilities::Time Waveform::getStartTime() const
     return startTime;
 }
 
+/// Sets the trace start time
 void Waveform::setStartTime(const Utilities::Time &startTime) noexcept
 {
      pImpl->mHeader.setHeader(SAC::Integer::NZYEAR, startTime.getYear()); 
@@ -304,16 +315,19 @@ void Waveform::setStartTime(const Utilities::Time &startTime) noexcept
      pImpl->mHeader.setHeader(SAC::Double::B, 0.0);    
 }
 
+/// Sets a double header value
 void Waveform::setHeader(const Double variableName, const double value)
 {
     pImpl->mHeader.setHeader(variableName, value);
 }
 
+/// Gets a double header value
 double Waveform::getHeader(const Double variableName) const noexcept
 {
     return pImpl->mHeader.getHeader(variableName);
 }
 
+/// Sets an integer header value
 void Waveform::setHeader(const Integer variableName, const int value)
 {
     if (variableName == Integer::NPTS)
@@ -327,43 +341,50 @@ void Waveform::setHeader(const Integer variableName, const int value)
     pImpl->mHeader.setHeader(variableName, value);
 }
 
+/// Gets an integer header value
 int Waveform::getHeader(const Integer variableName) const noexcept
 {
     return pImpl->mHeader.getHeader(variableName);
 }
 
+/// Sets a logical header value
 void Waveform::setHeader(const Logical variableName, const bool value) noexcept
 {
     pImpl->mHeader.setHeader(variableName, value);
 }
 
+/// Gets a logical header value
 int Waveform::getHeader(const Logical variableName) const noexcept
 {
     return pImpl->mHeader.getHeader(variableName);
 }
 
+/// Sets a character header value
 void Waveform::setHeader(const Character variableName,
                          const std::string &value) noexcept
 {
     pImpl->mHeader.setHeader(variableName, value);
 }
 
+/// Gets a character header value
 std::string Waveform::getHeader(const Character variableName) const noexcept
 {
     return pImpl->mHeader.getHeader(variableName);
 }
                          
-
+/// Gets the waveform sampling period
 double Waveform::getSamplingPeriod() const noexcept
 {
     return pImpl->mHeader.getHeader(Double::DELTA);
 }
 
+/// Gets the number of samples in the waveform
 int Waveform::getNumberOfSamples() const noexcept
 {
     return pImpl->mHeader.getHeader(Integer::NPTS);
 }
 
+/// Checks if this is a valid trace
 bool Waveform::isValid() const noexcept
 {
     if (!pImpl){return false;}
@@ -373,11 +394,13 @@ bool Waveform::isValid() const noexcept
     return true;
 }
 
+/// Gets a pointer to the data
 const double *Waveform::getDataPointer() const noexcept
 {
     return pImpl->mData;
 }
 
+/// Gets a copy of the data
 std::vector<double> Waveform::getData() const noexcept
 {
     int npts = getNumberOfSamples();
@@ -393,6 +416,7 @@ std::vector<double> Waveform::getData() const noexcept
     }
 }
 
+/// Sets the waveform data
 void Waveform::setData(const int npts, const double x[])
 {
     pImpl->freeData();
