@@ -1,14 +1,14 @@
-#ifndef TEMBLOR_DATAREADERS_SEGY_SEGY2_HPP
-#define TEMBLOR_DATAREADERS_SEGY_SEGY2_HPP
+#ifndef TEMBLOR_SEISMICDATAIO_SEGY_SEGY2_HPP
+#define TEMBLOR_SEISMICDATAIO_SEGY_SEGY2_HPP
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace Temblor::DataReaders::SEGY
+namespace Temblor::SeismicDataIO::SEGY
 {
-
+class BinaryFileHeader;
 /*!
- * @brief The SEGY-2 class.
+ * @brief A class for reading/writing SEGY-Revision 2 files.
  */
 class Segy2
 {
@@ -48,12 +48,25 @@ public:
 
     /*! @} */
 
+    /*! @name Textual Header
+     * @{
+     */
     /*!
      * @brief Gets the 3200 character textual header. 
      * @result The 3200 character textual header.
      * @note This will be 3200 blank spaces if the header has yet to be set.
      */
     std::string getTextualHeader() const noexcept;
+    /*!
+     * @brief Sets the 3200 character textual header.
+     * @param[in] header  The 3200 character textual header.
+     * @note If the length of the header is than 3200 characters then it
+     *       will be padded with blank spaces.  Alternatively, if the
+     *       length of the header exceeds 3200 characters then it will be
+     *       truncated.
+     */
+    std::string setTextualHeader(const std::string &header);
+    /*! @} */
 private:
     class Segy2Impl;
     std::unique_ptr<Segy2Impl> pImpl;

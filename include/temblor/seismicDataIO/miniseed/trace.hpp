@@ -1,20 +1,22 @@
-#ifndef TEMBLOR_DATAREADERS_MINISEED_TRACE_HPP
-#define TEMBLOR_DATAREADERS_MINISEED_TRACE_HPP 1
+#ifndef TEMBLOR_SEISMICDATAIO_MINISEED_TRACE_HPP
+#define TEMBLOR_SEISMICDATAIO_MINISEED_TRACE_HPP 1
 #include <memory>
-#include "temblor/dataReaders/miniseed/enums.hpp"
+#include <vector>
+#include "temblor/seismicDataIO/abstractBaseClass/trace.hpp"
+#include "temblor/seismicDataIO/miniseed/enums.hpp"
 
 namespace Temblor::Utilities
 {
 class Time;
 }
 
-namespace Temblor::DataReaders::MiniSEED
+namespace Temblor::SeismicDataIO::MiniSEED
 {
 class SNCL;
 /*!
  * @brief Defines a miniSEED trace.
  */
-class Trace
+class Trace : public Temblor::SeismicDataIO::AbstractBaseClass::ITrace
 {
 public:
     /*! @name Constructors
@@ -94,7 +96,7 @@ public:
      * @result The start time of the trace.
      * @note If this was not set then it will correspond to January 1, 1970.
      */
-    Temblor::Utilities::Time getStartTime() const noexcept;
+    Temblor::Utilities::Time getStartTime() const noexcept override;
     /*!
      * @brief Gets the end time of the trace.
      * @result The end time of the trace.
@@ -114,13 +116,19 @@ public:
      * @param[in] samplingRate  The sampling rate in Hz.
      * @throws std::invalid_argument if sampling rate is not positive.
      */
-    void setSamplingRate(const double samplingRate);
+    void setSamplingRate(double samplingRate);
     /*!
      * @brief Gets the sampling rate.
      * @result The sampling rate in Hz.
      * @throws std::runtime_error if the sampling rate was not set.
      */
-    double getSamplingRate() const;    
+    double getSamplingRate() const override;
+    /*! 
+     * @brief Gets the sampling period.
+     * @result The sampling rate in seconds.
+     * @throws std::runtime_error if the sampling rate was not set.
+     */
+    double getSamplingPeriod() const override;
     /*! !} */
 
     /*! @name Number of Samples
@@ -130,7 +138,7 @@ public:
      * @brief Sets the number of samples.
      * @result The number of samples in the trace.
      */
-    int getNumberOfSamples() const noexcept;
+    int getNumberOfSamples() const noexcept override;
     /*! @} */
 
     /*! @name Precision
@@ -186,9 +194,9 @@ public:
      *         or read from disk.
      * @sa \c getNumberOfSamples()
      */ 
-    void getData(const int length, double *x[]) const;
-    void getData(const int length, float *x[]) const;
-    void getData(const int length, int *x[]) const;
+    void getData(int length, double *x[]) const override;
+    void getData(int length, float *x[]) const override;
+    void getData(int length, int *x[]) const;
     /*!
      * @brief Sets the time series data.
      * @param[in] nSamples  The number of samples in the signal.
@@ -198,9 +206,9 @@ public:
      * @throws std::invalid_argument if nSamples is too big or if nSamples is
      *         positive and x is NULL.
      */
-    void setData(const size_t nSamples, const double x[]);
-    void setData(const size_t nSamples, const float x[]);
-    void setData(const size_t nSamples, const int x[]);
+    void setData(size_t nSamples, const double x[]);
+    void setData(size_t nSamples, const float x[]);
+    void setData(size_t nSamples, const int x[]);
     /*!
      * @brief Gets a pointer to the double precision time series.
      * @result A pointer to the time series data.

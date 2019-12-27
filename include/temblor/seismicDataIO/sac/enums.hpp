@@ -1,7 +1,7 @@
-#ifndef TEMBLOR_DATAREADERS_SAC_ENUMS_HPP
-#define TEMBLOR_DATAREADERS_SAC_ENUMS_HPP
+#ifndef TEMBLOR_SEISMICDATAIO_SAC_ENUMS_HPP
+#define TEMBLOR_SEISMICDATAIO_SAC_ENUMS_HPP
 
-namespace Temblor::DataReaders::SAC
+namespace Temblor::SeismicDataIO::SAC
 {
 
 /*!

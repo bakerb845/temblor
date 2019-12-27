@@ -1,15 +1,15 @@
-#ifndef TEMBLOR_DATAREADERS_MINISEED_TRACEGROUP_HPP
-#define TEMBLOR_DATAREADERS_MINISEED_TRACEGROUP_HPP 1
+#ifndef TEMBLOR_SEISMICDATAIO_MINISEED_TRACEGROUP_HPP
+#define TEMBLOR_SEISMICDATAIO_MINISEED_TRACEGROUP_HPP 1
 #include <vector>
 #include <memory>
-#include "temblor/dataReaders/miniseed/enums.hpp"
+#include "temblor/seismicDataIO/miniseed/enums.hpp"
 
 namespace Temblor::Utilities
 {
 class Time;
 }
 
-namespace Temblor::DataReaders::MiniSEED
+namespace Temblor::SeismicDataIO::MiniSEED
 {
 class SNCL;
 class Trace;

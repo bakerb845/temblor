@@ -1,10 +1,11 @@
-#ifndef TEMBLOR_LIBRARY_DATAREADERS_SAC_WAVEFORM_HPP
-#define TEMBLOR_LIBRARY_DATAREADERS_SAC_WAVEFORM_HPP
+#ifndef TEMBLOR_SEISMICDATAIO_SAC_WAVEFORM_HPP
+#define TEMBLOR_SEISMICDATAIO_SAC_WAVEFORM_HPP
 #include <memory>
 #include <string>
 #include <vector>
+#include "temblor/seismicDataIO/abstractBaseClass/trace.hpp"
 #include "temblor/utilities/time.hpp"
-#include "temblor/dataReaders/sac/enums.hpp"
+#include "temblor/seismicDataIO/sac/enums.hpp"
 
 // Forward declarations
 namespace Temblor::Utilities
@@ -12,14 +13,13 @@ namespace Temblor::Utilities
 class Time;
 }
 
-namespace Temblor::DataReaders::SAC
+namespace Temblor::SeismicDataIO::SAC
 {
-
 /*!
  * @brief The SAC waveform class.  A SAC waveform is comprised of a time series
  *        and is characterized by a SAC header.
  */
-class Waveform
+class Waveform : public Temblor::SeismicDataIO::AbstractBaseClass::ITrace
 {
 public:
     /*! @name Constructors
@@ -86,7 +86,7 @@ public:
      * @throws std::invalid_argument if attempting to set Double::Delta
      *         with a negative value.
      */
-    void setHeader(const Double variableName, const double value);
+    void setHeader(const Double variableName, double value);
     /*! @} */
 
     /*! @name Integer Header Variables
@@ -107,7 +107,7 @@ public:
       *         to a negative number, if any of the time variables are
       *         out of range, or if the user attemps to modify Integer::IFTYPE.
       */
-    void setHeader(const Integer variableName, const int value);
+    void setHeader(const Integer variableName, int value);
     /*! @} */
 
     /*! @name Logical Header Variables
@@ -125,7 +125,7 @@ public:
       * @param value         The value of the variable.
       * @note That after a variable is set it can only to toggled on or off.
       */
-    void setHeader(const Logical variableName, const bool value) noexcept;
+    void setHeader(const Logical variableName, bool value) noexcept;
     /*! @} */
 
     /*! @name Character Header Variables
@@ -156,11 +156,19 @@ public:
     /*!
      * @brief Gets the sampling period.
      * @result The sampling period in seconds of the waveform.
-     * @note If the waveform is not properly initialized then this can be 
-     *       negative.  In this case the value will likely be -12345.
+     * @throws std::runtime_error if the sampling period was never properly
+     *         set in the SAC header.
      * @sa isValid()
      */
-    double getSamplingPeriod() const noexcept;
+    double getSamplingPeriod() const override;
+    /*! 
+     * @brief Gets the sampling rate.
+     * @result The sampling rate in Hz of the waveform.
+     * @throws std::runtime_error if the sampling period was never properly
+     *         set in the SAC header.
+     * @sa isValid()
+     */
+    double getSamplingRate() const override;
     /*!
      * @brief Gets the number of points in the waveform.
      * @result The number of samples in the waveform.
@@ -168,7 +176,7 @@ public:
      *       be negative.  In this case the value will likely be -12345.
      * @sa isValid()
      */
-    int getNumberOfSamples() const noexcept;
+    int getNumberOfSamples() const noexcept override;
     /*!
      * @brief Convenience function to set the start time.
      * @param[in] startTime   The start time of the trace.
@@ -182,7 +190,7 @@ public:
      *         start time (NZYEAR, NZJDAY, NZHOUR, NZMIN, NZMSEC, B) were not
      *         set.
      */
-    Temblor::Utilities::Time getStartTime() const;
+    Temblor::Utilities::Time getStartTime() const override;
 
     /*!
      * @brief Sets the data.
@@ -192,13 +200,16 @@ public:
      *                  [npts].
      * @throws std::invalid_argument if npts is not positive or data is NULL.
      */
-    void setData(const int npts, const double *data);
+    void setData(int npts, const double data[]);
     /*!
      * @brief Returns a pointer to the data.
      * @result A pointer to the data.  This can be NULL.  The length of
      *         the pointer is given by \c getNumberOfSamples().
      */
     const double *getDataPointer() const noexcept;
+
+    void getData(int npts, double *data[]) const override;
+    void getData(int npts, float *data[]) const override;
     /*!
      * @brief Returns a copy of the data.
      * @result A copy of the waveform data.
