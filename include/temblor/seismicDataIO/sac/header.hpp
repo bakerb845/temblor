@@ -94,7 +94,7 @@ public:
      * @throws std::invalid_argument if the sampling rate or number of samples
      *         are invalid.  This can indicate a problem with the byte order.
      */
-    void setFromBinaryHeader(const char chdr[632], const bool lswap = false);
+    void setFromBinaryHeader(const char chdr[632], bool lswap = false);
     /*!
      * @brief Creates a header for writing to a binary file.
      * @param[out] header  The packed header.  This constitutes the first
@@ -103,7 +103,7 @@ public:
      *                     The default is false.
      */
     void getBinaryHeader(char header[632], 
-                         const bool lswap = false) const noexcept;
+                         bool lswap = false) const noexcept;
     /*! @name Floating Point Header Variables
      * @{
      */
@@ -120,7 +120,7 @@ public:
      * @throws std::invalid_argument if attempting to set Double::Delta
      *         with a negative value.
      */
-    void setHeader(const Double variableName, const double value);
+    void setHeader(const Double variableName, double value);
     /*! @} */
 
     /*! @name Integer Header Variables
@@ -139,7 +139,7 @@ public:
       *         to a negative number or if any of the time variables are
       *         out of range.
       */
-    void setHeader(const Integer variableName, const int value);
+    void setHeader(const Integer variableName, int value);
     /*! @} */
 
     /*! @name Logical Header Variables
@@ -157,7 +157,7 @@ public:
       * @param value         The value of the variable.
       * @note That after a variable is set it can only to toggled on or off.
       */
-    void setHeader(const Logical variableName, const bool value) noexcept;
+    void setHeader(const Logical variableName, bool value) noexcept;
     /*! @} */
 
     /*! @name Character Header Variables

@@ -373,9 +373,17 @@ std::string Waveform::getHeader(const Character variableName) const noexcept
 }
                          
 /// Gets the waveform sampling period
-double Waveform::getSamplingPeriod() const noexcept
+double Waveform::getSamplingPeriod() const
 {
-    return pImpl->mHeader.getHeader(Double::DELTA);
+    auto dt = pImpl->mHeader.getHeader(Double::DELTA);
+    if (dt <= 0){throw std::runtime_error("Sampling rate not yet set\n");}
+    return dt;
+}
+
+/// Gets the waveform sampling rate
+double Waveform::getSamplingRate() const
+{
+    return 1/getSamplingPeriod();
 }
 
 /// Gets the number of samples in the waveform
@@ -400,13 +408,43 @@ const double *Waveform::getDataPointer() const noexcept
     return pImpl->mData;
 }
 
+/// Get a copy of the data
+void Waveform::getData(const int npts, double *dataIn[]) const
+{
+    int n = getNumberOfSamples();
+    if (npts < n)
+    {
+        throw std::invalid_argument("npts = " + std::to_string(npts)
+                                  + " must be at least "
+                                  + std::to_string(n) + "\n");
+    }
+    double *data = *dataIn;
+    std::copy(pImpl->mData, pImpl->mData+n, data); 
+}
+
+void Waveform::getData(const int npts, float *dataIn[]) const
+{
+    int n = getNumberOfSamples();
+    if (npts < n)
+    {
+        throw std::invalid_argument("npts = " + std::to_string(npts)
+                                  + " must be at least "
+                                  + std::to_string(n) + "\n");
+    }
+    float *data = *dataIn;
+    #pragma omp simd
+    for (int i=0; i<n; ++i){data[i] = static_cast<float> (pImpl->mData[i]);}
+}
+
 /// Gets a copy of the data
 std::vector<double> Waveform::getData() const noexcept
 {
     int npts = getNumberOfSamples();
     if (npts > 0 && pImpl->mData)
     {
-        std::vector<double> data(pImpl->mData, pImpl->mData + npts);
+        std::vector<double> data(npts);
+        double *dataPtr = data.data();
+        getData(npts, &dataPtr);
         return data;
     }
     else

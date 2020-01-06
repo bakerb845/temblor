@@ -1,7 +1,7 @@
 #ifndef TEMBLOR_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP
 #define TEMBLOR_MODELS_TIMESERIESDATA_SINGLECHANNELWAVEFORM_HPP 1
 #include <memory>
-#include "temblor/dataReaders/fileFormats.hpp"
+#include "temblor/seismicDataIO/fileFormats.hpp"
 
 // Forward declarations
 namespace Temblor::Utilities
